@@ -1,0 +1,1628 @@
+===================================================================
+configure.user
+diff -r3.12 -r3.20
+93c93
+< ##XLOCAL0 = -Wl,-Xlocal,bt1_,-Xlocal,blk1_,-Xlocal,blk2
+---
+> ##XLOCAL0 = -Wl,-Xlocal,bt1_,-Xlocal,blk1_,-Xlocal,blk2_
+311c311
+< #                                     0=none,1=simple,2=cloud,3=ccm2
+---
+> #                                     0=none,1=simple,2=cloud,3=ccm2,4=rrtm
+367c367
+< #FCFLAGS = -O3 -qstrict -qarch=pwrx -qhsflt
+---
+> #FCFLAGS = -O3 -qstrict -qarch=auto -qhsflt
+386c386
+< #    7a.1 IBM SP2 with Silver nodes
+---
+> #    7a.1 IBM SP with Silver or Winterhawk nodes
+395a396,397
+> #       - The -bmaxdata:0x70000000 flag on LDOPTIONS was suggested by
+> #         Katja Stokely, the IBM Applications Analyst at NCAR
+407,408c409,410
+< #FCFLAGS = -O3 -qarch=auto -qzerosize -qsmp=noauto,schedule=static -qnosave -qmaxmem=-1
+< #LDOPTIONS =  -qsmp=noauto,schedule=static
+---
+> #FCFLAGS = -O3 -qarch=auto -qzerosize -qsmp=noauto -qnosave -qmaxmem=-1
+> #LDOPTIONS =  -qsmp=noauto -bmaxdata:0x70000000
+453a456,458
+> #    Note that the MPP version of MM5 is not supported for compilation under
+> #    the "modules" environment.  To see if you are using modules to control
+> #    compiler versions on your machine, type "module list".
+546a552,576
+> #
+> # These options have been updated for the newer VPP5000 system. If you
+> # find that you have trouble compiling on your system, try removing the
+> # -KA32 and -Ka4 option from FCFLAGS, LDOPTIONS, CFLAGS and from
+> # MPP/RSL/RSL/makefile.vpp. Note that to successfully compile the RSL
+> # library (MPP/RSL/RSL) you need the following two environment variables
+> # set (syntax may vary with shells other than csh):
+> #
+> # Older systems:
+> #
+> #    setenv MPIINCDIR /usr/lang/mpi/include
+> #    setenv MPILIBS '-Wl,-P -L/usr/lang/mpi/lib -lmpi -lmp'
+> #
+> # Newer systems:
+> #
+> #    setenv MPIINCDIR /usr/lang/mpi2/include32
+> #    setenv MPILIBS '-Wl,-P -L/usr/lang/mpi2/lib32 -lmpi -lmp'
+> #
+> # Newer system had difficulty in compiling MPP/FLIC/FLIC/dm. If you have 
+> # trouble with this program, please download 
+> #
+> #        ftp://ftp.ucar.edu/mesouser/MM5V3/Util/dm.gz
+> #
+> # 'chmod ugo+x dm' and copy into MPP/FLIC/FLIC. Or contact michalak@ucar.edu.
+> #
+553,555c583,584
+< ##FCFLAGS =  -Sw -Wl,-P -lmpi -lmp -Of
+< #FCFLAGS =  -Sw -Wv,-Of,-te,-ilfunc,-noalias,-m3,-P255 -Oe,-P -Kfast -Pdos -lmpi -lmp
+< #LDOPTIONS = -Wl,-P -L$(MPILIBS) -lmpi -J -lmp
+---
+> #FCFLAGS = -Sw -Wv,-Of,-te,-ilfunc,-noalias,-m3,-P255 -Oe,-P -Kfast -Pdos -lmpi -lmp -KA32
+> #LDOPTIONS = -Wl,-P -L$(MPILIBS) -lmpi -J -lmp -KA32
+566c595
+< #CFLAGS = -DMPI -Dvpp -I$(MPIINCDIR)
+---
+> #CFLAGS = -DMPI -Dvpp -I$(MPIINCDIR) -KA32 -Ka4
+===================================================================
+configure.user.linux
+diff -r3.1 -r3.2
+113c113
+< #                                     0=none,1=simple,2=cloud,3=ccm2
+---
+> #                                     0=none,1=simple,2=cloud,3=ccm2,rrtm=4
+===================================================================
+Run/mm5.F
+diff -r3.0 -r3.1
+220d219
+< # ifdef MPP1                                                                     MM5.220
+222,224d220
+< # else                                                                           MM5.222
+<       CALL SOLVE(IEXEC(1),1,0)                                                   MM5.223
+< # endif                                                                          MM5.224
+===================================================================
+Templates/nparam
+diff -r3.0 -r3.1
+14a15
+>  ;          2=read in nest terrain file
+===================================================================
+Templates/nparam.WS
+diff -r3.0 -r3.1
+14a15
+>  ;          2=read in nest terrain file
+===================================================================
+Util/parseconfig.c
+diff -r3.0 -r3.1
+208c208
+< 	    int s1=FALSE,s2=FALSE,s3=FALSE;
+---
+> 	    int s1=FALSE,s2=FALSE,s3=FALSE,s4=FALSE;
+223a224,226
+> 	      } else if (frad[j] == 4) {
+> 		irrdim = 1;
+> 		s4 = TRUE;
+236a240,242
+> 	    if (s4 == TRUE) {
+> 	      fprintf(fd,"#define FRAD4 1\n");
+> 	    }
+===================================================================
+domain/boundary/bdyin.F
+diff -r3.3 -r3.9
+2c2
+<       IMPLICIT NONE                                                              BDYIN.2
+---
+> C      IMPLICIT NONE                                                             25JAN00.1
+54c54
+<      &           STATUS='OLD')                                                   BDYIN.55
+---
+>      &           STATUS='OLD',ERR=9020)                                          25JAN00.2
+63,64c63,72
+<       IF(DM_IONODE())READ (IUNIT,ERR=9009,END=9010)FLAG                          BDYIN.64
+< #ifdef MPP1                                                                      BDYIN.65
+---
+> #ifndef MPP1                                                                     25JAN00.3
+>       READ (IUNIT,ERR=9009,END=9010)FLAG                                         25JAN00.4
+> #else                                                                            25JAN00.5
+>       IF(DM_IONODE())THEN                                                        25JAN00.6
+>         READ (IUNIT,ERR=9009,END=7010)FLAG                                       25JAN00.7
+>         GOTO 8010                                                                25JAN00.8
+>  7010   CONTINUE                                                                 25JAN00.9
+>         FLAG = FILEDONE                                                          25JAN00.10
+>  8010   CONTINUE                                                                 25JAN00.11
+>       ENDIF                                                                      25JAN00.12
+65a74
+>       IF(FLAG.EQ.FILEDONE) GOTO 9010                                             25JAN00.13
+77c86
+<         CALL DM_BCAST_REALS(JBHR,NUMINT*NUMPROGS)                                BDYIN.78
+---
+>         CALL DM_BCAST_REALS(JBHR,NUMREAL*NUMPROGS)                               25JAN00.14
+377c386
+<      &      'MODEL STARTING TIME. XTIME,CURRENT_DATE,CDATE = ',2F10.2,           BDYIN.378
+---
+>      &      'MODEL STARTING TIME. XTIME,CURRENT_DATE,CDATE = ',F10.2,            25JAN00.15
+383a393,394
+> 9020  PRINT *,'ERROR OPENING BOUNDARY FILE'                                      25JAN00.16
+>       STOP '9020 IN BDYIN'                                                       25JAN00.17
+===================================================================
+domain/drivers/nstlev1.F
+diff -r3.0 -r3.2
+11a12
+>       IDLEV=LEVIDN(ICOARS)+1                                                     25JAN00.18
+39c40
+<           IF(NUMLV(ICOARS+1,L).GT.0)THEN                                         NSTLEV1.39
+---
+>           IF(NUMLV(IDLEV+1,L).GT.0)THEN                                          25JAN00.19
+60c61
+<           IF(NUMLV(ICOARS+1,L).GT.0)CALL NSTLEV2(IEXEC,L)                        NSTLEV1.60
+---
+>           IF(NUMLV(IDLEV+1,L).GT.0)CALL NSTLEV2(IEXEC,L)                         25JAN00.20
+===================================================================
+domain/drivers/nstlev2.F
+diff -r3.0 -r3.2
+55c55
+<           IF(NUMLV(ICOARS+1,L).GT.0)CALL NSTLEV3(IEXEC,L)                        NSTLEV2.55
+---
+>           IF(NUMLV(IDLEV+1,L).GT.0)CALL NSTLEV3(IEXEC,L)                         25JAN00.21
+===================================================================
+domain/drivers/nstlev3.F
+diff -r3.0 -r3.2
+55c55
+< C          IF(NUMLV(ICOARS+1,L).GT.0)CALL NSTLEV4(IEXEC,L)                       NSTLEV3.55
+---
+> C          IF(NUMLV(IDLEV+1,L).GT.0)CALL NSTLEV4(IEXEC,L)                        25JAN00.22
+===================================================================
+domain/initial/init.F
+diff -r3.3 -r3.11
+149,150c149,150
+<       CALL RDINIT(11,1,IX,JX,IHEADER)                                            INIT.149
+< C                 ^  ^ ^  ^  ^                                                   INIT.150
+---
+>       CALL RDINIT(11,1,IX,JX)                                                    25JAN00.23
+> C                 ^  ^ ^  ^                                                      25JAN00.24
+501,509d500
+<       ISN=1                                                                      INIT.501
+<       IF(JULDAY.LT.105.OR.JULDAY.GT.288)ISN=2                                    INIT.502
+<       ICENT=IL/2                                                                 INIT.503
+<       JCENT=JL/2                                                                 INIT.504
+< #ifndef MPP1                                                                     INIT.505
+<       IF(XLAT(ICENT,JCENT).LT.0.0)ISN=3-ISN                                      INIT.506
+< #else                                                                            INIT.507
+<       CALL MP_SHEMI(1,XLAT,ISN)                                                  INIT.508
+< #endif                                                                           INIT.509
+581,582c572,573
+< C         uncomment these lines if snowc contains sea-ice (and in initne         INIT.581
+< C           IF(XLAND(I,J).GT.1.5)THEN                                            INIT.582
+---
+> C     uncomment these lines if snowc contains sea-ice (and in initnest)          25JAN00.25
+> C           IF(XLAND(I,J).GT.1.5.AND.SNOWC(I,J).GT.0.5)THEN                      25JAN00.26
+638d628
+<       IF(ISOIL.NE.2)THEN                                                         INIT.638
+644c634,635
+<           OPEN(8, FILE='LOWBDY_DOMAIN1',FORM='UNFORMATTED',STATUS='OLD')         INIT.644
+---
+>           OPEN(8, FILE='LOWBDY_DOMAIN1',FORM='UNFORMATTED',STATUS='OLD',         25JAN00.27
+>      $         ERR=9010)                                                         25JAN00.28
+657c648
+<           CALL DM_BCAST_REALS(JBHR,NUMINT*NUMPROGS)                              INIT.657
+---
+>           CALL DM_BCAST_REALS(JBHR,NUMREAL*NUMPROGS)                             25JAN00.29
+700c691
+<           IF(NDIM.EQ.2.AND.NAME(1:8).EQ.'RES TEMP')THEN                          INIT.700
+---
+>           IF(NDIM.EQ.2.AND.NAME(1:8).EQ.'RES TEMP'.AND.ISOIL.NE.2)THEN           25JAN00.30
+709d699
+<                                                                                  INIT.709
+714c704
+<             CALL DM_DIST_READ(IUNIT,1,TMN,NDIM,LENDIM1,LENDIM2,LENDIM3,          INIT.714
+---
+>             CALL DM_DIST_READ(IUNIT,1,TMN,NDIM,LENDIM1,LENDIM2,1,                25JAN00.31
+718a709,726
+>           ELSE IF(NDIM.EQ.2.AND.NAME(1:8).EQ.'TSEASFC ')THEN                     25JAN00.32
+> #ifndef MPP1                                                                     25JAN00.33
+>             READ (8)((TSS(I,J),I=1,END_INDEX(1)),J=1,END_INDEX(2))               25JAN00.34
+> #else                                                                            25JAN00.35
+>             DO J = J, MJX                                                        25JAN00.36
+>               DO I = 1, MIX                                                      25JAN00.37
+>                 TSS(I,J) = 0.                                                    25JAN00.38
+>               ENDDO                                                              25JAN00.39
+>             ENDDO                                                                25JAN00.40
+>             LENDIM1=(END_INDEX(1)-START_INDEX(1)+1)                              25JAN00.41
+>             LENDIM2=(END_INDEX(2)-START_INDEX(2)+1)                              25JAN00.42
+>             LENDIM3=(END_INDEX(3)-START_INDEX(3)+1)                              25JAN00.43
+>             IUNIT=8                                                              25JAN00.44
+>             CALL DM_DIST_READ(IUNIT,1,TSS,NDIM,LENDIM1,LENDIM2,1,                25JAN00.45
+>      +           MIX,MJX,1)                                                      25JAN00.46
+> #endif                                                                           25JAN00.47
+>             PRINT *, 'FOUND INPUT FIELD ', NAME, ' FOR ', CURRENT_DATE           25JAN00.48
+>             IFOUNDTSS=1                                                          25JAN00.49
+726c734
+<           IF(IFOUNDTMN.NE.1)THEN                                                 INIT.726
+---
+>           IF(IFOUNDTMN.NE.1.AND.ISOIL.NE.2)THEN                                  25JAN00.50
+729a738,740
+>           IF(IFOUNDTSS.NE.1)THEN                                                 25JAN00.51
+>             PRINT *, 'SEA SURFACE TEMP NOT FOUND'                                25JAN00.52
+>           ENDIF                                                                  25JAN00.53
+731d741
+<       ENDIF                                                                      INIT.731
+741c751,752
+<                IF(TSLA(I,J,L).EQ.0.0)THEN                                        24SEP99.28
+---
+> C CHECK TO SEE IF TSLA ALREADY INITIALIZED FROM INITIAL DATA BEFORE SETTING      25JAN00.54
+>                IF(TSLA(I,J,L).LE.1.0)THEN                                        25JAN00.55
+875a887,888
+> 9010  PRINT *,'ERROR OPENING SUBSTRATE TEMP FILE'                                25JAN00.56
+>       STOP '9010 IN INIT'                                                        25JAN00.57
+===================================================================
+domain/initial/param.F
+diff -r3.6 -r3.16
+228a229
+> C              = 4 ; RRTM LONGWAVE AND DUDHIA SHORTWAVE (RRTM SCHEME)            25JAN00.58
+484c485
+<      &       STATUS='OLD')                                                       24SEP99.35
+---
+>      &       STATUS='OLD',ERR=9003)                                              25JAN00.59
+501c502
+<         CALL DM_BCAST_REALS(BHR,NUMINT*NUMPROGS)                                 PARAM.503
+---
+>         CALL DM_BCAST_REALS(BHR,NUMREAL*NUMPROGS)                                25JAN00.60
+1030a1032,1039
+> C  CHECK IFEED OPTION FOR MPP MM5: IFEED=4 ONLY                                  25JAN00.61
+> C                                                                                25JAN00.62
+> #ifdef MPP1                                                                      25JAN00.63
+>       IF (IFEED.EQ.3.AND.MAXNES.GT.1) THEN                                       25JAN00.64
+>          PRINT *,'* ADVISORY: IFEED=4 IS RECOMMENDED FOR USE WITH *'             25JAN00.65
+>          PRINT *,'* MPP VERSION (MORE EFFICIENT)                  *'             25JAN00.66
+>       ENDIF                                                                      25JAN00.67
+> #endif                                                                           25JAN00.68
+1309a1319,1323
+> #ifdef FRAD4                                                                     25JAN00.69
+>       I_FRAD(4)=1                                                                25JAN00.70
+> #else                                                                            25JAN00.71
+>       I_FRAD(4)=0                                                                25JAN00.72
+> #endif                                                                           25JAN00.73
+1557a1572,1575
+>       IF(IFRAD.EQ.4.AND.(IMOIST(1).NE.2.OR.IRDDIM.NE.1))THEN                     25JAN00.74
+>         PRINT *,'ERROR: IFRAD=4 REQUIRES IRDDIM=1 AND IMPHYS>3'                  25JAN00.75
+>         IWARN=IWARN+1                                                            25JAN00.76
+>       ENDIF                                                                      25JAN00.77
+1647a1666,1669
+>           IF(IFRAD.EQ.4.AND.IMOIST(N).NE.2)THEN                                  25JAN00.78
+>             PRINT *,'ERROR: IFRAD=4 REQUIRES IMPHYS>3'                           25JAN00.79
+>             IWARN=IWARN+1                                                        25JAN00.80
+>           ENDIF                                                                  25JAN00.81
+1749a1772,1777
+> C                                                                                25JAN00.82
+> C  DEFINE SEASON ACCORDING TO JULIAN DAY AND CENTER LATITUDE (BHR(2,1))          25JAN00.83
+> C                                                                                25JAN00.84
+>       ISN=1                                                                      25JAN00.85
+>       IF(JULDAY.LT.105.OR.JULDAY.GT.288)ISN=2                                    25JAN00.86
+>       IF(BHR(2,1).LT.0.0)ISN=3-ISN                                               25JAN00.87
+1892a1921,1924
+> #ifdef FRAD4                                                                     25JAN00.88
+>       IF(IFRAD.EQ.4)CALL RRTMINIT                                                25JAN00.89
+> #endif                                                                           25JAN00.90
+>                                                                                  25JAN00.91
+2229a2262
+>       IF(IFRAD.EQ.4)PRINT1177,IFRAD                                              25JAN00.92
+2361a2395
+>  1177 FORMAT(/' IFRAD  = ',I3,'  RRTM LONGWAVE AND DUDHIA SHORTWAVE.')           25JAN00.93
+2380c2414
+<  1240 FORMAT(//' MAXIMUM TIME      = ',F5.0,' MINUTES')                          PARAM.2363
+---
+>  1240 FORMAT(//' MAXIMUM TIME      = ',F7.0,' MINUTES')                          25JAN00.94
+2388a2423
+> #ifndef MPP1                                                                     25JAN00.95
+2392a2428,2438
+> 9003  PRINT *, 'ERROR OPENING MMINPUT_DOMAIN1'                                   25JAN00.96
+>       STOP '9003 IN PARAM'                                                       25JAN00.97
+> #else                                                                            25JAN00.98
+> C PARAM IS NOT PASSED THROUGH FLIC SO STOP STATEMENTS CONVERTED MANUALLY         25JAN00.99
+> 9001  PRINT *, 'ERROR IN READING HEADER. CHECK INPUT FILE UNIT 11'               25JAN00.100
+>       CALL FKILL_MODEL( '9001 IN PARAM' )                                        25JAN00.101
+> 9002  PRINT *, 'INPUT FILE EMPTY. CHECK IF INPUT FILE UNIT 11 EXISTS'            25JAN00.102
+>       CALL FKILL_MODEL( '9002 IN PARAM' )                                        25JAN00.103
+> 9003  PRINT *, 'ERROR OPENING MMINPUT_DOMAIN1'                                   25JAN00.104
+>       CALL FKILL_MODEL( '9003 IN PARAM' )                                        25JAN00.105
+> #endif                                                                           25JAN00.106
+===================================================================
+domain/io/output.F
+diff -r3.0 -r3.2
+55,57c55,56
+<         ENDIF                                                                    OUTPUT.55
+<         PRINT 70, SAVTIM,LLN,IFIX(XTIME+.001)                                    OUTPUT.56
+<    70   FORMAT(6X,'+++ RESTART FILE IS WRITTEN AT TIME = ',F10.2,                OUTPUT.57
+---
+>           PRINT 70, SAVTIM,LLN,IFIX(XTIME+.001)                                  25JAN00.107
+>    70     FORMAT(6X,'+++ RESTART FILE IS WRITTEN AT TIME = ',F10.2,              25JAN00.108
+58a58
+>         ENDIF                                                                    25JAN00.109
+===================================================================
+domain/io/outtap.F
+diff -r3.9 -r3.16
+2c2
+<       IMPLICIT NONE                                                              OUTTAP.2
+---
+> C      IMPLICIT NONE                                                             25JAN00.110
+121c121
+<             PRINT 930, TAPTIM,NESCOU                                             OUTTAP.123
+---
+>             PRINT 930, XTIME,NESCOU                                              25JAN00.111
+174c174
+<       JBHIC( 1, 1)( 1:80)='OUTPUT FROM PROGRAM MM5 V3 RELEASE-3-0  '             OUTTAP.176
+---
+>       JBHIC( 1, 1)( 1:80)='OUTPUT FROM PROGRAM MM5 V3              '             25JAN00.112
+238c238
+<       JBHI (3,11)=2                                                              24SEP99.93
+---
+>       JBHI (3,11)=3                                                              25JAN00.113
+243a244,245
+>       IF(NESCOU.EQ.1.AND.DM_IONODE()) PRINT 950,JBHI(3,11),JBHI(4,11)            25JAN00.114
+> 950   FORMAT(6X,'*** YOU ARE RUNNING MM5 VERSION 3-',I1,'-',I1/)                 25JAN00.115
+372c374
+<      *     //     'E RADIATION; 2=CLOUD RADIATION; 3=CCM2  '                     24SEP99.99
+---
+>      *     //     'E; 2=CLOUD RADIATION; 3=CCM2; 4=RRTMLW  '                     25JAN00.116
+===================================================================
+domain/io/rdinit.F
+diff -r3.10 -r3.15
+68c68
+<       if (dm_ionode()) then                                                      RDINIT.65
+---
+>       IF (DM_IONODE()) THEN                                                      25JAN00.117
+70,71c70,71
+<      &       FORM='UNFORMATTED',STATUS='OLD')                                    RDINIT.67
+<       endif                                                                      RDINIT.68
+---
+>      &       FORM='UNFORMATTED',STATUS='OLD',ERR=9010)                           25JAN00.118
+>       ENDIF                                                                      25JAN00.119
+123c123
+<         call dm_bcast_reals   ( jbhr, NUMINT*NUMPROGS)                           RDINIT.114
+---
+>         call dm_bcast_reals   ( jbhr, NUMREAL*NUMPROGS)                          25JAN00.120
+277,278d276
+<         ELSE IF(NAME8.EQ.'TSEASFC ')THEN                                         24SEP99.233
+<           CALL EQUATE(HDOTH,IX,JX,1,TSS,MIX,MJX,1)                               24SEP99.234
+625a624
+>           IF(FNDSEAIC.AND.XICE(I,J).GT.0.5)TMN(I,J)=271.16                       25JAN00.121
+694,697c693,696
+<       RETURN                                                                     RDINIT.641
+< #ifdef MPP1                                                                      RDINIT.642
+< #  include <mpp_rdinit_10.incl>                                                  RDINIT.643
+< #endif                                                                           RDINIT.644
+---
+> #ifdef MPP1                                                                      25JAN00.122
+> #  include <mpp_rdinit_10.incl>                                                  25JAN00.123
+> #endif                                                                           25JAN00.124
+>       RETURN                                                                     25JAN00.125
+705a705,706
+>  9010 PRINT *,'ERROR OPENING INPUT FILE. CHECK THE FILE, UNIT ',IUNIT            25JAN00.126
+>       STOP 'STOP 9010 IN RDINIT'                                                 25JAN00.127
+===================================================================
+domain/io/rdter.F
+diff -r3.3 -r3.8
+8a9
+> #     include <landuse.incl>                                                     25JAN00.128
+19c20
+<                                                                                  RDTER.19
+---
+>       CHARACTER*4 MMINLUN                                                        25JAN00.129
+22a24
+>       LOGICAL LANDUSEMATCH                                                       25JAN00.130
+28c30
+<      &       FORM='UNFORMATTED',STATUS='OLD')                                    RDTER.31
+---
+>      &       FORM='UNFORMATTED',STATUS='OLD',ERR=997)                            25JAN00.131
+48c50
+<         call dm_bcast_reals   ( jbhr, NUMINT*NUMPROGS)                           RDTER.51
+---
+>         call dm_bcast_reals   ( jbhr, NUMREAL*NUMPROGS)                          25JAN00.132
+78a81,93
+> C CHECK TO MATCH LANDUSE INPUT                                                   25JAN00.133
+>         MMINLUN = JBHIC(23,1)(1:4)                                               25JAN00.134
+>         LANDUSEMATCH = MMINLUN.NE.MMINLU                                         25JAN00.135
+> #ifdef MPP1                                                                      25JAN00.136
+>         CALL RSL_MON_BCAST( LANDUSEMATCH, LWORDSIZE )                            25JAN00.137
+> #endif                                                                           25JAN00.138
+>         IF(LANDUSEMATCH) THEN                                                    25JAN00.139
+>           PRINT *,'THE NEST LANDUSE TYPE DOES NOT MATCH THAT ',                  25JAN00.140
+>      -            'IN COARSE DOMAIN'                                             25JAN00.141
+>           PRINT *,'THE COARSE DOMAIN LANDUSE TYPE IS ', MMINLU                   25JAN00.142
+>           PRINT *,'THE NEST DOMAIN LANDUSE TYPE IS   ', MMINLUN                  25JAN00.143
+>           IWARN=IWARN+1                                                          25JAN00.144
+>         ENDIF                                                                    25JAN00.145
+155a171,172
+>   997 PRINT *,'ERROR OPENING TERRAIN FILE'                                       25JAN00.146
+>       STOP 'STOP 997 IN RDTER'                                                   25JAN00.147
+===================================================================
+domain/io/savread.F
+diff -r3.0 -r3.2
+14c14
+<      &         FORM='UNFORMATTED',STATUS='OLD')                                  SAVREAD.14
+---
+>      &         FORM='UNFORMATTED',STATUS='OLD',ERR=997)                          25JAN00.148
+41a42,44
+>   997 PRINT *,'ERROR OPENING READING RESTART FILE. CHECK RESTART FILE,',         25JAN00.149
+>      *      ' UNIT ',IUTSAV                                                      25JAN00.150
+>       STOP 'STOP 997 IN SAVREAD'                                                 25JAN00.151
+===================================================================
+domain/nest/feedbk.F
+diff -r3.0 -r3.3
+1a2
+>       IMPLICIT NONE                                                              25JAN00.152
+36,41c37,62
+<                                                                                  FEEDBK.36
+<       DIMENSION HSC1(MIX,MJX),HSC2(MIX,MJX)                                      FEEDBK.37
+<       DIMENSION HSC3(MIX,MJX),HSC4(MIX,MJX)                                      FEEDBK.38
+<       DIMENSION HSC6(MIX,MJX)                                                    FEEDBK.39
+<       DIMENSION HSC5(MIX,MJX)                                                    FEEDBK.40
+<       DIMENSION SLP(MIX,MJX)                                                     FEEDBK.41
+---
+> C DECLARATIONS ADDED FOR IMPL NONE                                               25JAN00.153
+>       REAL F1,F2,F3                                                              25JAN00.154
+>       INTEGER INEST                                                              25JAN00.155
+>       INTEGER I,J,K                                                              25JAN00.156
+>       INTEGER ICY,JCX,JFX,JFP,IFY,IFP,IFM                                        25JAN00.157
+>       INTEGER JFM,L                                                              25JAN00.158
+>       REAL    TIJ,TPJ,TMG,TIP,TIM,TPP,TPM,TMP,TMM,TAV                            25JAN00.159
+>       REAL    QVIJ,QVPJ,QVMJ,QVIP,QVIM,QVPP,QVPM                                 25JAN00.160
+>       REAL    QVMP,QVMM,QVAV,QCIJ,QCPJ,QCMJ,QCIP,QCIM,QCPP                       25JAN00.161
+>       REAL TMJ,QCPM,QCMP,QCMM,QCAV,QRIJ,QRPJ,QRMJ,QRIP,QRIM,QRPP,QRPM            25JAN00.162
+>       REAL QRMP,QRMM,QRAV,QIIJ,QIPJ,QIMJ,QIIP,QIIM,QIPP,QIPM,QIMP                25JAN00.163
+>       REAL QIMM,QIAV,QNIIJ,QNIPJ,QNIMJ,QNIIP,QNIIM                               25JAN00.164
+>       REAL QNIPP,QNIPM,QNIMP,QNIMM,QNIAV,QGIJ,QGPJ,QGMJ,QGIP,QGIM                25JAN00.165
+>       REAL QGPP,QGPM,QGMP,QGMM,QGAV,QNCIJ,QNCPJ,QNCIP,QNCIM                      25JAN00.166
+>       REAL QNCPP,QNCPM,QNCMP,QNCMM,QNCAV,QNCMJ                                   25JAN00.167
+>       REAL UIJ,UPJ,UMJ                                                           25JAN00.168
+>       INTEGER JFM2,IFM2                                                          25JAN00.169
+>       REAL UIP,UIM,UPP,UPM,UMP,UMM,UAV                                           25JAN00.170
+>       REAL VIJ,VPJ,VMJ,VIP,VIM,VPP,VPM,VMP,VMM,VAV                               25JAN00.171
+>       INTEGER IYY,JXX                                                            25JAN00.172
+> C                                                                                25JAN00.173
+>       REAL HSC1(MIX,MJX),HSC2(MIX,MJX)                                           25JAN00.174
+>       REAL HSC3(MIX,MJX),HSC4(MIX,MJX)                                           25JAN00.175
+>       REAL HSC5(MIX,MJX)                                                         25JAN00.176
+>       REAL HSC6(MIX,MJX)                                                         25JAN00.177
+>       REAL SLP(MIX,MJX)                                                          25JAN00.178
+645c666
+< c$omp&private(hsc1,hsc2,hsc3,hsc4,hsc5,hsc6)                                     FEEDBK.645
+---
+> c$omp&private(i,j,k,hsc1,hsc2,hsc3,hsc4,hsc5,hsc6)                               25JAN00.179
+705,706c726,727
+<               DO 120 I=1,INM1                                                    FEEDBK.705
+<                 DO 120 J=1,JEM1                                                  FEEDBK.706
+---
+>               DO 120 I=1,INM1+1                                                  25JAN00.180
+>                 DO 120 J=1,JEM1+1                                                25JAN00.181
+737,738c758,759
+<                     CALL SMT2(HSC5,IL,JL,ISP1,INM2,JWP1,JEM2)                    FEEDBK.737
+<                     CALL SMT2(HSC6,IL,JL,ISP1,INM2,JWP1,JEM2)                    FEEDBK.738
+---
+>                     CALL SMT2(HSC5,MIX,MJX,ISP1,INM2,JWP1,JEM2)                  25JAN00.182
+>                     CALL SMT2(HSC6,MIX,MJX,ISP1,INM2,JWP1,JEM2)                  25JAN00.183
+837c858
+< c$omp&private(hsc1,hsc2)                                                         FEEDBK.837
+---
+> c$omp&private(i,j,k,hsc1,hsc2)                                                   25JAN00.184
+===================================================================
+domain/nest/initnest.F
+diff -r3.9 -r3.16
+47a48
+> #     include <soilcnst.incl>                                                    25JAN00.185
+107,109d107
+< C                                                                                INITNEST.108
+< C--- READ NESTED TERRAIN DATA                                                    INITNEST.109
+< C                                                                                INITNEST.110
+918c916
+<         CALL RDINIT(IUNITH,NUMNES,IL,JL,IHEADER)                                 INITNEST.915
+---
+>         CALL RDINIT(IUNITH,NUMNES,IL,JL)                                         25JAN00.186
+975a974,994
+>       IF(MLX.NE.1)THEN                                                           25JAN00.187
+>         IF(ISOIL.EQ.1)THEN                                                       25JAN00.188
+> C                                                                                25JAN00.189
+> C-----INITIALIZE SOIL TEMPERATURE PROFILE (LINEAR WITH DEPTH)                    25JAN00.190
+> C                                                                                25JAN00.191
+> cmic$ do all autoscope                                                           25JAN00.192
+> c$omp parallel do default(shared)                                                25JAN00.193
+> c$omp&private(i,j,l)                                                             25JAN00.194
+>           DO L=1,MLX                                                             25JAN00.195
+>             DO J=1,JLX                                                           25JAN00.196
+>               DO I=1,ILX                                                         25JAN00.197
+>                 TSLA(I,J,L)=(TGA(I,J)*(ZS(MLX)-ZS(L))+TMN(I,J)*(ZS(L)-           25JAN00.198
+>      +                      ZS(1)))/(ZS(MLX)-ZS(1))                              25JAN00.199
+>                 TSLB(I,J,L)=(TGB(I,J)*(ZS(MLX)-ZS(L))+TMN(I,J)*(ZS(L)-           25JAN00.200
+>      +                      ZS(1)))/(ZS(MLX)-ZS(1))                              25JAN00.201
+>               ENDDO                                                              25JAN00.202
+>             ENDDO                                                                25JAN00.203
+>           ENDDO                                                                  25JAN00.204
+>         ENDIF                                                                    25JAN00.205
+>       ENDIF                                                                      25JAN00.206
+> C                                                                                25JAN00.207
+1330,1333d1348
+<  1172 FORMAT(/' IFRAD  = ',I3,'  SIMPLE RADIATIVE COOLING.')                     INITNEST.1304
+<  1174 FORMAT(/' IFRAD  = ',I3,'  LONGWAVE AND SHORTWAVE SCHEMES ',               INITNEST.1305
+<      1 '(DUDHIA, 1989).')                                                        INITNEST.1306
+<  1176 FORMAT(/' IFRAD  = ',I3,'  CCM2 LONGWAVE AND SHORTWAVE SCHEMES.')          INITNEST.1307
+1344c1359
+<  1240 FORMAT(//' MAXIMUM TIME      = ',F5.0,' MINUTES')                          INITNEST.1318
+---
+>  1240 FORMAT(//' MAXIMUM TIME      = ',F7.0,' MINUTES')                          25JAN00.208
+1743a1759,1768
+> C   WATER TEMP ADJUSTMENT TO MATCH COASTLINES                                    25JAN00.209
+>       DO J=1,JNLX                                                                25JAN00.210
+>         DO I=1,INLX                                                              25JAN00.211
+> C       CHECK IF WATER POINT AND IF TSS > 10 K (I.E. IT IS DEFINED)              25JAN00.212
+>           IF(XLANDN(I,J).GT.1.5.AND.TSSN(I,J).GT.10.)THEN                        25JAN00.213
+>             TGAN(I,J)=TSSN(I,J)                                                  25JAN00.214
+>             TGBN(I,J)=TSSN(I,J)                                                  25JAN00.215
+>           ENDIF                                                                  25JAN00.216
+>         ENDDO                                                                    25JAN00.217
+>       ENDDO                                                                      25JAN00.218
+===================================================================
+domain/nest/stotndt.F
+diff -r3.0 -r3.2
+64a65
+>       RDT = 1./DT                                                                25JAN00.219
+129,130c130,131
+<             TWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)-TWBN(I,K,NN))/DT                    STOTNDT.129
+<             TEBTN(I,K,NN)=(PSCA(JENDC-1,II,JJE)-TEBN(I,K,NN))/DT                 STOTNDT.130
+---
+>             TWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)-TWBN(I,K,NN))*RDT                   25JAN00.220
+>             TEBTN(I,K,NN)=(PSCA(JENDC-1,II,JJE)-TEBN(I,K,NN))*RDT                25JAN00.221
+149,150c150,151
+<             TSBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)-TSBN(J,K,NN))/DT                   STOTNDT.149
+<             TNBTN(J,K,NN)=(PSCA(JJ,IENDC-1,IIN)-TNBN(J,K,NN))/DT                 STOTNDT.150
+---
+>             TSBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)-TSBN(J,K,NN))* RDT                 25JAN00.222
+>             TNBTN(J,K,NN)=(PSCA(JJ,IENDC-1,IIN)-TNBN(J,K,NN))* RDT               25JAN00.223
+173,174c174,175
+<               QWBTN(I,K,NN)=(PSCA2(JWEST,II,JJ)-QWBN(I,K,NN))/DT                 STOTNDT.173
+<               QEBTN(I,K,NN)=(PSCA2(JENDC-1,II,JJE)-QEBN(I,K,NN))/DT              STOTNDT.174
+---
+>               QWBTN(I,K,NN)=(PSCA2(JWEST,II,JJ)-QWBN(I,K,NN))* RDT               25JAN00.224
+>               QEBTN(I,K,NN)=(PSCA2(JENDC-1,II,JJE)-QEBN(I,K,NN))* RDT            25JAN00.225
+195,196c196,197
+<               QSBTN(J,K,NN)=(PSCA2(JJ,ISOUTH,II)-QSBN(J,K,NN))/DT                STOTNDT.195
+<               QNBTN(J,K,NN)=(PSCA2(JJ,IENDC-1,IIN)-QNBN(J,K,NN))/DT              STOTNDT.196
+---
+>               QSBTN(J,K,NN)=(PSCA2(JJ,ISOUTH,II)-QSBN(J,K,NN))* RDT              25JAN00.226
+>               QNBTN(J,K,NN)=(PSCA2(JJ,IENDC-1,IIN)-QNBN(J,K,NN))* RDT            25JAN00.227
+231,234c232,235
+<               QCWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)-QCWBN(I,K,NN))/DT                STOTNDT.231
+<               QCEBTN(I,K,NN)=(PSCA(JENDC-1,II,JJE)-QCEBN(I,K,NN))/DT             STOTNDT.232
+<               QRWBTN(I,K,NN)=(PSCA2(JWEST,II,JJ)-QRWBN(I,K,NN))/DT               STOTNDT.233
+<               QREBTN(I,K,NN)=(PSCA2(JENDC-1,II,JJE)-QREBN(I,K,NN))/DT            STOTNDT.234
+---
+>               QCWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)-QCWBN(I,K,NN))* RDT              25JAN00.228
+>               QCEBTN(I,K,NN)=(PSCA(JENDC-1,II,JJE)-QCEBN(I,K,NN))* RDT           25JAN00.229
+>               QRWBTN(I,K,NN)=(PSCA2(JWEST,II,JJ)-QRWBN(I,K,NN))* RDT             25JAN00.230
+>               QREBTN(I,K,NN)=(PSCA2(JENDC-1,II,JJE)-QREBN(I,K,NN))* RDT          25JAN00.231
+258,261c259,262
+<               QCSBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)-QCSBN(J,K,NN))/DT               STOTNDT.258
+<               QCNBTN(J,K,NN)=(PSCA(JJ,IENDC-1,IIN)-QCNBN(J,K,NN))/DT             STOTNDT.259
+<               QRSBTN(J,K,NN)=(PSCA2(JJ,ISOUTH,II)-QRSBN(J,K,NN))/DT              STOTNDT.260
+<               QRNBTN(J,K,NN)=(PSCA2(JJ,IENDC-1,IIN)-QRNBN(J,K,NN))/DT            STOTNDT.261
+---
+>               QCSBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)-QCSBN(J,K,NN))* RDT             25JAN00.232
+>               QCNBTN(J,K,NN)=(PSCA(JJ,IENDC-1,IIN)-QCNBN(J,K,NN))* RDT           25JAN00.233
+>               QRSBTN(J,K,NN)=(PSCA2(JJ,ISOUTH,II)-QRSBN(J,K,NN))* RDT            25JAN00.234
+>               QRNBTN(J,K,NN)=(PSCA2(JJ,IENDC-1,IIN)-QRNBN(J,K,NN))* RDT          25JAN00.235
+307,311c308,312
+<                 QIWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)-QIWBN(I,K,NN))/DT              STOTNDT.307
+<                 QIEBTN(I,K,NN)=(PSCA(JENDC-1,II,JJE)-QIEBN(I,K,NN))/DT           STOTNDT.308
+<                 QNIWBTN(I,K,NN)=(PSCA2(JWEST,II,JJ)-QNIWBN(I,K,NN))/DT           STOTNDT.309
+<                 QNIEBTN(I,K,NN)=(PSCA2(JENDC-1,II,JJE)-QNIEBN(I,K,NN))/          STOTNDT.310
+<      +                          DT                                               STOTNDT.311
+---
+>                 QIWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)-QIWBN(I,K,NN))* RDT            25JAN00.236
+>                 QIEBTN(I,K,NN)=(PSCA(JENDC-1,II,JJE)-QIEBN(I,K,NN))* RDT         25JAN00.237
+>                 QNIWBTN(I,K,NN)=(PSCA2(JWEST,II,JJ)-QNIWBN(I,K,NN))* RDT         25JAN00.238
+>                 QNIEBTN(I,K,NN)=(PSCA2(JENDC-1,II,JJE)-QNIEBN(I,K,NN))*          25JAN00.239
+>      +                         RDT                                               25JAN00.240
+319,322c320,323
+<                   QGWBTN(I,K,NN)=(PSCA3(JWEST,II,JJ)-QGWBN(I,K,NN))/DT           STOTNDT.319
+<                   QGEBTN(I,K,NN)=(PSCA3(JENDC-1,II,JJE)-QGEBN(I,K,NN))/          STOTNDT.320
+<      +                           DT                                              STOTNDT.321
+<                   QNCWBTN(I,K,NN)=(PSCA4(JWEST,II,JJ)-QNCWBN(I,K,NN))/DT         STOTNDT.322
+---
+>                   QGWBTN(I,K,NN)=(PSCA3(JWEST,II,JJ)-QGWBN(I,K,NN))* RDT         25JAN00.241
+>                   QGEBTN(I,K,NN)=(PSCA3(JENDC-1,II,JJE)-QGEBN(I,K,NN))*          25JAN00.242
+>      +                          RDT                                              25JAN00.243
+>                   QNCWBTN(I,K,NN)=(PSCA4(JWEST,II,JJ)-QNCWBN(I,K,NN))* RDT       25JAN00.244
+324c325
+<      +                            /DT                                            STOTNDT.324
+---
+>      +                            * RDT                                          25JAN00.245
+359,363c360,364
+<                 QISBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)-QISBN(J,K,NN))/DT             STOTNDT.359
+<                 QINBTN(J,K,NN)=(PSCA(JJ,IENDC-1,IIN)-QINBN(J,K,NN))/DT           STOTNDT.360
+<                 QNISBTN(J,K,NN)=(PSCA2(JJ,ISOUTH,II)-QNISBN(J,K,NN))/DT          STOTNDT.361
+<                 QNINBTN(J,K,NN)=(PSCA2(JJ,IENDC-1,IIN)-QNINBN(J,K,NN))/          STOTNDT.362
+<      +                          DT                                               STOTNDT.363
+---
+>                 QISBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)-QISBN(J,K,NN))* RDT           25JAN00.246
+>                 QINBTN(J,K,NN)=(PSCA(JJ,IENDC-1,IIN)-QINBN(J,K,NN))*RDT          25JAN00.247
+>                 QNISBTN(J,K,NN)=(PSCA2(JJ,ISOUTH,II)-QNISBN(J,K,NN))*RDT         25JAN00.248
+>                 QNINBTN(J,K,NN)=(PSCA2(JJ,IENDC-1,IIN)-QNINBN(J,K,NN))*          25JAN00.249
+>      +                         RDT                                               25JAN00.250
+371,375c372,376
+<                   QGSBTN(J,K,NN)=(PSCA3(JJ,ISOUTH,II)-QGSBN(J,K,NN))/DT          STOTNDT.371
+<                   QGNBTN(J,K,NN)=(PSCA3(JJ,IENDC-1,IIN)-QGNBN(J,K,NN))/          STOTNDT.372
+<      +                           DT                                              STOTNDT.373
+<                   QNCSBTN(J,K,NN)=(PSCA4(JJ,ISOUTH,II)-QNCSBN(J,K,NN))/          STOTNDT.374
+<      +                            DT                                             STOTNDT.375
+---
+>                   QGSBTN(J,K,NN)=(PSCA3(JJ,ISOUTH,II)-QGSBN(J,K,NN))* RDT        25JAN00.251
+>                   QGNBTN(J,K,NN)=(PSCA3(JJ,IENDC-1,IIN)-QGNBN(J,K,NN))*          25JAN00.252
+>      +                          RDT                                              25JAN00.253
+>                   QNCSBTN(J,K,NN)=(PSCA4(JJ,ISOUTH,II)-QNCSBN(J,K,NN))*          25JAN00.254
+>      +                           RDT                                             25JAN00.255
+377c378
+<      +                            /DT                                            STOTNDT.377
+---
+>      +                            * RDT                                          25JAN00.256
+409,410c410,411
+<             UWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)*HSCR4(I,NN)-UWBN(I,K,NN))/          STOTNDT.409
+<      +                    DT                                                     STOTNDT.410
+---
+>             UWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)*HSCR4(I,NN)-UWBN(I,K,NN))*          25JAN00.257
+>      +                   RDT                                                     25JAN00.258
+412,414c413,415
+<      +                    UEBN(I,K,NN))/DT                                       STOTNDT.412
+<             VWBTN(I,K,NN)=(PSCA2(JWEST,II,JJ)*HSCR4(I,NN)-VWBN(I,K,NN))/         STOTNDT.413
+<      +                    DT                                                     STOTNDT.414
+---
+>      +                    UEBN(I,K,NN))* RDT                                     25JAN00.259
+>             VWBTN(I,K,NN)=(PSCA2(JWEST,II,JJ)*HSCR4(I,NN)-VWBN(I,K,NN))*         25JAN00.260
+>      +                   RDT                                                     25JAN00.261
+416c417
+<      +                    VEBN(I,K,NN))/DT                                       STOTNDT.416
+---
+>      +                    VEBN(I,K,NN))* RDT                                     25JAN00.262
+436,437c437,438
+<             USBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)*HSCR4(NN,J)-USBN(J,K,NN))/         STOTNDT.436
+<      +                    DT                                                     STOTNDT.437
+---
+>             USBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)*HSCR4(NN,J)-USBN(J,K,NN))*         25JAN00.263
+>      +                   RDT                                                     25JAN00.264
+439c440
+<      +                    UNBN(J,K,NN))/DT                                       STOTNDT.439
+---
+>      +                    UNBN(J,K,NN))* RDT                                     25JAN00.265
+441c442
+<      +                    /DT                                                    STOTNDT.441
+---
+>      +                    * RDT                                                  25JAN00.266
+443c444
+<      +                    VNBN(J,K,NN))/DT                                       STOTNDT.443
+---
+>      +                    VNBN(J,K,NN))* RDT                                     25JAN00.267
+465,466c466,467
+<             PPWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)-PPWBN(I,K,NN))/DT                  STOTNDT.465
+<             PPEBTN(I,K,NN)=(PSCA(JENDC-1,II,JJE)-PPEBN(I,K,NN))/DT               STOTNDT.466
+---
+>             PPWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)-PPWBN(I,K,NN))* RDT                25JAN00.268
+>             PPEBTN(I,K,NN)=(PSCA(JENDC-1,II,JJE)-PPEBN(I,K,NN))* RDT             25JAN00.269
+485,486c486,487
+<             PPSBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)-PPSBN(J,K,NN))/DT                 STOTNDT.485
+<             PPNBTN(J,K,NN)=(PSCA(JJ,IENDC-1,IIN)-PPNBN(J,K,NN))/DT               STOTNDT.486
+---
+>             PPSBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)-PPSBN(J,K,NN))* RDT               25JAN00.270
+>             PPNBTN(J,K,NN)=(PSCA(JJ,IENDC-1,IIN)-PPNBN(J,K,NN))* RDT             25JAN00.271
+519,520c520,521
+<             WWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)-WWBN(I,K,NN))/DT                    STOTNDT.519
+<             WEBTN(I,K,NN)=(PSCA(JENDC-1,II,JJE)-WEBN(I,K,NN))/DT                 STOTNDT.520
+---
+>             WWBTN(I,K,NN)=(PSCA(JWEST,II,JJ)-WWBN(I,K,NN))* RDT                  25JAN00.272
+>             WEBTN(I,K,NN)=(PSCA(JENDC-1,II,JJE)-WEBN(I,K,NN))* RDT               25JAN00.273
+539,540c540,541
+<             WSBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)-WSBN(J,K,NN))/DT                   STOTNDT.539
+<             WNBTN(J,K,NN)=(PSCA(JJ,IENDC-1,IIN)-WNBN(J,K,NN))/DT                 STOTNDT.540
+---
+>             WSBTN(J,K,NN)=(PSCA(JJ,ISOUTH,II)-WSBN(J,K,NN))* RDT                 25JAN00.274
+>             WNBTN(J,K,NN)=(PSCA(JJ,IENDC-1,IIN)-WNBN(J,K,NN))* RDT               25JAN00.275
+===================================================================
+domain/util/Makefile
+diff -r3.0 -r3.1
+17d16
+< 	seaprs.o \
+32d30
+< 	seaprs.i \
+47d44
+< 	seaprs.f \
+77d73
+< seaprs.o: ../../include/parame.incl
+===================================================================
+dynamics/nonhydro/solve.F
+diff -r3.6 -r3.15
+188c188
+<       IF(IFRAD.EQ.3)THEN                                                         24SEP99.342
+---
+>       IF(IFRAD.EQ.3.OR.IFRAD.EQ.4)THEN                                           25JAN00.276
+638,639c638,645
+<       DO K=1,MKX                                                                 24SEP99.361
+<         DO J=1,MJX                                                               24SEP99.362
+---
+> cmic$ do all autoscope                                                           25JAN00.277
+> cmic$2 private(i,j,k)                                                            25JAN00.278
+> c$doacross                                                                       25JAN00.279
+> c$& local(i,j,k)                                                                 25JAN00.280
+> c$omp parallel do default(shared)                                                25JAN00.281
+> c$omp&private(i,j,k)                                                             25JAN00.282
+>       DO J=1,MJX                                                                 25JAN00.283
+>         DO K=1,MKX                                                               25JAN00.284
+922c928
+<      +           PP3D,PSB)                                                       SOLVE.900
+---
+>      +           PP3D)                                                           25JAN00.285
+924c930
+<               GLW(I,J)=FRLA(I)                                                   SOLVE.902
+---
+>               GLW(I,J)=-FRLA(I)/EMISS(I,J)+STBOLT*TGB(I,J)**4                    25JAN00.286
+943a950,992
+> #ifdef FRAD4                                                                     25JAN00.287
+> C                                                                                25JAN00.288
+> C --- IFRAD=4: RRTM LONGWAVE + CLOUD/RADIATIVE SHORTWAVE (SWRAD)                 25JAN00.289
+> C                                                                                25JAN00.290
+>       IF(IFRAD.EQ.4)THEN                                                         25JAN00.291
+>         IF(MOD(KTAU,NTRAD(INEST)).EQ.0)THEN                                      25JAN00.292
+> cmic$ do all autoscope                                                           25JAN00.293
+> cmic$1 shared(inest,psa,rtten,glw,gsw,xlat,xlong,tga,emiss,alb,                  25JAN00.294
+> cmic$1        t3d,qv3d,qc3d,qr3d,qi3d,qni3d,qg3d,pp3d)                           25JAN00.295
+> cmic$2 private(j)                                                                25JAN00.296
+> c$doacross                                                                       25JAN00.297
+> c$& local(j)                                                                     25JAN00.298
+> c$omp parallel do default(shared)                                                25JAN00.299
+> c$omp&private(j)                                                                 25JAN00.300
+>           DO J=1,JLX                                                             25JAN00.301
+> #ifdef MPP1                                                                      25JAN00.302
+>             DUMJ(J)=J                                                            25JAN00.303
+> #endif                                                                           25JAN00.304
+>             DO K=1,KL                                                            25JAN00.305
+>               DO I=1,ILX                                                         25JAN00.306
+>                 CLDFRA(I,K)=CLDFRA3D(I,J,K)                                      25JAN00.307
+>               ENDDO                                                              25JAN00.308
+>             ENDDO                                                                25JAN00.309
+>             CALL RRTM(J,ILX,CLDFRA,INEST,GLW,RTTEN,T3D,QV3D,QC3D,QR3D            25JAN00.310
+>      +           ,QI3D,QNI3D,QG3D,PP3D,PSA,TGA,EMISS)                            25JAN00.311
+>             CALL SWRAD(J,RTTEN,PSA,GSW,XLAT,XLONG,ALB,T3D,QV3D,QC3D,QR3D         25JAN00.312
+>      +           ,QI3D,QNI3D,QG3D,PP3D,INEST)                                    25JAN00.313
+>           ENDDO                                                                  25JAN00.314
+>         ENDIF                                                                    25JAN00.315
+> cmic$ do all autoscope                                                           25JAN00.316
+> c$doacross                                                                       25JAN00.317
+> c$& local(i,j,k)                                                                 25JAN00.318
+> c$omp parallel do default(shared)                                                25JAN00.319
+> c$omp&private(i,j,k)                                                             25JAN00.320
+>         DO J=JBNES,JENES-1                                                       25JAN00.321
+>           DO K=1,KL                                                              25JAN00.322
+>             DO I=IBNES,IENES-1                                                   25JAN00.323
+>               T3DTEN(I,J,K)=T3DTEN(I,J,K)+RTTEN(I,J,K)*PSA(I,J)                  25JAN00.324
+>             ENDDO                                                                25JAN00.325
+>           ENDDO                                                                  25JAN00.326
+>         ENDDO                                                                    25JAN00.327
+>       ENDIF                                                                      25JAN00.328
+> #endif                                                                           25JAN00.329
+1094a1144,1147
+> #ifdef MPP1                                                                      25JAN00.330
+>           DUMJ(J)=J                                                              25JAN00.331
+> #endif                                                                           25JAN00.332
+>           PARJSUM(ITQEVA_SUM,J)=0.0                                              25JAN00.333
+1115a1169,1171
+> #ifdef MPP1                                                                      25JAN00.334
+> #  include <mpp_solve_30.incl>                                                   25JAN00.335
+> #endif                                                                           25JAN00.336
+1121c1177
+<           DO J=1,JLX                                                             SOLVE.1099
+---
+>           DO J=1,MJX                                                             25JAN00.337
+1123c1179
+<               DO I=1,ILX                                                         SOLVE.1101
+---
+>               DO I=1,MIX                                                         25JAN00.338
+===================================================================
+fdda/grid/in4dgd.F
+diff -r3.4 -r3.13
+85c85
+<      &         FORM='UNFORMATTED',STATUS='OLD')                                  IN4DGD.88
+---
+>      &         FORM='UNFORMATTED',STATUS='OLD',ERR=9010)                         25JAN00.339
+88c88
+< #if defined(CRAY) || defined(rs6000) || defined(SGI_Origin)                      24SEP99.388
+---
+> #if defined(CRAY)||defined(rs6000)||defined(SGI_Origin)||defined(linux)          25JAN00.340
+91c91
+<      &         FORM='UNFORMATTED',STATUS='OLD')                                  IN4DGD.94
+---
+>      &         FORM='UNFORMATTED',STATUS='OLD',ERR=9020)                         25JAN00.341
+96c96
+<      &         FORM='UNFORMATTED',STATUS='OLD')                                  IN4DGD.99
+---
+>      &         FORM='UNFORMATTED',STATUS='OLD',ERR=9020)                         25JAN00.342
+122a123
+> #ifndef MPP1                                                                     25JAN00.343
+123a125,127
+> #else                                                                            25JAN00.344
+>                 CALL FKILL_MODEL( 'in4dgd 1' )                                   25JAN00.345
+> #endif                                                                           25JAN00.346
+144a149
+> #ifndef MPP1                                                                     25JAN00.347
+145a151,153
+> #else                                                                            25JAN00.348
+>               CALL FKILL_MODEL( 'in4dgd 2' )                                     25JAN00.349
+> #endif                                                                           25JAN00.350
+155,156c163,172
+<       IF(DM_IONODE())READ (IUN1,END=7002)FLAG                                    IN4DGD.158
+< #ifdef MPP1                                                                      IN4DGD.159
+---
+> #ifndef MPP1                                                                     25JAN00.351
+>       READ (IUN1,END=7002)FLAG                                                   25JAN00.352
+> #else                                                                            25JAN00.353
+>       IF(DM_IONODE()) THEN                                                       25JAN00.354
+>          READ (IUN1,END=9002)FLAG                                                25JAN00.355
+>          GOTO 8002                                                               25JAN00.356
+>  9002    CONTINUE                                                                25JAN00.357
+>          FLAG = FILEDONE                                                         25JAN00.358
+>  8002    CONTINUE                                                                25JAN00.359
+>       ENDIF                                                                      25JAN00.360
+157a174
+>       IF(FLAG.EQ.FILEDONE) GOTO 7002                                             25JAN00.361
+165c182
+<         CALL DM_BCAST_REALS(JBHR,NUMINT*NUMPROGS)                                IN4DGD.168
+---
+>         CALL DM_BCAST_REALS(JBHR,NUMREAL*NUMPROGS)                               25JAN00.362
+220a238
+> #ifndef MPP1                                                                     25JAN00.363
+221a240,242
+> #else                                                                            25JAN00.364
+>         CALL FKILL_MODEL( 'in4dgd 3' )                                           25JAN00.365
+> #endif                                                                           25JAN00.366
+247a269
+> #ifndef MPP1                                                                     25JAN00.367
+248a271,273
+> #else                                                                            25JAN00.368
+>             CALL FKILL_MODEL( 'in4dgd 4' )                                       25JAN00.369
+> #endif                                                                           25JAN00.370
+285a311
+> #ifndef MPP1                                                                     25JAN00.371
+286a313,315
+> #else                                                                            25JAN00.372
+>         CALL FKILL_MODEL( 'IN4DGD 70' )                                          25JAN00.373
+> #endif                                                                           25JAN00.374
+297a327
+> #ifndef MPP1                                                                     25JAN00.375
+298a329,331
+> #else                                                                            25JAN00.376
+>         CALL FKILL_MODEL( 'IN4DGD 551' )                                         25JAN00.377
+> #endif                                                                           25JAN00.378
+320a354
+> #ifndef MPP1                                                                     25JAN00.379
+321a356,358
+> #else                                                                            25JAN00.380
+>         CALL FKILL_MODEL( 'IN4DGD 7002' )                                        25JAN00.381
+> #endif                                                                           25JAN00.382
+335,336c372,381
+<       IF(DM_IONODE())READ (IUN2,END=7005)FLAG                                    IN4DGD.338
+< #ifdef MPP1                                                                      IN4DGD.339
+---
+> #ifndef MPP1                                                                     25JAN00.383
+>       READ (IUN2,END=7005)FLAG                                                   25JAN00.384
+> #else                                                                            25JAN00.385
+>       IF(DM_IONODE()) THEN                                                       25JAN00.386
+>         READ (IUN2,END=9005)FLAG                                                 25JAN00.387
+>         GOTO 8005                                                                25JAN00.388
+>  9005   CONTINUE                                                                 25JAN00.389
+>         FLAG = FILEDONE                                                          25JAN00.390
+>  8005   CONTINUE                                                                 25JAN00.391
+>       ENDIF                                                                      25JAN00.392
+337a383
+>       IF(FLAG.EQ.FILEDONE) GOTO 7005                                             25JAN00.393
+343c389
+<         CALL DM_BCAST_REALS(JBHR,NUMINT*NUMPROGS)                                IN4DGD.346
+---
+>         CALL DM_BCAST_REALS(JBHR,NUMREAL*NUMPROGS)                               25JAN00.394
+395a442
+> #ifndef MPP1                                                                     25JAN00.395
+396a444,446
+> #else                                                                            25JAN00.396
+>         CALL FKILL_MODEL( 'in4dgd 5' )                                           25JAN00.397
+> #endif                                                                           25JAN00.398
+401a452
+> #ifndef MPP1                                                                     25JAN00.399
+402a454,456
+> #else                                                                            25JAN00.400
+>         CALL FKILL_MODEL( 'in4dgd 7005' )                                        25JAN00.401
+> #endif                                                                           25JAN00.402
+430a485
+> #ifndef MPP1                                                                     25JAN00.403
+431a487,489
+> #else                                                                            25JAN00.404
+>         CALL FKILL_MODEL( 'in4dgd 71' )                                          25JAN00.405
+> #endif                                                                           25JAN00.406
+543c601
+<      &         FORM='UNFORMATTED',STATUS='OLD')                                  IN4DGD.546
+---
+>      &         FORM='UNFORMATTED',STATUS='OLD',ERR=9030)                         25JAN00.407
+550,551c608,617
+<       IF(DM_IONODE())READ (IUNS,END=2499)FLAG                                    IN4DGD.553
+< #ifdef MPP1                                                                      IN4DGD.554
+---
+> #ifndef MPP1                                                                     25JAN00.408
+>       READ (IUNS,END=2499)FLAG                                                   25JAN00.409
+> #else                                                                            25JAN00.410
+>       IF(DM_IONODE())THEN                                                        25JAN00.411
+>         READ (IUNS,END=9499)FLAG                                                 25JAN00.412
+>         GOTO 8499                                                                25JAN00.413
+>  9499   CONTINUE                                                                 25JAN00.414
+>         FLAG = FILEDONE                                                          25JAN00.415
+>  8499   CONTINUE                                                                 25JAN00.416
+>       ENDIF                                                                      25JAN00.417
+552a619
+>       IF(FLAG.EQ.FILEDONE) GOTO 2499                                             25JAN00.418
+560c627
+<         CALL DM_BCAST_REALS(JBHR,NUMINT*NUMPROGS)                                IN4DGD.563
+---
+>         CALL DM_BCAST_REALS(JBHR,NUMREAL*NUMPROGS)                               25JAN00.419
+666c733
+<         IF(TIMANLS.GT.XTIM2(IN))GOTO 2500                                        IN4DGD.669
+---
+>         IF((TIMANLS-XTIM2(IN)).GT.1.E-3)GOTO 2500                                25JAN00.420
+674a742
+> #ifndef MPP1                                                                     25JAN00.421
+675a744,746
+> #else                                                                            25JAN00.422
+>         CALL FKILL_MODEL( 'in4dgd 6' )                                           25JAN00.423
+> #endif                                                                           25JAN00.424
+708c779,785
+<         IF(ABS(TIMANLS-XTIM1(IN)).GT.1.1*DTMIN)STOP 2020                         IN4DGD.711
+---
+>         IF(ABS(TIMANLS-XTIM1(IN)).GT.1.1*DTMIN) THEN                             25JAN00.425
+> #ifndef MPP1                                                                     25JAN00.426
+>           STOP 2020                                                              25JAN00.427
+> #else                                                                            25JAN00.428
+>           CALL FKILL_MODEL( 'IN4DGD 2020' )                                      25JAN00.429
+> #endif                                                                           25JAN00.430
+>         ENDIF                                                                    25JAN00.431
+771a849
+> #ifndef MPP1                                                                     25JAN00.432
+772a851,853
+> #else                                                                            25JAN00.433
+>         CALL FKILL_MODEL( 'IN4DGD 2501' )                                        25JAN00.434
+> #endif                                                                           25JAN00.435
+879a961,966
+>  9010 PRINT*,'ERROR OPENING FDDAGD INPUT IUN1=',IUN1,' IN=',IN                   25JAN00.436
+>       STOP 'STOP 9010 IN IN4DGD'                                                 25JAN00.437
+>  9020 PRINT*,'ERROR OPENING FDDAGD INPUT IUN2=',IUN2,' IN=',IN                   25JAN00.438
+>       STOP 'STOP 9020 IN IN4DGD'                                                 25JAN00.439
+>  9030 PRINT*,'ERROR OPENING FDDAGD INPUT IUNS=',IUNS,' IN=',IN                   25JAN00.440
+>       STOP 'STOP 9030 IN IN4DGD'                                                 25JAN00.441
+===================================================================
+include/hdrv3.incl
+diff -r3.0 -r3.2
+7a8,10
+> C A STANDARD FLAG VALUE FOR WHEN A FILE IS AT EOF                                25JAN00.442
+>       INTEGER FILEDONE                                                           25JAN00.443
+>       PARAMETER (FILEDONE = 919 )                                                25JAN00.444
+===================================================================
+include/parame
+diff -r3.2 -r3.4
+69a70
+> #ifndef MPP1                                                                     25JAN00.697
+71a73,76
+> #else                                                                            25JAN00.698
+>       PARAMETER(NELEMTKE=2*(MIXG*MJXG*(MKXG+1))+MIXG*MJXG)                       25JAN00.699
+>       PARAMETER(NELEMTKEI=MIXG*MJXG)                                             25JAN00.700
+> #endif                                                                           25JAN00.701
+===================================================================
+include/pbltke.incl
+diff -r3.0 -r3.2
+11a12
+> #ifndef MPP1                                                                     25JAN00.445
+12a14,16
+> #else                                                                            25JAN00.446
+>       POINTER(IMSTEPSS, MSTEPSS(MIXG,MJXG))                                      25JAN00.447
+> #endif                                                                           25JAN00.448
+===================================================================
+include/pbltken.incl
+diff -r3.0 -r3.2
+11a12
+> #ifndef MPP1                                                                     25JAN00.449
+12a14,16
+> #else                                                                            25JAN00.450
+>       POINTER(INMSTEPSS,MSTEPSSN(MIXG,MJXG))                                     25JAN00.451
+> #endif                                                                           25JAN00.452
+===================================================================
+include/surfslab.incl
+diff -r3.0 -r3.2
+11c11
+<       DIMENSION GOVRTH(MIX), GZ1OZ0(MIX),                                        SURFSLAB.11
+---
+>       REAL      GOVRTH(MIX), GZ1OZ0(MIX),                                        25JAN00.453
+===================================================================
+memory/address/addall.F
+diff -r3.0 -r3.2
+509a510,516
+> #ifdef MPP1                                                                      25JAN00.454
+> C        IAXALL(NCOUNT,K)=LOC(INTALL(NICOU+MIXG*MJXG,K))                         25JAN00.455
+>         ISAVEI=IAXALL(NCOUNT,K)                                                  25JAN00.456
+>         IAXALL(NCOUNT,K)=ISAVER                                                  25JAN00.457
+>         NICOU=NICOU+MIXG*MJXG                                                    25JAN00.458
+>         NCOUNT=NCOUNT+1                                                          25JAN00.459
+> #else                                                                            25JAN00.460
+514a522
+> #endif                                                                           25JAN00.461
+===================================================================
+physics/advection/simple/vadv.F
+diff -r3.2 -r3.4
+36c36
+<       INTEGER   KZZ,IND,IN                                                       VADV.36
+---
+>       INTEGER   KZZ,IND,IN,EPSI                                                  25JAN00.462
+96c96,101
+<             F(I,J,K)=TWT(K,1)*FA(I,J,K)+TWT(K,2)*FA(I,J,K-1)                     VADV.96
+---
+>             EPSI=1.E-15                                                          25JAN00.463
+>             IF(FA(I,J,K).GT.EPSI.AND.FA(I,J,K-1).GT.EPSI)THEN                    25JAN00.464
+>               F(I,J,K)=FA(I,J,K)*(FA(I,J,K-1)/FA(I,J,K))**QCON(K)                25JAN00.465
+>             ELSE                                                                 25JAN00.466
+>               F(I,J,K)=0.                                                        25JAN00.467
+>             ENDIF                                                                25JAN00.468
+===================================================================
+physics/cumulus/fc/cupara5.F
+diff -r3.0 -r3.2
+31c31,32
+<           ELSEIF(IMPHYS.GE.5)THEN                                                CUPARA5.31
+---
+>           ENDIF                                                                  25JAN00.469
+>           IF(IMPHYS.GE.5)THEN                                                    25JAN00.470
+===================================================================
+physics/cumulus/grell/cup.F
+diff -r3.0 -r3.3
+93,94c93,94
+<           QES(I,K)=.622*E/(100.*P(I,K)-(1.-.622)*E)                              CUP.93
+<           QESO(I,K)=.622*EO/(100.*PO(I,K)-(1.-.622)*EO)                          CUP.94
+---
+>           QES(I,K)=.622*E/(100.*P(I,K)-E)                                        25JAN00.471
+>           QESO(I,K)=.622*EO/(100.*PO(I,K)-EO)                                    25JAN00.472
+551c551
+<           XQES(I,K)=.622*E/(100.*P(I,K)-(1.-.622)*E)                             CUP.551
+---
+>           XQES(I,K)=.622*E/(100.*P(I,K)-E)                                       25JAN00.473
+749c749
+<       IF(IFRAD.EQ.3)THEN                                                         CUP.749
+---
+>       IF(IFRAD.EQ.3.OR.IFRAD.EQ.4)THEN                                           25JAN00.474
+===================================================================
+physics/cumulus/kf/cupara6.F
+diff -r3.0 -r3.2
+55c55,56
+<           ELSEIF(IMPHYS.GE.5)THEN                                                CUPARA6.55
+---
+>           ENDIF                                                                  25JAN00.475
+>           IF(IMPHYS.GE.5)THEN                                                    25JAN00.476
+===================================================================
+physics/cumulus/kuo/cupara2.F
+diff -r3.0 -r3.2
+224c224,225
+<           SCR3(I,K)=QV3D(I,J,K)*(QV3D(I,J,K-1)/QV3D(I,J,K))**QCON(K)             CUPARA2.224
+---
+>           SCR3(I,K)=QV3D(I,J,K)*PSB(I,J)                                         25JAN00.477
+>      +            *(QV3D(I,J,K-1)/QV3D(I,J,K))**QCON(K)                          25JAN00.478
+===================================================================
+physics/cumulus/shallow/entrs.F
+diff -r3.0 -r3.2
+49c49,50
+<         IF(DBY(K).LT.0.)THEN                                                     ENTRS.49
+---
+>         DEPTH=P(K)-P(KBC+1)                                                      25JAN00.479
+>         IF(DBY(K).LT.0..OR.DEPTH.GT.3000.)THEN                                   25JAN00.480
+===================================================================
+physics/cumulus/shallow/shallow.F
+diff -r3.0 -r3.3
+73a74
+>       REAL TOSHALL                                                               25JAN00.481
+77c78
+<       TO=50.                                                                     SHALLOW.77
+---
+>       TOSHALL=50.                                                                25JAN00.482
+172c173
+<         IF(T(K).LE.TO)IPH=2                                                      SHALLOW.172
+---
+>         IF(T(K).LE.TOSHALL)IPH=2                                                 25JAN00.483
+396c397
+<           IF(XT(K).LE.TO)IPH=2                                                   SHALLOW.396
+---
+>           IF(XT(K).LE.TOSHALL)IPH=2                                              25JAN00.484
+530c531
+<         PRINT *,'KBXX,KBMAX = ',KBXX,KBMAX                                       SHALLOW.530
+---
+> C       PRINT *,'KBXX,KBMAX = ',KBXX,KBMAX                                       25JAN00.485
+===================================================================
+physics/explicit/reisner1/exmoisr.F
+diff -r3.0 -r3.2
+454,455c454,458
+<           IF(N.GT.1000)STOP                                                      EXMOISR.454
+<      +      'IN SUB. EXMOISR, NSTEP TOO LARGE, PROBABLY NAN'                     EXMOISR.455
+---
+>           IF(N.GT.1000)THEN                                                      25JAN00.486
+>             PRINT *, 'STOPPING IN EXMOISR, NEST = ',IN,' I = ',I,                25JAN00.487
+>      +               ' J = ',J                                                   25JAN00.488
+>             STOP 'IN SUB. EXMOISR, NSTEP TOO LARGE, PROBABLY NAN'                25JAN00.489
+>           END IF                                                                 25JAN00.490
+===================================================================
+physics/explicit/reisner1/lexmoisr.F
+diff -r3.1 -r3.3
+498,499c498,502
+<           IF(N.GT.1000)STOP                                                      LEXMOISR.498
+<      +      'IN SUB. EXMOISR, NSTEP TOO LARGE, PROBABLY NAN'                     LEXMOISR.499
+---
+>           IF(N.GT.1000)THEN                                                      25JAN00.491
+>             PRINT *, 'STOPPING IN LEXMOISR, NEST = ',IN,' I = ',I,               25JAN00.492
+>      +               ' J = ',J                                                   25JAN00.493
+>             STOP 'IN SUB. LEXMOISR, NSTEP TOO LARGE, PROBABLY NAN'               25JAN00.494
+>           END IF                                                                 25JAN00.495
+===================================================================
+physics/explicit/reisner2/exmoisg.F
+diff -r3.0 -r3.2
+329,337c329,337
+< C LOSS OF SNOW BY COLLISIONS WITH CLOUD WATER, PRODUCE GRAUPEL (R-A.43)          EXMOISG.329
+<               PGSACW(I,K)=4.0*2.0*DT*ACRLS*SONV(I,K)*EFF_CS*EFF_CS*((            EXMOISG.330
+<      +                    RHO(I,K)*CLOUD(I,K))**2)*(SLOS(I,K)**BACLS)/(          EXMOISG.331
+<      +                    8.*RHO(I,K)*(DGRAUPEL-DSNOW))                          EXMOISG.332
+<               PGSACW(I,K)=AMAX1(0.0,AMIN1(PGSACW(I,K),PSACW(I,K)))               EXMOISG.333
+< C AMOUNT OF RIMING CONSUMED FOR GROWTH OF SNOW (R-A.45)                          EXMOISG.334
+<               PSSACW(I,K)=PSACW(I,K)-PGSACW(I,K)                                 EXMOISG.335
+< C AMOUNT OF SNOW CONVERTED TO GRAUPEL AS EMBRYO (R-A.44)                         EXMOISG.336
+<               PGEMB(I,K)=AMAX1(0.0,DSNOW*PGSACW(I,K)/(DGRAUPEL-DSNOW))           EXMOISG.337
+---
+> cC LOSS OF SNOW BY COLLISIONS WITH CLOUD WATER, PRODUCE GRAUPEL (R-A.43)         25JAN00.496
+> c              PGSACW(I,K)=4.0*2.0*DT*ACRLS*SONV(I,K)*EFF_CS*EFF_CS*((           25JAN00.497
+> c     +                    RHO(I,K)*CLOUD(I,K))**2)*(SLOS(I,K)**BACLS)/(         25JAN00.498
+> c     +                    8.*RHO(I,K)*(DGRAUPEL-DSNOW))                         25JAN00.499
+> c              PGSACW(I,K)=AMAX1(0.0,AMIN1(PGSACW(I,K),PSACW(I,K)))              25JAN00.500
+> cC AMOUNT OF RIMING CONSUMED FOR GROWTH OF SNOW (R-A.45)                         25JAN00.501
+> c              PSSACW(I,K)=PSACW(I,K)-PGSACW(I,K)                                25JAN00.502
+> cC AMOUNT OF SNOW CONVERTED TO GRAUPEL AS EMBRYO (R-A.44)                        25JAN00.503
+> c              PGEMB(I,K)=AMAX1(0.0,DSNOW*PGSACW(I,K)/(DGRAUPEL-DSNOW))          25JAN00.504
+386a387,398
+>           IF(CLOUD(I,K).GT.R1) THEN                                              25JAN00.505
+> C Murakami snow-to-graupel                                                       25JAN00.506
+>                IF (PREI(I,K).GT.PSACW(I,K)) THEN                                 25JAN00.507
+>                      PGEMB(I,K)=0.                                               25JAN00.508
+>                      PGSACW(I,K)=0.                                              25JAN00.509
+>                      PSSACW(I,K) = PSACW(I,K)                                    25JAN00.510
+>                   ELSE                                                           25JAN00.511
+>                      PGSACW(I,K)=PSACW(I,K)                                      25JAN00.512
+>                      PGEMB(I,K)=DSNOW/(DGRAUPEL-DSNOW) * PSACW(I,K)              25JAN00.513
+>                      PSSACW(I,K) = 0.                                            25JAN00.514
+>                   ENDIF                                                          25JAN00.515
+>                ENDIF                                                             25JAN00.516
+416c428
+<             PGIACW(I,K)=AMAX1(0.0,PRDTEMP-PIACW(I,K))                            EXMOISG.416
+---
+>             PGIACW(I,K)=AMAX1(0.0,PIACW1-PRDTEMP)                                25JAN00.517
+===================================================================
+physics/explicit/simple/exmoiss.F
+diff -r3.0 -r3.2
+293,294c293,297
+<           IF(N.GT.1000)STOP                                                      EXMOISS.293
+<      +      'IN SUB. EXMOISS, NSTEP TOO LARGE, PROBABLY NAN'                     EXMOISS.294
+---
+>           IF(N.GT.1000)THEN                                                      25JAN00.518
+>             PRINT *, 'STOPPING IN EXMOISS, NEST = ',IN,' I = ',I,                25JAN00.519
+>      +               ' J = ',J                                                   25JAN00.520
+>             STOP 'IN SUB. EXMOISS, NSTEP TOO LARGE, PROBABLY NAN'                25JAN00.521
+>           END IF                                                                 25JAN00.522
+===================================================================
+physics/explicit/simple/lexmoiss.F
+diff -r3.0 -r3.2
+292,293c292,296
+<           IF(N.GT.1000)STOP                                                      LEXMOISS.292
+<      +      'IN SUB. EXMOISS, NSTEP TOO LARGE, PROBABLY NAN'                     LEXMOISS.293
+---
+>           IF(N.GT.1000)THEN                                                      25JAN00.523
+>             PRINT *, 'STOPPING IN LEXMOISS, NEST = ',IN,' I = ',I,               25JAN00.524
+>      +               ' J = ',J                                                   25JAN00.525
+>             STOP 'IN SUB. LEXMOISS, NSTEP TOO LARGE, PROBABLY NAN'               25JAN00.526
+>           END IF                                                                 25JAN00.527
+===================================================================
+physics/pbl_sfc/gspbl/gspbl.F
+diff -r3.3 -r3.7
+22a23
+>       IMPLICIT NONE                                                              25JAN00.528
+118c119
+<       DIMENSION U3D(MIX,MJX,MKX),V3D(MIX,MJX,MKX),T3D(MIX,MJX,MKX),              GSPBL.118
+---
+>       REAL      U3D(MIX,MJX,MKX),V3D(MIX,MJX,MKX),T3D(MIX,MJX,MKX),              25JAN00.529
+120c121
+<       DIMENSION U3DTEN(MIX,MJX,MKX),V3DTEN(MIX,MJX,MKX),                         GSPBL.120
+---
+>       REAL      U3DTEN(MIX,MJX,MKX),V3DTEN(MIX,MJX,MKX),                         25JAN00.530
+123,124c124,126
+<       DIMENSION TKETEND(MIXG,MJXG,MKXG)                                          GSPBL.123
+<       DIMENSION TSLDSB(MIXS,MLX)                                                 GSPBL.124
+---
+>       REAL      TKETEND(MIXG,MJXG,MKXG)                                          25JAN00.531
+>       REAL      TSLDSB(MIXS,MLX)                                                 25JAN00.532
+>       INTEGER   IADVTKE                                                          25JAN00.533
+128c130
+<       REAL      KA,KH,KZM,KZOW,                                                  GSPBL.128
+---
+>       REAL      KA,KH,KZOW,                                                      25JAN00.534
+139,185c141,189
+<       DIMENSION BETABT(MIX,MKX),    BETABW(MIX,MKX),                             GSPBL.139
+<      &     BOUYAN(MIX,MKX),                                                      GSPBL.140
+<      &     CRIC(MIX,MKX),                                                        GSPBL.141
+<      &     DISSIP(MIX,MKX),                                                      GSPBL.142
+<      &     DQWDZ(MIX,MKX),     DTKEDT(MIX,MKX),                                  GSPBL.143
+<      &     DTLDZ (MIX,MKX),    DTVDZ(MIX,MKX),                                   GSPBL.144
+<      &     DUDZ(MIX,MKX),      DVDZ(MIX,MKX),                                    GSPBL.145
+<      &     DZA(MIX,MKX),       DZQ(MIX,MKX),                                     GSPBL.146
+<      &     FACTQWDRY(MIX,MKX), FACTQWSAT(MIX,MKX),                               GSPBL.147
+<      &     FACTTLDRY(MIX,MKX), FACTTLSAT(MIX,MKX),                               GSPBL.148
+<      &     GAMMAG(MIX,MKX),                                                      GSPBL.149
+<      &     GOVTHV(MIX,MKX),                                                      GSPBL.150
+<      &     KZM(MIX,MKX),                                                         GSPBL.151
+<      &     PRESHL(MIX,MKX),                                                      GSPBL.152
+<      &     QCITNP(MIXG,MKXG),                                                    GSPBL.153
+<      &     QCX(MIXG,MKXG),     QCXS(MIXG,MKXG),                                  GSPBL.154
+<      &     QCXSS(MIX,MKX),     QCTNP(MIXG,MKXG),                                 GSPBL.155
+<      &     QTNP(MIX,MKX),      QWTNP(MIX,MKX),                                   GSPBL.156
+<      &     QWVAR(MIX,KXP1),                                                      GSPBL.157
+<      &     QWX(MIX,MKX),       QXS(MIX,MKX),                                     GSPBL.158
+<      &     QXSS(MIX,MKX),                                                        GSPBL.159
+<      &     RHOXFL(MIX,MKX),    RHOXHL(MIX,MKX),                                  GSPBL.160
+<      &     RICHN (MIX,MKX),                                                      GSPBL.161
+<      &     SHEAR(MIX,MKX),                                                       GSPBL.162
+<      &     SVS(MIX,MKX),                                                         GSPBL.163
+<      &     TAU0(MIX,MKX),                                                        GSPBL.164
+<      &     THLTNP(MIX,MKX),                                                      GSPBL.165
+<      &     THLX(MIX,MKX),                                                        GSPBL.166
+<      &     THXS(MIX,MKX),      THXSS(MIX,MKX),                                   GSPBL.167
+<      &     TKEBOLD(MIX,KXP1),                                                    GSPBL.168
+<      &     TKEFLX(MIX,MKX),                                                      GSPBL.169
+<      &     TLVAR(MIX,KXP1),    TQCVAR(MIX,KXP1),                                 GSPBL.170
+<      &     TTNP(MIX,MKX),                                                        GSPBL.171
+<      &     TURBT(MIX,MKX),                                                       GSPBL.172
+<      &     UTNP(MIX,MKX),       UXS(MIX,MKX),                                    GSPBL.173
+<      &     VTNP(MIX,MKX),       VXS(MIX,MKX),                                    GSPBL.174
+<      &     XLVP(MIX,MKX)                                                         GSPBL.175
+< C                                                                                GSPBL.176
+<       DIMENSION ALFA(MKX),                                                       GSPBL.177
+<      &     BM(MKX),     EM(MKX),                                                 GSPBL.178
+<      &     FQ(MKX),     FQC(MKX),                                                GSPBL.179
+<      &     FTKE(MKX),   FTHX(MKX),                                               GSPBL.180
+<      &     FU(MKX),     FV(MKX),                                                 GSPBL.181
+<      &     MINIMUM(MKX),NTKELYR(MKX),                                            GSPBL.182
+<      &     QCXSV(MIX),  QXSV(MIX),                                               GSPBL.183
+<      &     THXSV(MIX),                                                           GSPBL.184
+<      &     UXSV(MIX),   VXSV(MIX)                                                GSPBL.185
+---
+> C KZM IS REAL                                                                    25JAN00.535
+>       REAL BETABT(MIX,MKX),    BETABW(MIX,MKX),                                  25JAN00.536
+>      &     BOUYAN(MIX,MKX),                                                      25JAN00.537
+>      &     CRIC(MIX,MKX),                                                        25JAN00.538
+>      &     DISSIP(MIX,MKX),                                                      25JAN00.539
+>      &     DQWDZ(MIX,MKX),     DTKEDT(MIX,MKX),                                  25JAN00.540
+>      &     DTLDZ (MIX,MKX),    DTVDZ(MIX,MKX),                                   25JAN00.541
+>      &     DUDZ(MIX,MKX),      DVDZ(MIX,MKX),                                    25JAN00.542
+>      &     DZA(MIX,MKX),       DZQ(MIX,MKX),                                     25JAN00.543
+>      &     FACTQWDRY(MIX,MKX), FACTQWSAT(MIX,MKX),                               25JAN00.544
+>      &     FACTTLDRY(MIX,MKX), FACTTLSAT(MIX,MKX),                               25JAN00.545
+>      &     GAMMAG(MIX,MKX),                                                      25JAN00.546
+>      &     GOVTHV(MIX,MKX),                                                      25JAN00.547
+>      &     KZM(MIX,MKX),                                                         25JAN00.548
+>      &     PRESHL(MIX,MKX),                                                      25JAN00.549
+>      &     QCITNP(MIXG,MKXG),                                                    25JAN00.550
+>      &     QCX(MIXG,MKXG),     QCXS(MIXG,MKXG),                                  25JAN00.551
+>      &     QCXSS(MIX,MKX),     QCTNP(MIXG,MKXG),                                 25JAN00.552
+>      &     QTNP(MIX,MKX),      QWTNP(MIX,MKX),                                   25JAN00.553
+>      &     QWVAR(MIX,KXP1),                                                      25JAN00.554
+>      &     QWX(MIX,MKX),       QXS(MIX,MKX),                                     25JAN00.555
+>      &     QXSS(MIX,MKX),                                                        25JAN00.556
+>      &     RHOXFL(MIX,MKX),    RHOXHL(MIX,MKX),                                  25JAN00.557
+>      &     RICHN (MIX,MKX),                                                      25JAN00.558
+>      &     SHEAR(MIX,MKX),                                                       25JAN00.559
+>      &     SVS(MIX,MKX),                                                         25JAN00.560
+>      &     TAU0(MIX,MKX),                                                        25JAN00.561
+>      &     THLTNP(MIX,MKX),                                                      25JAN00.562
+>      &     THLX(MIX,MKX),                                                        25JAN00.563
+>      &     THXS(MIX,MKX),      THXSS(MIX,MKX),                                   25JAN00.564
+>      &     TKEBOLD(MIX,KXP1),                                                    25JAN00.565
+>      &     TKEFLX(MIX,MKX),                                                      25JAN00.566
+>      &     TLVAR(MIX,KXP1),    TQCVAR(MIX,KXP1),                                 25JAN00.567
+>      &     TTNP(MIX,MKX),                                                        25JAN00.568
+>      &     TURBT(MIX,MKX),                                                       25JAN00.569
+>      &     UTNP(MIX,MKX),       UXS(MIX,MKX),                                    25JAN00.570
+>      &     VTNP(MIX,MKX),       VXS(MIX,MKX),                                    25JAN00.571
+>      &     XLVP(MIX,MKX)                                                         25JAN00.572
+> C                                                                                25JAN00.573
+>       REAL ALFA(MKX),                                                            25JAN00.574
+>      &     BM(MKX),     EM(MKX),                                                 25JAN00.575
+>      &     FQ(MKX),     FQC(MKX),                                                25JAN00.576
+>      &     FTKE(MKX),   FTHX(MKX),                                               25JAN00.577
+>      &     FU(MKX),     FV(MKX),                                                 25JAN00.578
+>      &     QCXSV(MIX),  QXSV(MIX),                                               25JAN00.579
+>      &     THXSV(MIX),                                                           25JAN00.580
+>      &     UXSV(MIX),   VXSV(MIX)                                                25JAN00.581
+>       INTEGER                                                                    25JAN00.582
+>      &     MINIMUM(MKX),NTKELYR(MKX)                                             25JAN00.583
+216a221,240
+> C     DECLARATIONS FOR IMPLICIT NONE                                             25JAN00.584
+> C                                                                                25JAN00.585
+>       INTEGER I,J,K,L,KK,MM,IN,KB,KE                                             25JAN00.586
+>       INTEGER IYY,JXX,KZZ,NST,KF                                                 25JAN00.587
+>       INTEGER ITKESAT,IDRS1,IDRS2,IDRS3,ILAMBDA,MITERING,IKBKC,MSTEPS            25JAN00.588
+>       INTEGER KTEMP1,KTEMP2,KTEMP,ICOUNT,NOVERMIN,INDSATUP,INDSATDW              25JAN00.589
+>       INTEGER INDTRANS,KLIM,IBGN,IEND,JBGN,JEND                                  25JAN00.590
+>       REAL QCMIN,XMITPAR,PL,THCON,TVCON,PS,E1,PS1,CELL,PRESB,FRACZ               25JAN00.591
+>       REAL DTTKE,PTKEMAX,PTKEFRACT,PTKEWEAK,PTKEZMIN,TKEBMAX,TKELIM              25JAN00.592
+>       REAL FRACT,ZAMX,TGBV,DTHVDZ,DTHVM,VCONV,FRCTN,THXFL,GOVTH,THVXFL           25JAN00.593
+>       REAL DEPTH,TKELMIN,XLMIN,XFR,FRACMINLIM,TKEMAXUP,TKEMAXDW,FRACMIN          25JAN00.594
+>       REAL ZUPP,ZDW,BETAW,BETAT,EXNER,EVAP,ALFAL,ABARL,BBARL,BETAL               25JAN00.595
+>       REAL BBTFL,BBWFL,XLMIN1,XLMIN2,XLMAX,XLSTAB,CZERO,FSUBL,TOP                25JAN00.596
+>       REAL TOP2,FSUB2,BOT,FSUB1,FSUB3,FSUB0                                      25JAN00.597
+>       REAL TAU1,TAU4,TAU6,TAU8,TAU9,WVAR,WBCVAR,TERM1,TERM2,TERM3                25JAN00.598
+>       REAL DENOM,TAU3,PSIX,USTM,DTG,SIGFGT,XMAVL,WSPDX,DELTSM,TSTAR              25JAN00.599
+>       REAL WSTAR,BUOYFL,XMOL,TERM4,TERM5,TERM6,BETAK,EES,QSAT,FRT                25JAN00.600
+>       REAL XLOVCPT,XLOVRT,ALFA1,BETA1,XLAMDA1,FACTTLFL,FACTQWFL,BUOFLUX          25JAN00.601
+>       REAL CHECK,FMULT,TBOVTH,ZL,XKMAXM,XKMAXH,XKMAX,XDTM,TGC,TSLC               25JAN00.602
+> C                                                                                25JAN00.603
+250a275,279
+>                                                                                  25JAN00.604
+> #ifdef MPP1                                                                      25JAN00.605
+> CMPP1      FLIC_DO_M(I,1,ILX)                                                    25JAN00.606
+> #endif                                                                           25JAN00.607
+>                                                                                  25JAN00.608
+254a284
+> #ifndef MPP1                                                                     25JAN00.609
+263a294,312
+> #else                                                                            25JAN00.610
+>       IF(MITERING.EQ.0)THEN                                                      25JAN00.611
+>         MSTEPS=1                                                                 25JAN00.612
+>       ELSE                                                                       25JAN00.613
+>         IF(KTAU.EQ.0)THEN                                                        25JAN00.614
+>           MSTEPS=2                                                               25JAN00.615
+>         ELSE                                                                     25JAN00.616
+>           MSTEPS=MSTEPSS(NOFLIC(I),J)                                            25JAN00.617
+>         ENDIF                                                                    25JAN00.618
+>       ENDIF                                                                      25JAN00.619
+> #endif                                                                           25JAN00.620
+> C                                                                                25JAN00.621
+> C                                                                                25JAN00.622
+> #ifdef BIT_FOR_BIT_KLUDGE                                                        25JAN00.623
+> C NEVER SET THIS OPERATIONALLY.  STRICTLY FOR ASCERTAINING ABILITY TO            25JAN00.624
+> C GIVE BIT-REPRODUCIBLE RESULTS BETWEEN MPP AND NON-MPP VERSIONS.                25JAN00.625
+>           MSTEPS=13                                                              25JAN00.626
+> #endif                                                                           25JAN00.627
+> C                                                                                25JAN00.628
+658c707
+<                        PRINT *,'PBL HT LIMITED TO 5 KM AGL AT ',I,J              GSPBL.658
+---
+> C                      PRINT *,'PBL HT LIMITED TO 5 KM AGL AT ',I,J              25JAN00.629
+780a830
+> # ifndef MPP1                                                                    25JAN00.630
+781a832,836
+> # else                                                                           25JAN00.631
+>           WRITE(0,*)' MPP VERSION NOT READY FOR THIS OPTION '                    25JAN00.632
+>           WRITE(*,*)' MPP VERSION NOT READY FOR THIS OPTION '                    25JAN00.633
+>           CALL FKILL_MODEL( 'GSPBL.781' )                                        25JAN00.634
+> # endif                                                                          25JAN00.635
+1421,1422c1476,1486
+<           IF(MOD(KTAU,NTRAD(IN)).EQ.0)                                           24SEP99.544
+<      -       CALL SFCRAD(IYY,JXX,J,IN,T3D,QV3D,PP3D)                             24SEP99.545
+---
+>                                                                                  25JAN00.636
+> #ifndef MPP1                                                                     25JAN00.637
+>           IF(MOD(KTAU,NTRAD(IN)).EQ.0) THEN                                      25JAN00.638
+>             CALL SFCRAD(IYY,JXX,J,IN,T3D,QV3D,PP3D)                              25JAN00.639
+>           ENDIF                                                                  25JAN00.640
+> #else                                                                            25JAN00.641
+>           IF(MOD(KTAU,NTRAD(IN)).EQ.0) THEN                                      25JAN00.642
+>             CALL SFCRAD_COL(IYY,JXX,I,J,IN,T3D,QV3D,PP3D)                        25JAN00.643
+>           ENDIF                                                                  25JAN00.644
+> #endif                                                                           25JAN00.645
+>                                                                                  25JAN00.646
+1524a1589
+>                                                                                  25JAN00.647
+1526a1592
+> #ifndef MPP1                                                                     25JAN00.648
+1527a1594,1596
+> #else                                                                            25JAN00.649
+>             CALL SLAB_COL(DELTSM,I,J,IN,THX,QX,FLHC,FLQC,PP3D)                   25JAN00.650
+> #endif                                                                           25JAN00.651
+1778a1848
+>                                                                                  25JAN00.652
+2146a2217
+>                                                                                  25JAN00.653
+2203a2275,2277
+> #ifdef MPP1                                                                      25JAN00.654
+> CMPP1      IF(FLIC_L2G_M(I).GE.IBGN.AND.FLIC_L2G_M(I).LE.IEND)THEN               25JAN00.655
+> #endif                                                                           25JAN00.656
+2225a2300,2302
+> #ifdef MPP1                                                                      25JAN00.657
+> CMPP1      ENDIF                                                                 25JAN00.658
+> #endif                                                                           25JAN00.659
+2236a2314
+> #ifndef MPP1                                                                     25JAN00.660
+2256a2335,2351
+> #else                                                                            25JAN00.661
+>         XKMAX=AMAX1(KZM(NOFLIC(I),KL),KTH(NOFLIC(I),KL))                         25JAN00.662
+>         XDTM=XMITPAR*DZQ(NOFLIC(I),KL)*DZQ(NOFLIC(I),KL)/XKMAX                   25JAN00.663
+>         IF(XDTM.LE.DT)THEN                                                       25JAN00.664
+>           MSTEPSS(NOFLIC(I),J)=NINT(DT/XDTM)                                     25JAN00.665
+>         ELSE                                                                     25JAN00.666
+>           MSTEPSS(NOFLIC(I),J)=1                                                 25JAN00.667
+>         ENDIF                                                                    25JAN00.668
+>         IF(MSTEPSS(NOFLIC(I),J).GT.50.)THEN                                      25JAN00.669
+>            PRINT*,' YOUR MSTEPS ARE TOO LARGE: MSTEPS = ',                       25JAN00.670
+>      *            MSTEPSS(NOFLIC(I),J),                                          25JAN00.671
+>      *           ' AT J = ',J,', AND XTIME = ',XTIME,' ON INEST = ',IN           25JAN00.672
+>            PRINT*,' YOUR SURFACE-LAYER (K=KL) KZM OR KTH IS TOO LARGE',          25JAN00.673
+>      *           ' OR YOUR SURFACE LAYER DEPTH (DZQ) IS TOO SMALL...'            25JAN00.674
+>           STOP 50                                                                25JAN00.675
+>         ENDIF                                                                    25JAN00.676
+> #endif                                                                           25JAN00.677
+2304a2400,2402
+> #ifdef MPP1                                                                      25JAN00.678
+> CMPP1      FLIC_ENDDO                                                            25JAN00.679
+> #endif                                                                           25JAN00.680
+===================================================================
+physics/pbl_sfc/util/slab.F
+diff -r3.0 -r3.3
+89,93c89
+<         IF(IFRAD.EQ.3)THEN                                                       SLAB.89
+<           XINET(I)=-GLW(I,J)                                                     SLAB.90
+<         ELSE                                                                     SLAB.91
+<           XINET(I)=EMISS(I,J)*(GLW(I,J)-UPFLUX(I))                               SLAB.92
+<         ENDIF                                                                    SLAB.93
+---
+>         XINET(I)=EMISS(I,J)*(GLW(I,J)-UPFLUX(I))                                 25JAN00.681
+101c97
+<           NSOILI=1+IFIX(4*DIFSL/(ZS(2)-ZS(1))*DELTSM/DZS(1))                     SLAB.101
+---
+>           NSOILI=1+IFIX(4*DIFSL/DZS(1)*DELTSM/DZS(1))                            25JAN00.682
+===================================================================
+physics/radiation/Makefile
+diff -r3.0 -r3.1
+28a29,36
+> 	fi; \
+> 	$(GREP) "4" $$tmpfile; \
+> 	if [ $$? = 0 ]; then \
+> 		echo "FRAD = 4"; \
+> 		(cd rrtm; $(MAKE) all); \
+> 		(cd cloud; $(MAKE) all); \
+> 	else \
+> 		echo "FRAD != 4"; \
+55a64,71
+> 	fi; \
+> 	$(GREP) "4" $$tmpfile; \
+> 	if [ $$? = 0 ]; then \
+> 		echo "FRAD = 4"; \
+> 		(cd rrtm; $(MAKE) code); \
+> 		(cd cloud; $(MAKE) code); \
+> 	else \
+> 		echo "FRAD != 4"; \
+82a99,106
+> 	fi; \
+> 	$(GREP) "4" $$tmpfile; \
+> 	if [ $$? = 0 ]; then \
+> 		echo "FRAD = 4"; \
+> 		(cd rrtm; $(MAKE) little_f); \
+> 		(cd cloud; $(MAKE) little_f); \
+> 	else \
+> 		echo "FRAD != 4"; \
+91a116
+> 	(cd rrtm; $(MAKE) clean); \
+===================================================================
+physics/radiation/ccm2/Makefile
+diff -r3.0 -r3.1
+14,15d13
+< 	inirad.o \
+< 	o3data.o \
+41,42d38
+< 	inirad.i \
+< 	o3data.i \
+67,68d62
+< 	inirad.f \
+< 	o3data.f \
+117,122d110
+< inirad.o: ../../../include/parame.incl ../../../include/parccm2.incl
+< inirad.o: ../../../include/various.incl
+< o3data.o: ../../../include/parame.incl ../../../include/param3.incl
+< o3data.o: ../../../include/point2d.incl ../../../include/point3d.incl
+< o3data.o: ../../../include/parccm2.incl ../../../include/various.incl
+< o3data.o: ../../../include/nonhyd.incl
+===================================================================
+physics/radiation/ccm2/getdat.F
+diff -r3.0 -r3.1
+132d131
+<           NLIM=MIN0(N,ILX)                                                       GETDAT.132
+152d150
+<           ILIM=MIN0(I,ILX)                                                       GETDAT.152
+182d179
+<             NLIM=MIN0(N,ILX)                                                     GETDAT.182
+197d193
+<           NLIM=MIN0(N,ILX)                                                       GETDAT.197
+212d207
+<             NLIM=MIN0(N,ILX)                                                     GETDAT.212
+246d240
+<             NLIM=MIN0(N,ILX)                                                     GETDAT.246
+331d324
+<           NLIM=MIN0(N,ILX)                                                       GETDAT.331
+===================================================================
+physics/radiation/ccm2/radclw.F
+diff -r3.0 -r3.2
+131a132
+> C      TCLRSF ARRAY WILL BE LOGS TO HANDLE SMALL NUMBERS BETTER                  25JAN00.683
+144c145,146
+<           TCLRSF(I,K+1)=TCLRSF(I,K)*(1.-CLD(I,K+1))                              RADCLW.144
+---
+>           IF(K.EQ.1)TCLRSF(I,K)=ALOG(TCLRSF(I,K))                                25JAN00.684
+>           TCLRSF(I,K+1)=TCLRSF(I,K)+ALOG(1.-CLD(I,K+1))                          25JAN00.685
+340c342
+<         IF((1.-TCLRSF(I,IPLEVP)).GT.1.E-3)THEN                                   RADCLW.340
+---
+>         IF((-TCLRSF(I,IPLEVP)).GT.1.E-3)THEN                                     25JAN00.686
+360,361c362,363
+<         FDL(I,IPLEVP)=FSDL(I,IPLEVP)*TCLRSF(I,IPLEV)/(                           RADCLW.360
+<      +                TCLRSF(I,IPLEVP-KHIV(I))+1.E-25)+FCLB4(I,IPLEV-1)*         RADCLW.361
+---
+>         FDL(I,IPLEVP)=FSDL(I,IPLEVP)*EXP(TCLRSF(I,IPLEV)-(                       25JAN00.687
+>      +                TCLRSF(I,IPLEVP-KHIV(I))))+FCLB4(I,IPLEV-1)*               25JAN00.688
+379c381
+<             TMP1=CLD(I,KM2)*TCLRSF(I,IPLEV)/(TCLRSF(I,KM2)+1.E-25)               RADCLW.379
+---
+>             TMP1=CLD(I,KM2)*EXP(TCLRSF(I,IPLEV)-(TCLRSF(I,KM2)))                 25JAN00.689
+404c406
+<           SUM=FSUL(I,K2)*(TCLRSF(I,IPLEVP)/(TCLRSF(I,K1)+1.E-25))                RADCLW.404
+---
+>           SUM=FSUL(I,K2)*EXP((TCLRSF(I,IPLEVP)-(TCLRSF(I,K1))))                  25JAN00.690
+409,410c411,412
+<             SUM=SUM+(FCLT4(I,KM1)+S(I,K2,K3)-S(I,K2,KM3))*CLD(I,KM2)*(           RADCLW.409
+<      +          TCLRSF(I,KM1)/(TCLRSF(I,K1)+1.E-25))                             RADCLW.410
+---
+>             SUM=SUM+(FCLT4(I,KM1)+S(I,K2,K3)-S(I,K2,KM3))*CLD(I,KM2)*            25JAN00.691
+>      +          EXP(TCLRSF(I,KM1)-(TCLRSF(I,K1)))                                25JAN00.692
+417c419
+<           SUM=FSUL(I,K2)*TCLRSF(I,IPLEVP)/(TCLRSF(I,MP12)+1.E-25)                RADCLW.417
+---
+>           SUM=FSUL(I,K2)*EXP(TCLRSF(I,IPLEVP)-(TCLRSF(I,MP12)))                  25JAN00.693
+422c424
+<             SUM=SUM+(CLD(I,KM2)*TCLRSF(I,KM1)/(TCLRSF(I,MP12)+1.E-25))*(         RADCLW.422
+---
+>             SUM=SUM+(CLD(I,KM2)*EXP(TCLRSF(I,KM1)-(TCLRSF(I,MP12))))*(           25JAN00.694
+440c442
+<             SUM=SUM+(CLD(I,KM2)*TCLRSF(I,K1)/(TCLRSF(I,KM2)+1.E-25))*(           RADCLW.440
+---
+>             SUM=SUM+(CLD(I,KM2)*EXP(TCLRSF(I,K1)-(TCLRSF(I,KM2))))*(             25JAN00.695
+443c445
+<           FDL(I,K2)=SUM+FSDL(I,K2)*(TCLRSF(I,K1)/(TCLRSF(I,MP12)+1.E-25)         RADCLW.443
+---
+>           FDL(I,K2)=SUM+FSDL(I,K2)*EXP(TCLRSF(I,K1)-(TCLRSF(I,MP12))             25JAN00.696
+490d491
+<                                                                                  RADCLW.490
+===================================================================
+physics/radiation/util/Makefile
+diff -r3.0 -r3.1
+8a9,10
+> 	inirad.o \
+> 	o3data.o \
+11a14,15
+> 	inirad.i \
+> 	o3data.i \
+14a19,20
+> 	inirad.f \
+> 	o3data.f \
+39a46,52
+> inirad.o: ../../../include/parame.incl ../../../include/parccm2.incl
+> inirad.o: ../../../include/various.incl
+> o3data.o: ../../../include/parame.incl ../../../include/param3.incl
+> o3data.o: ../../../include/point2d.incl ../../../include/point3d.incl
+> o3data.o: ../../../include/parccm2.incl ../../../include/various.incl
+> o3data.o: ../../../include/nonhyd.incl
+> 

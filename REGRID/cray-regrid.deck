@@ -1,0 +1,438 @@
+# QSUB -r RGD                           # request name
+# QSUB -o regridv3.SEQN                 # output name via migs
+# QSUB -q reg                           # job queue class
+# QSUB -eo                              # stdout and stderr together
+# QSUB -lM 6Mw                          # maximum memory
+# QSUB -lT 1800                         # time limit
+# QSUB -mb                              # mail me when it starts
+# QSUB -me                              # mail me when it ends
+# QSUB                                  # no more qsub commands
+#
+###############################################################################
+###############################################################################
+#####                                                                     #####
+#####   This script is a CRAY job deck for the REGRID package.  It is     #####
+#####   designed for submittal to NCAR's CRAY machines.  If you are not   #####
+#####   working with NCAR's CRAY machines, this script will not be of     #####
+#####   much help to you.                                                 #####
+#####                                                                     #####
+#####   This script is set up for only a few specific data sets that are  #####
+#####   archived at NCAR and easily accessible from NCAR's CRAY machines. #####
+#####   If you want to use other data sets, you will likely need to set   #####
+#####   up the "pregrid" and "regridder" portions of REGRID yourself, and #####
+#####   run interactively.                                                #####
+#####                                                                     #####
+#####   This deck performs just the basics.  It represents a subset of    #####
+#####   the full flexibility and capability of the REGRID package.  For   #####
+#####   more control, investigate interactive use.                        #####
+#####                                                                     #####
+#####   This deck is still in the experimental phase.  Capabilities and   #####
+#####   options are likely to change with unusual stealth and alarming    #####
+#####   frequency.  Please be patient.                                    #####
+#####                                                                     #####
+#####   Questions, comments, and lavish praise should be directed to:     #####
+#####                        mesouser@ucar.edu                            #####
+#####                                                                     #####
+###############################################################################
+###############################################################################
+
+ja
+
+set echo
+
+cd $TMPDIR
+#
+# Set Experiment Name for MSS
+#
+    set ExpName   = MM5V3/TEST         # MSS path name for output
+    set RetPd     = 365                # Retention period in days for MSWRITEs
+#
+# Select the source of first-guess analyses from among the following 
+# datasets archived at NCAR:
+#
+#   set ARCHIVE = GDAS     # NCEP Global Data Assimilation System, 
+                           # archives begin 1997-04-01
+
+    set ARCHIVE = ON84     # NCEP GDAS Archives through 1997-03-31
+
+#   set ARCHIVE = NNRP     # NCEP/NCAR Reanalysis Project
+
+#   set ARCHIVE = TOGA     # ECMWF Global analysis 
+
+#   set ARCHIVE = ERA      # ECMWF Reanalysis Project
+
+cat << End_Of_Record2 | sed -e 's/#.*//; s/  *$//' > ./pregrid.namelist
+&record1
+#
+# Set the starting date of the time period you want to process:
+#
+ START_YEAR  = 1993    # Year (Four digits)
+ START_MONTH = 03      # Month ( 01 - 12 )
+ START_DAY   = 13      # Day ( 01 - 31 )
+ START_HOUR  = 00      # Hour ( 00 - 23 )
+
+ END_YEAR  = 1993      # Year (Four digits)
+ END_MONTH = 03        # Month ( 01 - 12 )
+ END_DAY   = 14        # Day ( 01 - 31 )
+ END_HOUR  = 00        # Hour ( 00 - 23 )
+#
+# Define the time interval to process.
+#
+ INTERVAL =  43200 # Time interval (seconds) to process.
+		   # This is most sanely the same as the time interval for
+                   # which the analyses were archived, but you can really
+                   # set this to just about anything, and pregrid will
+                   # interpolate in time and/or skip over time periods for
+                   # your regridding pleasure.
+/
+
+&record2
+#
+# Set parameters related to pressure levels.  Units are Pascals (Pa).
+#
+ PTOP_IN_PA         = 10000         # Top pressure level to extract
+
+ NEW_LEVELS_IN_PA   =  97500, 95000, 92500, 90000,  # extra levels to
+                       80000,                       # which regridder
+                       75000,                       # is to interpolate
+                       65000, 60000,
+                       55000, 
+                       45000, 
+                       35000, 
+ /
+End_Of_Record2
+
+#######  END OF NAMELIST OPTIONS. ########
+
+#
+# Set your terrain MSS file name.  If the terrain file name or path name 
+# has the string "ieee" (not case sensitive), then the script will later
+# tell the regridder program to interpret this file as 32-bit IEEE 
+# fortran file.  Otherwise, this file will be interpreted as a Cray binary
+# fortran file.
+#
+   set InTerr = $ExpName/TERRAIN_DOMAIN1
+#
+# Output Options:
+#
+# Where to write on the MSS.  If you don't want to write the data to MSS,
+# don't set MssPath, or comment it out.
+
+      set MssPath = $ExpName
+
+# Set this to get 32-bit IEEE output.  If you want the CRAY-Binary files,
+# don't set IEEE32.
+
+      set IEEE32
+#
+#  Where to send the data via rcp.  If you don't want to send the data,
+#  don't set SEND_LOCAL:
+
+      set SEND_LOCAL = username@host.domain:/local_directory
+
+###############################################################################
+###############################################################################
+##########                                                           ##########
+##########                   END USER MODIFICATION                   ##########
+##########                                                           ##########
+###############################################################################
+###############################################################################
+
+#
+# Get the REGRID tarfile:
+#
+
+msread regrid.tar.gz /MESOUSER/MM5V3/REGRID.TAR.gz
+#cp /fs/othrorgs/home0/mesouser/MM5V3/REGRID.TAR.gz regrid.tar.gz
+
+gzip -d regrid.tar.gz
+pax -rf regrid.tar
+
+cd REGRID
+mv ../pregrid.namelist .
+set TOPDIR = `pwd`
+
+cd pregrid
+    cat ${TOPDIR}/pregrid.namelist
+
+#############################################################################
+#
+# Get the data:
+   f90 -f free -o rdnml_util util/rdnml_util.F
+   set DtLst = `rdnml_util < ${TOPDIR}/pregrid.namelist`
+
+   set START_DATE = ${DtLst[1]}-${DtLst[2]}-${DtLst[3]}_${DtLst[4]}
+   set END_DATE = ${DtLst[5]}-${DtLst[6]}-${DtLst[7]}_${DtLst[8]}
+
+if ( $ARCHIVE == NNRP ) then
+   cd ${TOPDIR}/pregrid/nnrp
+   chmod +x get_nnrp.csh
+   get_nnrp.csh ${START_DATE} ${END_DATE} 6
+else if ( $ARCHIVE == TOGA ) then
+   cd ${TOPDIR}/pregrid/toga
+   chmod +x get_toga.csh
+   get_toga.csh ${START_DATE} ${END_DATE} 12
+else if ( $ARCHIVE == ERA ) then
+   cd ${TOPDIR}/pregrid/era
+   chmod +x get_era.csh
+   get_era.csh ${START_DATE} ${END_DATE} 6
+else if ( $ARCHIVE == GDAS ) then
+   cd ${TOPDIR}/pregrid/ncep.grib
+   chmod +x get_ncep.csh
+   get_ncep.csh ${START_DATE} ${END_DATE} 12
+else if ( $ARCHIVE == ON84 ) then
+   cd ${TOPDIR}/pregrid/on84
+   chmod +x get_on84.csh
+   get_on84.csh ${START_DATE} ${END_DATE} 12
+else
+   exit(2)
+endif
+
+#############################################################################
+
+# Run pregrid
+
+  cd ${TOPDIR}
+  setenv NPROC 1
+  make >&! make.print.out
+
+  cd pregrid
+
+  set LETTERS = ( A B C D E F G H I J K L M N O P Q R S T U V W X Y Z )
+
+if ( $ARCHIVE == NNRP ) then
+     cd grib.misc
+     rm -f FILE:*
+     rm -f GRIBFILE*
+
+     ln -s ${TOPDIR}/pregrid.namelist pregrid.namelist
+
+     if ( -e Vtable ) then
+        rm Vtable
+     endif
+     touch Vtable
+     cat Vtable.NNRP >> Vtable
+
+     set NUM = 0
+     set num = 1
+     foreach file ( ../nnrp/pgb* ../nnrp/SFCNNRP* ) 
+        @ NUM ++
+        if ( $NUM == 27 ) then
+           set NUM = 1
+           @ num ++
+        endif
+        ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+     end
+
+     ./pregrid_grib.exe
+
+     set ROOT = `pwd`
+     set ROOT = ( \'${ROOT}/FILE\' )
+
+else if ( $ARCHIVE == TOGA ) then
+     cd grib.misc
+     rm -f FILE:*
+     rm -f GRIBFILE*
+
+     ln -s ${TOPDIR}/pregrid.namelist pregrid.namelist
+
+     if ( -e Vtable ) then
+        rm Vtable
+     endif
+     cp Vtable.TOGA3D Vtable
+     cat Vtable.TOGASST >> Vtable
+     cat Vtable.TOGASNOW >> Vtable
+
+     set NUM = 0
+     set num = 1
+     foreach file ( ../toga/TOGA_GRIB* )
+        @ NUM ++
+        if ( $NUM == 27 ) then
+           set NUM = 1
+           @ num ++
+        endif
+        ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+     end
+
+     ./pregrid_grib.exe
+
+     set ROOT = `pwd`
+     set ROOT = ( \'${ROOT}/FILE\' )
+
+else if ( $ARCHIVE == ERA ) then
+     cd grib.misc
+     rm -f FILE:*
+     rm -f GRIBFILE*
+
+     ln -s ${TOPDIR}/pregrid.namelist pregrid.namelist
+
+     if ( -e Vtable ) then
+        rm Vtable
+     endif
+     touch Vtable
+     cat Vtable.ERA >> Vtable
+
+     set NUM = 0
+     set num = 1
+     foreach file ( ../era/ERA_GRIB_UPA* ../era/ERA_GRIB_SFC* ) 
+        @ NUM ++
+        if ( $NUM == 27 ) then
+           set NUM = 1
+           @ num ++
+        endif
+        ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+     end
+
+     ./pregrid_grib.exe
+
+     set ROOT = `pwd`
+     set ROOT = ( \'${ROOT}/FILE\' )
+
+else if ( $ARCHIVE == GDAS ) then
+
+    cd ${TOPDIR}/pregrid/ncep.grib
+    rm GRIBFILE*
+    # Build the Vtable
+    rm -f Vtable
+    cp Vtable.NCEP Vtable
+    cat Vtable.SST >> Vtable
+    cat Vtable.SNOW >> Vtable
+
+    # Get the input files
+    ln -s ${TOPDIR}/pregrid.namelist pregrid.namelist
+
+    cat pregrid.namelist
+
+    set Num = 0
+    foreach file ( NCEP_GRIB* )
+       @ Num ++
+       ln -s $file GRIBFILE${LETTERS[$Num]}
+    end
+
+    # Run the program
+    ./pregrid_ncep.exe 
+
+    set ROOT = `pwd`
+    set ROOT = ( \'${ROOT}/SST\', \'${ROOT}/NCEP\', \'${ROOT}/SNOW\')
+    ls -l
+
+else if ( $ARCHIVE == ON84 ) then
+
+    cd ${TOPDIR}/pregrid/on84
+    ln -s ${TOPDIR}/pregrid.namelist pregrid.namelist
+
+    # Build the Vtable
+    rm -f Vtable
+    touch Vtable
+    cat Vtable.ON84 >> Vtable
+    cat Vtable.SST >> Vtable
+    cat Vtable.SNOW >> Vtable
+    set Num = 0
+    # Get the input files
+    foreach file ( ./NCEP_ON84* )
+       @ Num ++
+       ln -s $file ON84FILE${LETTERS[$Num]}
+    end
+
+    # Run the program
+    ./pregrid_on84.exe 
+
+    # Set up the ROOT variable.
+
+    set ROOT = `pwd`
+    set ROOT = ( \'${ROOT}/ON84\', \'${ROOT}/SST\', \'${ROOT}/SNOW\')
+
+endif
+
+###############################################################################
+
+cd ${TOPDIR}/regridder
+
+msread terrain ${InTerr}
+
+rm -f namelist.input
+cp ${TOPDIR}/pregrid.namelist namelist.input
+###cat << End_Of_Namelist | sed -e 's/#.*//; s/  *$//' >> ./namelist.input
+cat << End_Of_One >> ./namelist.input
+
+&record3
+ root      = $ROOT[1]
+End_Of_One
+
+set n = 1
+while ( $n < $#ROOT )
+   @ n++
+cat << End_Of_Next >> ./namelist.input
+             $ROOT[$n]
+End_Of_Next
+end
+
+cat << End_Of_Namelist >> ./namelist.input
+
+ terrain_file_name               = './terrain' /
+
+&record4
+ print_echo                      = .FALSE. , 
+ print_debug                     = .FALSE. , 
+ print_mask                      = .FALSE. ,
+ print_interp                    = .FALSE. ,
+ print_link_list_store           = .FALSE. , 
+ print_array_store               = .FALSE. , 
+ print_header                    = .FALSE. , 
+ print_output                    = .FALSE. , 
+ print_file                      = .FALSE. ,
+ print_f77_info                  = .TRUE. /
+
+&record5
+ insert_bogus_storm              = .FALSE.
+ num_storm                       =    1
+ latc_loc                        =   36.
+ lonc_loc                        =  -35.
+ vmax                            =   50. /
+End_Of_Namelist
+
+cat namelist.input 
+
+set Itest = `echo ${InTerr} | grep -i ieee`
+if ( $#Itest ) then
+   assign -N ieee -F f77 ./terrain
+endif
+unset Itest
+
+./regridder 
+
+if ( $?IEEE32 ) then 
+   foreach file ( REGRID_DOMAIN? )
+      /fs/othrorgs/home0/mesouser/MM5V3/Util/ieeev3.csh ${file}
+   end
+endif
+
+if ( $?MssPath ) then
+   if ( $?IEEE32 ) then
+      foreach file ( REGRID_DOMAIN?.ieee )
+         set Remote = `echo ${file} | cut -b 1-14`_IEEE
+         mswrite -t $RetPd ${file} ${MssPath}/${Remote}
+         unset Remote
+      end
+#  else
+      foreach file ( REGRID_DOMAIN? )
+         mswrite -t $RetPd ${file} ${MssPath}/${file}
+      end
+   endif
+endif
+
+if ( $?SEND_LOCAL ) then
+   if ( $?IEEE32 ) then
+      foreach file ( REGRID_DOMAIN?.ieee )
+         rcp ${file} ${SEND_LOCAL}
+      end
+   else
+      foreach file ( REGRID_DOMAIN? )
+         rcp $file ${SEND_LOCAL}
+      end
+   endif
+endif
+
+ls
+
+ja -st

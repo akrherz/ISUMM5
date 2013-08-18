@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Advanced_csh</title>
+    <style type="text/css">
+      body {color: black; background: #CCFFFF}
+      div.code {color: #FF0000; background: #FFFFFF; 
+      border: solid black; border-width: 1}
+    </style>
+  </head>
+
+  <body>
+    <h1>Slightly more advanced use of the pregrid.csh shell script:</h1>
+
+The default setup of the pregrid.csh shell script works well in most
+    situations.  But often, a user may find that it can work better
+    with some different arrangement of options.  To understand this,
+    some discussion is needed about the details of the script.
+<p>
+There are four conceptual categories of data: 
+<li> "3D", which generally includes any atmospheric analyses, whether
+	they be at pressure levels or at the surface. </li>
+<li> "SST", which indicates the SST data.</li>
+<li> "SNOW", which indicates the snow-cover data.</li>
+<li> "SOIL", which indicates soil data such as ground temperature
+	and soil moisture.</li>
+<p>
+The main body of the shell script below the user options is a loop
+      over the four categories.  For each category, the shell script
+      checks the user's setting of the source of analyses, i.e., for
+      categories 3D, SST, SNOW, and SOIL, the script checks shell
+      variables SRC3D, SRCSST, SRCSNOW, and SRCSOIL, respectively.
+      The script compares these shell variables against known options
+      (e.g., GRIB, ON84, NAVYSST, NCEP), and when it finds a
+      match, it goes into the appropriate subdirectory, links the 
+      appropriate files, runs the appropriate program, and moves the
+      output files back up to the "pregrid" directory.
+<p>
+Some pseudo-code may be useful:
+<p>
+    <blockquote>
+      <div class = "code">
+	foreach Category ( 3D SST SNOW SOIL )
+	<blockquote>
+	  if ( user option for $Category matches ON84 ) then
+	  <blockquote>
+	    Process ON84 Data for the given Category.<br>
+	    If ( $Category == 3D ), output files are called "ON84:YYYY-MM-DD_HH"<br>
+	    If ( $Category == SST ), output files are called "ON84_SST:YYYY-MM-DD_HH"<br>
+	    If ( $Category == SNOW ), output files are called "ON84_SNOW:YYYY-MM-DD_HH"
+	  </blockquote>
+	  else if ( user option for $Category matches NCEP ) then
+	  <blockquote>
+	    Process NCEP Data for the given Category<br>
+	    If ( $Category == 3D ), output files are called "NCEP:YYYY-MM-DD_HH"<br>
+	    If ( $Category == SST ), output files are called "NCEP_SST:YYYY-MM-DD_HH"<br>
+	    If ( $Category == SNOW ), output files are called "NCEP_SNOW:YYYY-MM-DD_HH"
+	  </blockquote>
+	  else if ( user option for $Category matches NAVYSST ) then
+	  <blockquote>
+	    Process NAVY SST Data for the given Category<br>
+	    Output files are called "NAVY_SST:YYYY-MM-DD_HH"<br>
+	  </blockquote>
+	  else if ( user option for $Category matches GRIB ) then
+	  <blockquote>
+	    Process GRIB Data for the given Category<br>
+	    If ( $Category == 3D ), output files are called "FILE:YYYY-MM-DD_HH"<br>
+	    If ( $Category == SST ), output files are called "SST_FILE:YYYY-MM-DD_HH"<br>
+	    If ( $Category == SNOW ), output files are called "SNOW_FILE:YYYY-MM-DD_HH"<br>
+	    If ( $Category == SOIL ), output files are called "SOIL_FILE:YYYY-MM-DD_HH"<br>
+	  </blockquote>
+	  endif<br>
+	</blockquote>
+	end<br>
+      </div>
+    </blockquote>
+<p>
+
+This setup works well if each category of data comes in its own
+      separate file, or in a separate data set.  The astute reader,
+      however, will notice that this setup may result in much
+      repetition.  For example, if all of your 3D, SST, SNOW, and SOIL
+      fields are in a single GRIB file, that GRIB file must be opened
+      and read four separate times, once for each category of data.
+      Most of the fields are ignored each time, with only the data
+      matching the given category actually extracted.  Things could be
+      much more efficient if you could read through the GRIB file once,
+      and extract all four categories of data as you go.
+<p>
+The shell script is set up to allow users to do this easily, at least
+      for the GRIB case.  The script variable VT3D (as well as the
+      script variables  VTSST, VTSNOW, and VTSOIL ) is interpreted as
+      a list of values, each element of the list is a Vtable file
+      name.  Before the pregrid_grib.exe program is run, all elements
+      of the list are cat'ed (Unix "cat" command) into one Vtable
+      file, to be read by the program.  Every field in the GRIB
+      file which matches a Vtable entry is extracted.
+<p>
+So, you may list in VT3D the separate Vtables for the 3D data, SST
+      data, SNOW data, and SOIL data.  Turn off all the SRCSST,
+      SRCSNOW, SRCSOIL, InSST, InSnow, InSoil script variables.
+      Essentially, you're saying that all the data, 3D, SST, SNOW, and
+      SOIL, may be considered part of the "3D" dataset, and read in
+      one execution of the pregrid_grib.exe program.
+<p>
+Instead of <br>
+<blockquote>
+<div class = "code">
+set SRC3D = GRIB <br>
+set InFiles = Your_Grib_File <br>
+set SRCSST = GRIB <br>
+set InSST = Your_Grib_File <br>
+set SRCSNOW = GRIB <br>
+set InSnow = Your_Grib_File <br>
+set SRCSOIL = GRIB <br>
+set InSoil = Your_Grib_File <br>
+set VT3D = Appropriate_3D_Vtable <br>
+set VTSST = Appropriate_SST_Vtable <br>
+set VTSNOW = Appropriate_SNOW_Vtable <br>
+set VTSOIL = Appropriate_SOIL_Vtable <br>
+</div>
+which runs the program pregrid_grib.exe four times and returns fields
+      separated into files called "FILE:YYYY-MM-DD_HH",
+      "SST_FILE:YYYY-MM-DD_HH", "SNOW_FILE:YYYY-MM-DD_HH", and
+      "SOIL_FILE:YYYY-MM-DD_HH", <p> 
+</blockquote>
+you may set <br>
+<blockquote>
+<div class = "code">
+set SRC3D = GRIB <br>
+set InFiles = Your_Grib_File <br>
+set VT3D = ( \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Appropriate_3D_Vtable&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Appropriate_SST_Vtable&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Appropriate_SNOW_Vtable&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Appropriate_SOIL_Vtable )<br>
+</div>
+which returns all the fields in files called "FILE:YYYY-MM-DD_HH".  It
+      is important to note that even though you do not get files
+      called "SST_FILE:...", "SNOW_FILE:...", or "SOIL_FILE"...", the
+      SST, snow, and soil fields will be in the "FILE:YYYY-MM-DD_HH" files.
+</blockquote>
+or you could even set <br>
+<blockquote>
+<div class = "code">
+set SRCSST = GRIB <br>
+set InSST = Your_Grib_File <br>
+set VTSST = ( \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Appropriate_3D_Vtable;&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Appropriate_SST_Vtable&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Appropriate_SNOW_Vtable&nbsp;\<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Appropriate_SOIL_Vtable )<br>
+</div>
+which returns all the fields in files called
+      "SST_FILE:YYYY-MM-DD_HH".  It is important to note that even
+      though the files are labelled SST, they contain all the fields,
+      not just SST.
+</blockquote>
+The same sort of argument works if, for example, you want to get
+    atmospheric fields from the ON84 dataset, and SST and Snow from a GRIB
+    Dataset (and you choose not to get soil fields).  In this case, you could set:
+<blockquote>
+<div class = "code">
+set SRC3D = ON84 <br>
+set InFiles = Your_ON84_File <br>
+set SRCSST = GRIB <br>
+set InSST = Your_Grib_File <br>
+set VTSST = ( Appropriate_SST_Vtable Appropriate_SNOW_Vtable )<br>
+</div>
+which returns the atmospheric fields in files called
+      "ON84:YYYY-MM-DD_HH", and the SST and Snow fields in files
+      called "SST_FILE:YYYY-MM-DD_HH".  Again, note that even though
+      the file is labelled "SST_FILE" and there is no "SNOW_FILE",
+      both SST and SNOW fields are in the "SST_FILE".  Note also that 
+      you do not need to set the VT3D variable, because your SRC3D is
+      ON84 and not GRIB.
+      
+</blockquote>
+
+
+<hr>
+<br><a href="Documentation_Home.html">Documentation HOME</a>
+<!-- Created: Tue May 16 13:56:47 MDT 2000 -->
+<p>
+<!-- hhmts start -->
+Last modified: Tue Jun  6 13:53:09 MDT 2000
+<!-- hhmts end -->
+  </body>
+</html>

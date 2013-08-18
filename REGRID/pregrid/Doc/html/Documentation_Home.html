@@ -1,0 +1,61 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; OSF1 V4.0 alpha) [Netscape]">
+</head>
+<body text="#000000" bgcolor="#CCFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<h1>
+The REGRID package</h1>
+
+<p><br>The REGRID package is a preprocessor component of MM5, the Penn
+State/NCAR Mesoscale Modeling System (see <a href="images/mm5_system_schematic.gif">MM5
+System Schematic</a>).&nbsp; The purpose of REGRID is to read archived
+meteorological analyses on pressure levels and interpolate those analyses
+from some native grid and map projection to the grid and map projection
+defined by the MM5 preprocessor program TERRAIN.&nbsp; REGRID handles pressure-level
+and surface analyses.&nbsp; Two-dimensional interpolation is performed
+on these levels.&nbsp; Other sorts of levels, such as isentropic levels
+or model sigma or eta levels, are not handled.&nbsp; The output from REGRID
+is generally used as a first guess for an objective analysis of observations
+(MM5 preprocessor program RAWINS or LITTLE_R).&nbsp; For users familiar
+with older versions of the MM5 system, the REGRID package replaces the
+obsolete DATAGRID program.
+<p>REGRID is not a single program, but a suite of programs to handle various
+tasks of the REGRID package.&nbsp; The tasks are split up into two main
+components: 1) data input (i.e., reading the original meteorological analyses)
+and 2) interpolation to MM5 grid.&nbsp; The data input task is handled
+by the programs collectively known as <i>pregrid</i>, and the interpolation
+to the MM5 grid is handled by the program <i>regridder</i>.&nbsp; Communication
+between these programs is accomplished via intermediate files written in
+a pretty simple
+<a href="intermediate_format.html">format</a>. The <i>pregrid</i>
+tasks are further subdivided into programs which read specific data&nbsp;
+formats, while the <i>regridder</i> tasks are managed in a single program.
+<a href="reasons_for_approach.html">The
+intent</a> is that individual users can easily write their own data input
+programs (i.e., their own <i>pregrid</i> programs) if necessary, thus introducing
+their own data sources into the MM5 Modeling System (see <a href="images/regrid_schematic.gif">schematic</a>).
+<p>The Unix tar file "regrid.tar" has been set up to reflect the bipartite
+structure of the REGRID package, with a top-level directory named "REGRID",
+and subdirectories named "pregrid" and "regridder".
+<br>&nbsp;
+<p><a href="what_you_need.html">What you need to run REGRID</a>
+<br><a href="pregrid.html">pregrid documentation</a>
+<br><a href="regridder.html">regridder documentation</a>
+<br><a href="intermediate_format.html">REGRID intermediate format</a>
+<br><a href="where_to_find_analyses.html">Where can I find analyses?</a>
+<br><a href="faq.html">FAQ</a> Under Construction yet
+<br><a href="tutorial.html">Tutorial</a> Under Construction yet
+<br><a href="ftp://ftp.ucar.edu/mesouser/MM5V3/REGRID.TAR.gz">Download
+the REGRID package (regrid.tar.gz)</a>
+<br><a href="http://www.mmm.ucar.edu/mm5">MM5 Home Page</a>
+<p><a href="Documentation_Home.html">Documentation HOME</a>
+<p>
+<!-- hhmts start -->
+Last modified: Tue Jun  6 14:22:42 MDT 2000
+<!-- hhmts end -->
+</p>
+</body>
+</html>

@@ -1,0 +1,2 @@
+      REAL DIFSL,DZS,ZS                                                          SOILCNST.1
+      COMMON /SOILCNST/ZS(MLX),DZS(MLX),DIFSL                                    SOILCNST.2

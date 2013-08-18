@@ -1,0 +1,522 @@
+# QSUB -r MM5V3                         # request name
+# QSUB -o mm5v3.SEQN                    # output name via migs
+# QSUB -q econ                          # job queue class
+# QSUB -eo                              # stdout and stderr together
+# QSUB -lM 10Mw                         # maximum memory
+# QSUB -lT 9000                         # time limit
+# QSUB -mb                              # mail me when it starts
+# QSUB -me                              # mail me when it ends
+# QSUB                                  # no more qsub commands
+#
+ja
+set echo
+#
+#               ********************************************
+#               ******* mm5 interactive/batch C shell ****** 
+#               *******          V3 System            ******
+#               ********************************************
+#
+#     Note: when running this deck interactively, it assumes
+#           the source files are local and un-tared.
+#
+#     CAUTION: If you have changed/added new options in configure.user,
+#              you have to re-compile the code, i.e. set compile = yes
+#
+#
+if ( $?ENVIRONMENT ) then
+   echo "environment variable defined as $ENVIRONMENT"
+else
+   setenv ENVIRONMENT INTERACTIVE
+   echo "environment variable defined as $ENVIRONMENT"
+endif
+#
+if ( $ENVIRONMENT == BATCH ) then
+   cd $TMPDIR
+endif
+#
+#    how many CRAY CPUs to use to run the model, set to 1 if not multitasking
+#
+setenv NCPUS 8
+setenv NPROC 4
+#
+#       this should be the user's case or experiment (used in MS name)
+#
+  set ExpName   = MM5V3/TEST         # MSS path name for output
+  set InName    = MM5V3/TEST/DATA    # MSS path name for input
+  set RetPd     = 365         # MSS retention period in days
+#
+#       type of mm5 job
+#
+  set compile   = yes         # if yes, compile the mm5 code
+# set compile   = no          # if no, the deck expects to read mm5.exe
+
+  set execute   = yes         # if yes, execute model run
+# set execute   = no          # if no, complie only
+#
+  set UseMySource = no        # Use "standard" version of MM5
+# set UseMySource = yes       # Use my version of MM5
+#
+  set CaseName  = CTL         # MSS pathname for this experiment
+#
+  set STARTsw   = NoReStart   # start model run at hour 0
+# set STARTsw   = ReStart     # restart model run
+#
+  if ( $STARTsw == ReStart ) then
+     set compile = no
+  endif
+#
+  set FDDAsw    = NoFDDA      # no FDDA input files
+# set FDDAsw    = Anly        # gridded FDDA input files
+# set FDDAsw    = Obs         # obs FDDA input files
+# set FDDAsw    = Both        # gridded and obs FDDA input files
+#
+#    Whether the input files are IEEE
+#      If input files are in IEEE, set whether they are 32-bit or
+#         64-bit IEEE
+#
+  set InIEEE  = no
+# set InIEEE  = yes
+#
+  set IEEEType = 32
+# set IEEEType = 64
+#
+#    Input files:
+#        1. lateral and lower boundary files
+#
+  set InBdy  =  $InName/BDYOUT_DOMAIN1
+  set InLow  =  $InName/LOWBDY_DOMAIN1
+#
+#        2. initial conditions and/or nest terrain file
+#
+# set InMM    = ( $InName/MMINPUT_DOMAIN1 )
+  set InMM    = ( $InName/MMINPUT_DOMAIN1 \
+                  $InName/TERRAIN_DOMAIN2 )
+#                 $InName/MMINPUT_DOMAIN2 )
+#
+#        3. input restart file - if this is a restart run 
+#
+  if ( $STARTsw == ReStart ) then
+     set InRst    = ( $ExpName/${CaseName}/SAVE_DOMAIN1 \
+                      $ExpName/${CaseName}/SAVE_DOMAIN2 )
+  endif
+#
+#        4. 4dda surface analyses - if this is a 4DDA run
+#
+if (( $FDDAsw == Anly ) || ( $FDDAsw == Both )) then
+  set In4DSfc  = ( $InName/SFCFDDA_DOMAIN1 \
+                   $InName/SFCFDDA_DOMAIN2  )
+endif
+#
+#        5. 4dda observations - if this is a 4DDA run
+#
+if (( $FDDAsw == Obs  ) || ( $FDDAsw == Both )) then
+  set In4DObs  = ( $InName/MM5OBS_DOMAIN1 \
+                   $InName/MM5OBS_DOMAIN2 )
+endif
+#
+#    Output files: MSS path name for output, save, 
+#                  shut down and print out files
+#
+if ( $STARTsw == ReStart ) then
+   set OutMM       = ${ExpName}/${CaseName}/RES
+else
+   set OutMM       = ${ExpName}/$CaseName
+endif
+#
+#      set up the remote host location where your source code may locate
+#
+  set Host    = username@host.domain:/usr/tmp/username
+#
+#=======================================================================
+#
+#       Get source code
+#
+if ( $ENVIRONMENT == BATCH ) then
+   if ( $compile == yes ) then
+      if ( $UseMySource == yes ) then
+         rcp $Host/mm5v3.tar .
+#        msread mm5v3.tar MM5/TEST/MM5.TAR
+      else
+         msread mm5v3.tar.gz /MESOUSER/MM5V3/MM5.TAR.gz
+#        cp /fs/othrorgs/home0/mesouser/MM5V3/MM5.TAR.gz mm5v3.tar.gz
+         gunzip mm5v3.tar
+      endif
+   else
+      msread mm5v3.tar ${ExpName}/${CaseName}/mm5exe.tar
+   endif
+   tar -xf mm5v3.tar
+   rm mm5v3.tar
+   cd MM5
+   ls -ls
+endif
+#
+#========================================================================
+# configure.user file - User editting required for sections 5 and 6
+#  **Please read Release-note for how to make changes in configure.user
+#------------------------------------------------------------------------
+#
+cat >! ./configure.user << "EOF"
+# Sections
+# 1. System Variables
+# 3. Fortran options
+#    3a. Cray (YMP, J90)
+# 4. General commands
+# 5. Options for making "./include/parame.incl"
+# 6. Physics Options (memory related)
+# 7. make rules - Don't need to change
+#
+#------------------------------------------------------------------------
+# 1. System Variables
+#------------------------------------------------------------------------
+SHELL =         /bin/sh
+.SUFFIXES: .F .i .o .f
+#-----------------------------------------------------------------------------
+# 3. Fortran options
+#------------------------------------------------------------------------
+LIBINCLUDE = $(DEVTOP)/include
+#------------------------------------------------------------------------
+#    3a. Cray
+#    Note: - imsl library is only needed if running Arakawa-Schubert cumulus scheme;
+#          and the location of the library may be different on non-NCAR Crays.
+#    
+#------------------------------------------------------------------------
+RUNTIME_SYSTEM = "CRAY"
+FC = f90
+FCFLAGS = -D$(RUNTIME_SYSTEM) -I$(LIBINCLUDE) -O task1 -x omp
+CFLAGS =
+CPP = /opt/ctl/bin/cpp
+CPPFLAGS = -I$(LIBINCLUDE) -C -P
+LDOPTIONS =
+LOCAL_LIBRARIES = -L /usr/local/lib -l imsl
+MAKE = make -i -r
+#------------------------------------------------------------------------
+# 4. General commands
+#------------------------------------------------------------------------
+AR = ar ru
+RM = rm -f
+RM_CMD = $(RM) *.CKP *.ln *.BAK *.bak *.o *.i core errs ,* *~ *.a \
+.emacs_* tags TAGS make.log MakeOut *.f !
+GREP = grep -s
+CC = cc
+#------------------------------------------------------------------------
+# 5. Options for making ./include/parame.incl
+#------------------------------------------------------------------------
+#
+# FDDAGD (integer)                  - "1" -> FDDA gridded run
+FDDAGD = 0
+#
+# FDDAOBS (integer)                 - "1" -> FDDA obs run
+FDDAOBS = 0
+#
+# MAXNES (integer)                  - Max Number of Domains in simulation
+MAXNES = 2
+#
+# MIX,MJX (integer)                 - Maximum Dimensions of any Domain
+MIX = 49
+MJX = 52
+# MKX (integer)                     - Number of half sigma levels in model
+MKX = 23
+#------------------------------------------------------------------------
+# 6. Physics Options
+#    The first MAXNES values in the list will be used for the corresponding
+#        model nests; the rest in the list can be used to compile other options.
+#        The exception is FRAD, of which only the first value is used in the model,
+#        (i.e., only one radiation option is used for all nests). The rest allow
+#        other options to be compiled.
+#------------------------------------------------------------------------
+# IMPHYS - for explicit moisture schemes (array,integer)
+IMPHYS = "4,4,1,1,1,1,1,1,1,1"
+#                                   - Dry,stable,warm rain,simple ice,mix phase,
+#                                   - 1  ,2     ,3        ,4         ,5
+#                                   - graupel(gsfc),graupel(reisner2),schultz
+#                                   -,6            ,7                ,8
+MPHYSTBL = 0
+#                                   - 0=do not use look-up tables for moist
+#                                     physics
+#                                   - 1=use look-up tables for moist physics
+#                                     (currently only simple ice and mix phase
+#                                      are available)
+#
+# ICUPA - for cumulus schemes (array,integer)
+#                                   - None,Kuo,Grell,AS,FC,KF,BM - 1,2,3,4,5,6,7
+ICUPA  = "3,3,1,1,1,1,1,1,1,1"
+#
+# IBLTYP - for planetary boundary layer (array,integer)
+#                                   - 0=no PBL fluxes,1=bulk,
+#                                     2=Blackadar,3=Burk-Thompson,4=Eta M-Y,5=MRF,
+#                                     6=Gayno-Seaman,7=Pleim-Xiu
+IBLTYP  = "5,5,2,2,2,2,2,2,2,1"
+#
+# FRAD - for atmospheric radiation (integer)
+#                                   - Radiation cooling of atmosphere
+#                                     0=none,1=simple,2=cloud,3=ccm2,4=rrtm
+FRAD = "2,0,0,0,0"
+#
+# ISOIL - for multi-layer soil temperature model (integer)
+#                                   - 0=no,1=yes (only works with IBLTYP=2,4,5)
+#                                     2=OSU land-surface scheme (IBLTYP=5)
+#                                     3=Pleim-Xiu LSM (IBLTYP=7 only)
+ISOIL = 1
+#
+# ISHALLO (array,integer)           - Shallow Convection Option
+#                                     1=shallow convection,0=No shallow convection
+ISHALLO  = "0,0,0,0,0,0,0,0,0,0"
+#------------------------------------------------------------------------
+# 7. make rules - Don't need to change
+#------------------------------------------------------------------------
+.F.i:
+	$(RM) $@
+	$(CPP) $(CPPFLAGS) $*.F > $@
+	mv $*.i $(DEVTOP)/pick/$*.f
+	cp $*.F $(DEVTOP)/pick
+.c.o:
+	$(RM) $@ && \
+	$(CC) -c $(CFLAGS) $*.c
+.F.o:
+	$(RM) $@
+	$(FC) -c $(FCFLAGS) $*.F
+.F.f:
+	$(RM) $@
+	$(CPP) $(CPPFLAGS) $*.F > $@
+.f.o:
+	$(RM) $@
+	$(FC) -c $(FCFLAGS) $*.f
+#-----------------------------------------------------------------------
+"EOF"
+#
+#=======================================================================
+# Options for namelist ("mmlif") - User editting required
+#   (Comments in the namelist are removed during execution)
+#-----------------------------------------------------------------------
+#
+# Note: The first dimension (column) of the arrays denotes the domain
+#       identifier.
+#          Col 1 = Domain #1, Col 2 = Dom #2, etc.
+#       If there is only one colume, the choice is true for all domains.
+#
+cat >! ./Run/oparam << EOF
+ &OPARAM
+#INCLUDE oparam
+ &END
+EOF
+cat >! ./Run/lparam << EOF
+ &LPARAM
+#INCLUDE lparam
+EOF
+cat >! ./Run/nparam << EOF
+ &NPARAM
+#INCLUDE nparam
+ &END
+EOF
+cat >! ./Run/pparam << EOF
+ &PPARAM
+#INCLUDE pparam
+ &END 
+EOF
+cat >! ./Run/fparam << EOF
+ &FPARAM
+#INCLUDE fparam
+ &END
+EOF
+#
+########################################################################
+####################                             #######################
+####################    END USER MODIFICATION    #######################
+####################                             #######################
+########################################################################
+#
+#    This is where the utility programs/executable come from
+#
+set MesoUser = /fs/othrorgs/home0/mesouser/MM5V3
+#
+if ( $InIEEE == yes && $IEEEType == 32) then
+   set Option = -Nieee
+else if ( $InIEEE == yes && $IEEEType == 64 ) then
+   set Option = -Nieee_64
+endif
+#
+if ( $compile == yes ) then
+# make clean
+  make
+   set toast = $status
+   if      ( $toast != 0 ) then
+      echo "error in the compile, stopping"
+      if ( -e mm5vv3-debug.tar ) rm mm5v3-debug.tar
+      tar -cf .mm5v3-debug.tar * ; mv .mm5v3-debug.tar mm5v3-debug.tar
+      echo " mswrite -t $RetPd mm5v3-debug.tar $OutMM/mm5v3-debug.tar "
+      mswrite -t $RetPd mm5v3-debug.tar $OutMM/mm5v3-debug.tar
+      exit(1)
+   else if ( $ENVIRONMENT != BATCH ) then
+      echo -n "compile complete, continue?    (yes)   "
+      set ans = "$<"
+      if (( $ans == "n" ) || ( $ans == "no" )) then
+         exit (1)
+      endif
+   endif
+   if ( -e mm5exe.out ) rm mm5exe.out
+   tar -cf .mm5exe.out * ; mv .mm5exe.out mm5exe.out
+   mswrite mm5exe.out ${ExpName}/${CaseName}/mm5exe.tar
+#
+   if ( $execute == no ) exit (0)
+else
+#
+#       Update information needed to create mmlif
+#
+   cc -o parseconfig Util/parseconfig.c
+   ./parseconfig
+endif
+#
+#  remove object files to avoid exceeding inode limit
+#
+make rm_obj
+#
+#  edit mmlif file to remove comments
+#
+make mmlif
+cd ./Run
+cp mmlif mmlif.comment
+sed -f ../Util/no_comment.sed mmlif | grep "[A-Z,a-z]" > mmlif.tmp
+mv mmlif.tmp mmlif
+#
+#       cd to Run, and run the model there
+#
+rm fparam lparam nparam oparam pparam
+#
+#       get boundary conditions from MS
+#
+msread BDYOUT_DOMAIN1 $InBdy
+msread LOWBDY_DOMAIN1 $InLow
+#
+#       1. initial conditions
+#
+set NUMFIL = 1
+while ( $NUMFIL <= ${#InMM} )
+   msread MMINPUT_DOMAIN$NUMFIL $InMM[${NUMFIL}]
+   if ( $NUMFIL >= 2 ) then
+      echo "$InMM[${NUMFIL}]" > .tmpfile
+      grep TERRAIN .tmpfile
+      if ( $status == 0 ) then
+         echo "The number $NUMFIL input file is a TERRAIN file"
+         mv MMINPUT_DOMAIN$NUMFIL TERRAIN_DOMAIN$NUMFIL
+         rm .tmpfile
+      endif
+   endif
+   if (( $FDDAsw == Anly ) || ( $FDDAsw == Both ) || ( -e MMINPUT_DOMAIN$NUMFIL )) then
+      cp MMINPUT_DOMAIN$NUMFIL MMINPUT2_DOMAIN$NUMFIL
+   endif
+   @ NUMFIL ++
+end
+#
+#       2. input restart conditions
+#
+if ( $STARTsw == ReStart ) then
+   set NUMFIL = 1
+   while ( $NUMFIL <= ${#InRst} )
+      msread RESTART_DOMAIN$NUMFIL $InRst[${NUMFIL}]
+      @ NUMFIL ++
+   end
+endif
+#
+#       3. get surface analyses files for nudging 
+#
+if (( $FDDAsw == Anly ) || ( $FDDAsw == Both )) then
+   foreach i ( $In4DSfc )
+       set NUMFIL = `echo $i | sed 's/.*\(.\)/\1/'`
+       echo "Current domain is $NUMFIL"
+       msread SFCFDDA_DOMAIN$NUMFIL $i
+       if ( $InIEEE == yes ) then
+          assign -a SFCFDDA_DOMAIN$NUMFIL -Ff77 $Option u:7$NUMFIL
+       endif
+   end
+endif
+#
+#       4. observations if OBS nudging
+#
+if (( $FDDAsw == Obs ) || ( $FDDAsw == Both )) then
+   foreach i ( $In4DObs )
+       set NUMFIL = `echo $i | sed 's/.*\(.\)/\1/'`
+       echo "Current domain is $NUMFIL"
+       msread MM5OBS_DOMAIN$NUMFIL $i
+       if ( $InIEEE == yes ) then
+          assign -a MM5OBS_DOMAIN$NUMFIL -Ff77 $Option  u:6$NUMFIL
+       endif
+   end
+endif
+#
+#  if input files are 32-bit IEEE:
+#
+if ( $InIEEE == yes ) then
+   assign -a BDYOUT_DOMAIN1  -Ff77 $Option  u:9
+   assign -a LOWBDY_DOMAIN1  -Ff77 $Option  u:21
+   set NUMFIL = 1
+   while ( $NUMFIL <= ${#InMM} )
+      assign -a MMINPUT_DOMAIN$NUMFIL -Ff77 $Option  u:1$NUMFIL
+      if (( $FDDAsw == Anly ) || ( $FDDAsw == Both )) then
+         assign -a MMINPUT2_DOMAIN$NUMFIL -Ff77 $Option  u:3$NUMFIL
+      endif
+      if ( $NUMFIL >= 2 ) then
+         if ( -e LOWBDY_DOMAIN$NUMFIL ) assign -a LOWBDY_DOMAIN$NUMFIL -Ff77 $Option  u:2$NUMFIL
+         if ( -e TERRAIN_DOMAIN$NUMFIL ) assign -a TERRAIN_DOMAIN$NUMFIL -Ff77 $Option  u:1$NUMFIL
+      endif
+      @ NUMFIL ++
+   end
+endif
+#
+#  RRTM_DATA is in 32-bit IEEE format, use assign on Cray
+#
+assign -a ./RRTM_DATA -Ff77 -Nieee u:20
+#
+ls -l
+#
+#       run MM5
+#
+date
+size mm5.exe
+./mm5.exe >&! mm5.print.out
+#
+#       if interactive, probably do not want to dispose files
+#
+if ( $ENVIRONMENT != BATCH ) then
+   echo -n "test mm5 run complete, continue?     (no)    "
+   set ans = "$<"
+   if (( $ans != "y" ) && ( $ans != "yes" )) then
+      exit (0)
+   endif
+endif
+#
+#       print and save the print output
+#
+cat mmlif.comment >> mm5.print.out
+ja -s >! acct
+cat acct >> mm5.print.out
+if ( $ENVIRONMENT == BATCH ) cat mm5.print.out
+#
+#       Write to MSS all output files
+#
+ls -ls
+foreach file ( MMOUT_DOMAIN* SAVE_DOMAIN* SHUTDO_DOMAIN* )
+   echo $file
+   mswrite -t $RetPd $file $OutMM/$file
+end
+#
+if ( -e fort.26 ) then
+   set NUM = 1
+   foreach file ( fort.2? )
+      mswrite -t $RetPd $file $OutMM/TIMESERIES_DOMAIN$NUM
+      @ NUM++
+   end
+endif 
+#
+# tar the source code, objects, executable, and output together
+# save the MM5 tar file on MSS
+#
+if ( $ENVIRONMENT == BATCH ) then
+   rm mm5out.tar
+   tar -cf .mm5out.tar mm5.print.out mmlif mm5.exe
+   mv .mm5out.tar mm5out.tar
+   echo " mswrite -t $RetPd mm5out.tar $OutMM/mm5out.tar "
+   mswrite -t $RetPd mm5out.tar $OutMM/mm5out.tar
+endif
+ls -ls
+
+#ENDTEMPLATE

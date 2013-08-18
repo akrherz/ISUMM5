@@ -1,0 +1,63 @@
+
+The following write statements are iterated for as many 2d arrays are
+to be put in the file:
+
+For version 0:
+
+   write (iunit) hdate, field, level, idim, jdim, llflag
+   write (iunit) startlat, startlon, deltalat, deltalon
+   write (iunit) array
+
+For version 1: (UPPERCASE indicates new with version 1)
+
+   write (iunit) IVERSION
+   write (iunit) hdate, field, UNITS, DESC, level, idim, jdim, llflag
+   write (iunit) startlat, startlon, deltalat, deltalon
+   write (iunit) array
+
+Where:
+   integer           :: iversion
+   character(len=19) :: hdate
+   character(len=8)  :: field
+   character(len=16) :: units
+   character(len=54) :: desc
+   real              :: level
+   integer           :: idim
+   integer           :: jdim
+   integer [?]       :: llflag
+   real              :: startlat
+   real              :: startlon
+   real              :: deltalat
+   real              :: deltalon
+   real, dimension(idim,jdim) :: array
+
+
+   IVERSION is an integer version number of the format
+   HDATE is a 19-character string of the form YYYY-MM-DD_hh:mm:ss
+   FIELD is an 8-character label for the field.  Labels used here are:
+          'T       ', Temperature (K)
+          'U       ', U wind component (m/s)
+          'V       '  V wind component (m/s)
+          'HGT     ', Geopotential Height (not geopotential) (m)
+          'RH      ', Relative Humidity (%)
+	  'SNOWCOVR', Snow-cover array (0/1)
+          'SST     ', Sea-surface Temperature (K)
+          'PRESSURE', Pressure (Pa) (You can tell whether it is
+                      sea-level pressure or surface pressure by
+                      checking on the value given for the pressure
+                      level.
+   UNITS is a 16-character string with the units of FIELD
+   DESC is a 54-character string describing FIELD
+   IDIM is the number of points in the I dimension.
+   JDIM is the number of points in the J dimension.
+   LEVEL is a floating-point pressure-level value, in Pa.  Special
+         values are 2013 for sea-level and 2001 for surface.
+
+   LLFLAG is a flag saying that the next record defines the lat/lon
+         grid.  Valid values have yet to be determined.
+
+   STARTLAT is the starting latitude, in degrees N
+   STARTLON is the starting longitude, in degrees E
+   DELTALAT is the latitude increment, in degrees N
+   DELTALON is the longitude increment, in degrees E
+   ARRAY is the actual 2d slab, dimensioned (IDIM,JDIM)

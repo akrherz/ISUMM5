@@ -1,0 +1,38 @@
+CSTART   mpp_mm5_10.incl
+      IF ( MPP_IO_NODE .EQ. 1 ) THEN
+        CALL RSL_OUTPUT_BUFFER_YES
+        CALL RSL_IO_NODE_YES
+      ELSE
+        CALL RSL_OUTPUT_BUFFER_NO
+        CALL RSL_IO_NODE_NO
+      ENDIF
+ 
+C this stores the values of MIX and MJX into the decomposition routine
+C see MPP/RSL/parallel_src/lb_alg.c
+      CALL STATMEM_STAT(MIX,MJX)
+      CALL RSL_MESH( NPROC_LT, NPROC_LN )
+C tell decomposition routine in lb_alg.c that this is mother domain
+      CALL INEST_STAT(1,1)
+      CALL RSL_MOTHER_DOMAIN(DOMAINS(1), RSL_168PT, IL, JL, MLOC, NLOC )
+      IDEFERR = 0
+#ifndef vpp
+      IF ( MLOC .GT. MIX+2 ) THEN
+        PRINT*,'MLOC ',MLOC,' GT ',MIX
+        IDEFERR = 1
+      ENDIF
+#endif
+      IF ( NLOC .GT. MJX+2 ) THEN
+        PRINT*,'NLOC ',NLOC,' GT ',MJX
+        IDEFERR = 1
+      ENDIF
+      IF (IDEFERR .EQ. 1) THEN
+        PRINT*,'DECOMPOSITION REQUIRES MORE LOCAL MEMORY THAN AVAIL'
+        PRINT*,'CONSIDER REDUCING PROCMIN VARS IN MAKEFILE'
+        STOP 'mpp_mm5_10.incl'
+      ENDIF
+      CALL SHOW_DOMAIN_DECOMP(DOMAINS(1))
+      CALL DEFINE_COMMS(1)
+      CALL MP_INITDOMAIN(1)
+      CALL ADDRX1C(IAXALL(1,1))
+
+CEND   mpp_mm5_10.incl

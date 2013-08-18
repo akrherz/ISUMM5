@@ -1,0 +1,2977 @@
+===================================================================
+CHANGES
+diff -r3.7 -r3.8
+6c6
+< The current release is 3.4 (November 6, 2000)
+---
+> The current release is 3.5 (December 5, 2001)
+10c10,66
+< 1. Bug fixes and updates:
+---
+> Release-3-5:
+> 
+> 1. Bug fixes:
+> 
+> - Fixed an error when using bi-linear interpolation 
+>   (or linear_interpolation = .F.) across data boundary 
+>   (such as for AVN data across Greenich or 0 longitude). 
+>   (Thanks to Todd Hutchinson of WSI.)
+> 
+>   Affected file:
+>   regridder/src/module_horiz_interp.F
+>    
+> 
+> 2. Changes and improvements:
+> 
+> - Batch deck for NCAR IBM users. (A user may choose to run REGRID
+>   interactively too by running pregrid and regridder separately.)
+> 
+> - All get data decks for IBM are available under each data directory
+>   (e.g. pregrid/nnrp/get_nnrp.deck.ibm), or in ~mesouser/MM5V3/Util/ 
+>   directory on IBM. The decks are get_x.deck.ibm, where x = nnrp for
+>   NCEP/NCAR Reanalysis, era for ECMWF reanalysis, on84 for old NCEP
+>   global analysis, ncep for new NCEP global analysis in GRIB format,
+>   and toga for ECMWF TOGA data.
+> 
+> - Allows file names to have date stamps out to minutes or seconds, if 
+>   the user requests a time interval (in seconds) that is not evenly
+>   divisible into hours or minutes.
+> 
+> - Change *.exe to ./*.exe in scripts.
+> 
+> - Pregrid: Added the snow-propagation function to ncep.grib code.
+> 
+> - Pregrid: Slight change to the iterative algorithm which computes 
+>   temperature from virtual temperature for the ON84 GDAS data set. 
+>   Stop if they don't converge.
+> 
+> - Regridder: New map routines from Brent Shaw of FSL/NOAA.
+> 
+> 
+> 3. New in V3.5:
+> 
+> - Regridder: Tropical cyclone bogussing procedure. TC added through
+>   namelist.input. 
+> 
+> - Regridder: Able to pass all 2D and 3D fields, for example, from
+>   INTERPB program which may include microphysical fields.
+> 
+> - Regridder: Able to process intermediate files produced by INTERPB
+>   (FILE_MMOUTP*) to turn one MM5 grid to another.
+>  
+> 
+> ========================================================
+> 
+> Release-3-4:
+> 
+> 1. Bug fixes and updates: 
+===================================================================
+Makefile
+diff -r3.10 -r3.11
+269c269
+< 		echo "FCFLAGS		=	-Free -X9 -Am -sc -Kfast -Kfreealloc -Karraystack3 -I../util"	>> macros_pregrid	; \
+---
+> 		echo "FCFLAGS		=	-Free -X9 -Am -sc -Kfreealloc -Karraystack3 -I../util"	>> macros_pregrid	; \
+285c285
+< 		echo "FCFLAGS		=	-Free -X9 -Am -sc -Kfast -Kfreealloc -Karraystack3"	>> macros_regridder	; \
+---
+> 		echo "FCFLAGS		=	-Free -X9 -Am -sc -Kfreealloc -Karraystack3"	>> macros_regridder	; \
+===================================================================
+README
+diff -r3.5 -r3.6
+2,3c2,3
+< VERSION 3 REGRID PROGRAM (release 3-3)
+< (Updated January 25, 2000)
+---
+> VERSION 3 REGRID PROGRAM (release 3-5)
+> (Updated December 5, 2001)
+===================================================================
+pregrid/pregrid.csh
+diff -r3.6 -r3.8
+2,20d1
+< 
+< #############################################################################
+< #############################################################################
+< ####                                                                     ####
+< ####   NOTE:  2000-06-06:                                                ####
+< ####          This version of the pregrid.csh shell script has some      ####
+< ####          differences from prior versions.  Users who are familiar   ####
+< ####          with earlier versions should pay special attention to the  ####
+< ####          use of VT3D, VTSST, VTSNOW, and VTSOIL script variables,   ####
+< ####          which are now interpreted as lists of one or more          ####
+< ####          individual Vtable files.  For further information on this  ####
+< ####          new script, see the HTML documentation files:              ####
+< ####                 REGRID/pregrid/Doc/html/how_to_use_pregrid.html     ####
+< ####                 REGRID/pregrid/Doc/html/Advanced_csh.html           ####
+< ####                                                                     ####
+< #############################################################################
+< #############################################################################
+< #
+< 
+284c265
+<     pregrid_on84.exe 
+---
+>     ./pregrid_on84.exe 
+367c348
+<     pregrid_ncep.exe 
+---
+>     ./pregrid_ncep.exe 
+418c399
+<      pregrid_navy.exe
+---
+>      ./pregrid_navy.exe
+530c511
+<      pregrid_grib.exe
+---
+>      ./pregrid_grib.exe
+===================================================================
+pregrid/Doc/html/how_to_use_pregrid.html
+diff -r1.5 -r1.6
+5c5
+<    <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; OSF1 V4.0 alpha) [Netscape]">
+---
+>    <meta name="GENERATOR" content="Mozilla/4.75 [en] (X11; U; OSF1 V4.0 alpha) [Netscape]">
+76,82c76,79
+< 
+< For notes on slightly more advanced use of the pregrid.csh shell
+<     script, go <a href="Advanced_csh.html">here</a>.  But first, read
+<     the rest of this page and be sure you understand the basic use
+<     of the pregrid.csh shell script and Vtables.
+< 
+< 
+---
+> For notes on slightly more advanced use of the pregrid.csh shell script,
+> go <a href="Advanced_csh.html">here</a>. But first, read the rest of this
+> page and be sure you understand the basic use of the pregrid.csh shell
+> script and Vtables.
+126c123
+< may be used, if you're careful.  So the statement could look like:
+---
+> may be used, if you're careful. So the statement could look like:
+154,156c151,152
+< <p>Example:&nbsp; Your SST fields come from the ON84-formatted NCEP
+< GDAS analyses.&nbsp; In this case, your set SRCSST statement would
+< look like: 
+---
+> <p>Example:&nbsp; Your SST fields come from the ON84-formatted NCEP GDAS
+> analyses.&nbsp; In this case, your set SRCSST statement would look like:
+163,167c159,162
+< <blockquote>Example:&nbsp; Your SST fields come from the ON84-formatted NCEP 
+< GDAS analyses.&nbsp;
+< You have put those analysis files in the directory /users/smith/Data, in
+< a file called ON84.DATA.&nbsp; In this case, the "set InSST" statement might
+< look like:
+---
+> <blockquote>Example:&nbsp; Your SST fields come from the ON84-formatted
+> NCEP GDAS analyses.&nbsp; You have put those analysis files in the directory
+> /users/smith/Data, in a file called ON84.DATA.&nbsp; In this case, the
+> "set InSST" statement might look like:
+173,174c168,169
+< analyses.&nbsp;&nbsp;The snow-cover field is optional in
+< mm5, so you may choose not to retrieve snow-cover data.
+---
+> analyses.&nbsp; The snow-cover field is optional in mm5, so you may choose
+> not to retrieve snow-cover data.
+182d176
+< 
+190,195c184,189
+< <br><b><font face="Courier New,Courier">VTSST</font></b>:&nbsp; The
+<       Vtables for the files specified in InSST.
+< <br><b><font face="Courier New,Courier">VTSNOW</font></b>: The Vtables for
+< the files specified in InSnow.
+< <br><b><font face="Courier New,Courier">VTSOIL</font></b>: The Vtables for
+< the files specified in InSoil.
+---
+> <br><b><font face="Courier New,Courier">VTSST</font></b>:&nbsp; The Vtables
+> for the files specified in InSST.
+> <br><b><font face="Courier New,Courier">VTSNOW</font></b>: The Vtables
+> for the files specified in InSnow.
+> <br><b><font face="Courier New,Courier">VTSOIL</font></b>: The Vtables
+> for the files specified in InSoil.
+241,242c235,236
+< printout, which may or may not be useful for diagnosing problems when
+<       pregrid fails, add the following line to the namelist:</blockquote>
+---
+> printout, which may or may not be useful for diagnosing problems when pregrid
+> fails, add the following line to the namelist:</blockquote>
+249c243
+< <p><br>TIME_ORDERED:&nbsp; Default value is .TRUE.&nbsp; If your fields
+---
+> <p><br>ORDERED_BY_DATE:&nbsp; Default value is .TRUE.&nbsp; If your fields
+253c247
+< <div class = "code">TIME_ORDERED = .FALSE.</div>
+---
+> <div class = "code">ORDERED_BY_DATE = .FALSE.</div>
+259,263c253
+< <p>
+< <!-- hhmts start -->
+< Last modified: Tue Jun  6 13:54:34 MDT 2000
+< <!-- hhmts end -->
+< </p>
+---
+> <p><!-- hhmts start -->Last modified: Tue Jun 6 13:54:34 MDT 2000<!-- hhmts end -->
+===================================================================
+pregrid/Doc/html/pregrid_changes.html
+diff -r1.3 -r1.6
+16a17,94
+> <h3>2001-09-19 (pregrid version 0.26):</h3>
+>    <ul>
+>     <li>Slight change to the iterative algorithm which computes
+>     temperature from virtual temperature for the ON84 GDAS data set.
+>     See affected file for details.
+>     <br><br>
+>     Affected files: <br>
+>        <ul><li>on84/tv_to_t.F (change the conversion algorithm, and
+> 	      stop things if they don't converge)
+>  </ul></ul>
+> 
+> 
+> 
+> <h3>2001-02-14 (pregrid version 0.25):</h3>
+>    <ul>
+>     <li> Added the snow-propagation function to ncep.grib code.  This
+> 	  function was already there for on84 code, and ported in
+> 	  pretty conveniently.<br><br>
+> 	  Affected files: <br>
+> 	  <ul><li>ncep.grib/snowprop.F (added this subroutine)<br>
+> 	  <li>ncep.grib/output.F   (write the snow-cover to a different
+> 		  file, and send information back to main routine)<br>
+>           <li>ncep.grib/pregrid_ng.F (call the new subroutine, and another call to
+> 	      delete_files)<br>
+> 	  <li>ncep.grib/Makefile   (added snowprop.o to list of object
+> 			  files)<br><br></ul>
+>     <li> Allow file names to have date stamps out to minutes or
+> 	      seconds, if the user requests a time interval (in
+> 	      seconds) that is not evenly divisible into hours or
+> 	      minutes.<br><br>
+> 	  Affected files: <br>
+> 	  <ul><li>grib.misc/pregrid_grib.F<br>
+> 	    <li>grib.misc/datint.F<br>
+> 	    <li>grib.misc/file_delete.F<br>
+> 	    <li>grib.misc/output.F<br>
+> 	    <li>grib.misc/rrpr.F<br>
+> 	    <li>ncep.grib/pregrid_ng.F<br>
+> 	    <li>ncep.grib/datint.F<br>
+> 	    <li>ncep.grib/output.F<br>
+> 	    <li>ncep.grib/sstint.F<br>
+> 	    <li>on84/pregrid_on84.F<br>
+> 	    <li>on84/datint.F<br>
+> 	    <li>on84/output.F<br>
+> 	    <li>on84/snowprop.F<br>
+> 	    <li>on84/sstint.F<br>
+> 
+> </ul></ul>
+>       
+>     
+> <h3>2000-11-07 (pregrid version 0.24):</h3>
+>    <ul>
+>     <li> For GRIB decoding routines, add a cylindrical equidistant
+> grid to lat-lon to x-y routine.<br><br> 
+> 	  Affected files: <br>
+> 	  <ul>
+> 	    gribcode.F (routine gribllxy)<br>
+> 	  </ul><br>
+>     <li> For GRIB decoding routines, define sec1(25) and sec1(26) as
+> binary flags (0=false, 1=true) for the presence of a Grid Description
+> Section (GDS) and a Bit Map Section (BMS), respectively. <br><br> 
+> 	  Affected files: <br>
+> 	  <ul>
+> 	    gribcode.F (numerous routines)<br>
+> 	  </ul><br>
+>     <li> A number of changes mostly related to predefined
+>          grids for GRIB decoding:<br><br>
+>                <ul><li>Take gclon out of the module, and use gridinfo(6) instead.
+>                  This makes for one less thing for the user to set in the
+>                  the case of predefined grids.</ul>
+> 
+>                <ul><li>Add a number of predefined grids (61, 62, 63, 64, 105)</ul>
+>                <ul><li>Add a logical variable RECOGNIZED_GRID if the grid is 
+>                  recognized, either from the GDS or from the list of 
+>                  predefined grids.</ul>
+> <br>
+> 	  Affected files: <br><ul>gribcode.F (numerous routines)<br>
+> </ul></ul>
+> 
+101c179
+< Last modified: Fri Oct 27 11:54:27 MDT 2000
+---
+> Last modified: Wed Sep 19 15:00:33 MDT 2001
+===================================================================
+pregrid/grib.misc/datint.F
+diff -r3.0 -r3.1
+1c1,18
+< subroutine datint(fuldates, nful, hstart, ntimes, idts)
+---
+> subroutine datint(fuldates, nful, hstart, ntimes, interval)
+> !                                                                             !
+> ! Recent changes:                                                             !
+> !    2001-02-14:                                                              !
+> !               - Changed the variable name IDTS to INTERVAL, just to make    !
+> !                 things a little more consistent with other routines.        !
+> !                                                                             !
+> !               - Allow file names to have date stamps out to minutes or      !
+> !                 seconds, if the user requests a time interval (in seconds)  !
+> !                 that is not evenly divisible into hours or minutes.         !
+> !                 INTERVAL is checked for divisibility into 3600 (for hours)  !
+> !                 or 60 (for minutes).  The local variable DATELEN is set     !
+> !                 to be the number of characters to use in our character      !
+> !                 dates.  Valid values for DATELEN are 13 (for hours),        !
+> !                 16 (for minutes), and 19 (for seconds).                     !
+> !                                                                             !
+> !                 This change also requires changes to pregrid_grib.F,        !
+> !                 output.F, rrpr.F, file_delete.F                             !
+6c23
+<   integer :: idts
+---
+>   integer :: interval
+20c37
+<   integer :: iful, idtsa, idtsb, ifv
+---
+>   integer :: iful, intervala, intervalb, ifv
+23a41,53
+> ! DATELEN:  length of date strings to use for our output file names.
+>   integer :: datelen
+> 
+> ! Decide the length of date strings to use for output file names.  
+> ! DATELEN is 13 for hours, 16 for minutes, and 19 for hours.
+>   if (mod(interval,3600) == 0) then
+>      datelen = 13
+>   else if (mod(interval, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   end if
+> 
+29,30c59,60
+<      call geth_newdate(hdate(1:19), hstart(1:19), (itime-1)*idts)
+<      write(*, '(/,2x,"Looking for data at time ", A13)') hdate(1:19)
+---
+>      call geth_newdate(hdate(1:19), hstart(1:19), (itime-1)*interval)
+>      write(*, '(/,2x,"Looking for data at time ", A19)') hdate(1:datelen)//"      "
+33c63
+<            write(*, '(/, 10x, "Found file:      FILE:", A13)') hdate(1:13)
+---
+>            write(*, '(/, 10x, "Found file:      FILE:", A19)') hdate(1:datelen)//"      "
+39,42c69,73
+<               &  A13,2x,"FILE:",A13)') fuldates(iful)(1:13), fuldates(iful+1)(1:13)
+<            write(*, '(10x, "Interpolating to create file:  FILE:", A13,/)') &
+<               &  hdate(1:13)
+<            call geth_idts(hdate(1:19), fuldates(iful)(1:19), idtsA)
+---
+>                 &  A19,2x,"FILE:",A19)') fuldates(iful)(1:datelen)//"      ", &
+>                 fuldates(iful+1)(1:datelen)//"      "
+>            write(*, '(10x, "Interpolating to create file:  FILE:", A19,/)') &
+>               &  hdate(1:datelen)//"      "
+>            call geth_idts(hdate(1:19), fuldates(iful)(1:19), intervalA)
+44,45c75,76
+<                           float(idtsA) / 3600.
+<            call geth_idts(fuldates(iful+1)(1:19), hdate(1:19), idtsB)
+---
+>                 float(intervalA) / 3600.
+>            call geth_idts(fuldates(iful+1)(1:19), hdate(1:19), intervalB)
+47,48c78,79
+<                           float(idtsB) / 3600.
+<            AWT = 1. - (float(idtsA)/float(idtsA+idtsB))
+---
+>                 float(intervalB) / 3600.
+>            AWT = 1. - (float(intervalA)/float(intervalA+intervalB))
+50c81
+<            open(10, file='FILE:'//fuldates(iful)(1:13), form='unformatted', &
+---
+>            open(10, file='FILE:'//fuldates(iful)(1:datelen), form='unformatted', &
+72c103
+<            open(10, file='FILE:'//fuldates(iful+1)(1:13), status='old', &
+---
+>            open(10, file='FILE:'//fuldates(iful+1)(1:datelen), status='old', &
+74c105
+<            open(11, file='FILE:'//hdate(1:13), status='new', form='unformatted')
+---
+>            open(11, file='FILE:'//hdate(1:datelen), status='new', form='unformatted')
+===================================================================
+pregrid/grib.misc/file_delete.F
+diff -r3.0 -r3.1
+1c1,15
+< subroutine file_delete(hdates, ndates, root)
+---
+> subroutine file_delete(hdates, ndates, root, interval)
+> ! Recent changes:                                                             !
+> !    2001-02-14:                                                              !
+> !               - Allow file names to have date stamps out to minutes or      !
+> !                 seconds, if the user requests a time interval (in seconds)  !
+> !                 that is evenly divisible into minutes or hours.             !
+> !                 INTERVAL is checked for divisibility into 3600 (for hours)  !
+> !                 or 60 (for minutes).  The local variable DATELEN is set     !
+> !                 to be the number of characters to use in our character      !
+> !                 dates.  Valid values for DATELEN are 13 (for hours),        !
+> !                 16 (for minutes), and 19 (for seconds).                     !
+> !                                                                             !
+> !                 This change also requires changes to pregrid_grib.F,        !
+> !                 output.F, rrpr.F, datint.F                                  !
+> 
+5a20
+>   integer :: interval
+12a28,40
+> ! DATELEN:  length of date strings to use for our output file names.
+>   integer :: datelen
+> 
+> ! Decide the length of date strings to use for output file names.  
+> ! DATELEN is 13 for hours, 16 for minutes, and 19 for hours.
+>   if (mod(interval,3600) == 0) then
+>      datelen = 13
+>   else if (mod(interval, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   end if
+> 
+18c46
+<      flnm=trim(root)//hdates(idate)(1:13)
+---
+>      flnm=trim(root)//hdates(idate)(1:datelen)
+===================================================================
+pregrid/grib.misc/output.F
+diff -r3.0 -r3.1
+1c1,16
+< subroutine output(hdate, nlvl, maxlvl, plvl, iflag)
+---
+> subroutine output(hdate, nlvl, maxlvl, plvl, interval, iflag)
+> ! Recent changes:                                                             !
+> !    2001-02-14:                                                              !
+> !               - Allow file names to have date stamps out to minutes or      !
+> !                 seconds, if the user requests a time interval (in seconds)  !
+> !                 that is evenly divisible into minutes or hours.  This       !
+> !                 change involved adding INTERVAL to the argument list.       !
+> !                 INTERVAL is checked for divisibility into 3600 (for hours)  !
+> !                 or 60 (for minutes).  The local variable DATELEN is set     !
+> !                 to be the number of characters to use in our character      !
+> !                 dates.  Valid values for DATELEN are 13 (for hours),        !
+> !                 16 (for minutes), and 19 (for seconds).                     !
+> !                                                                             !
+> !                 This change also requires changes to pregrid_grib.F,        !
+> !                 rrpr.F, datint.F, file_delete.F                             !
+> 
+18a34
+>   integer :: interval
+26a43,55
+> 
+> ! DATELEN:  length of date strings to use for our output file names.
+>   integer :: datelen
+> 
+> ! Decide the length of date strings to use for output file names.  
+> ! DATELEN is 13 for hours, 16 for minutes, and 19 for hours.
+>   if (mod(interval,3600) == 0) then
+>      datelen = 13
+>   elseif (mod(interval,60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   endif
+65c94
+<         open(iunit, file='PFILE:'//HDATE(1:13), form='unformatted', &
+---
+>         open(iunit, file='PFILE:'//HDATE(1:datelen), form='unformatted', &
+68c97
+<         filedates(nfiles)(1:13) = hdate(1:13)
+---
+>         filedates(nfiles)(1:datelen) = hdate(1:datelen)
+71,72c100,101
+<            if (hdate(1:13).eq.filedates(k)(1:13)) then
+<               open(iunit, file='PFILE:'//HDATE(1:13), form='unformatted', &
+---
+>            if (hdate(1:datelen).eq.filedates(k)(1:datelen)) then
+>               open(iunit, file='PFILE:'//HDATE(1:datelen), form='unformatted',&
+78c107
+<            open(iunit, file='PFILE:'//HDATE(1:13), form='unformatted', &
+---
+>            open(iunit, file='PFILE:'//HDATE(1:datelen), form='unformatted', &
+81c110
+<            filedates(nfiles)(1:13) = hdate(1:13)
+---
+>            filedates(nfiles)(1:datelen) = hdate(1:datelen)
+85c114
+<      open(iunit, file='FILE:'//HDATE(1:13), form='unformatted', &
+---
+>      open(iunit, file='FILE:'//HDATE(1:datelen), form='unformatted', &
+===================================================================
+pregrid/grib.misc/pregrid_grib.F
+diff -r3.7 -r3.8
+32a33,39
+> !   2001-02-14:  Allow output file names to have date stamps out to minutes   !
+> !                or seconds, if the user requests a time interval (in         !
+> !                seconds) that is not evenly divisible into hours.  For this  !
+> !                routine (pregrid_grib.F), this simply involves passing       !
+> !                the interval to routines output.F, rrpr.F, datint.F,         !
+> !                file_delete.F                                                !
+> !                                                                             !
+245c252
+<            call output(hsave, nlvl, maxlvl, plvl, 1)
+---
+>            call output(hsave, nlvl, maxlvl, plvl, interval, 1)
+289c296
+<   call file_delete(filedates, nfiles, "PFILE:")
+---
+>   call file_delete(filedates, nfiles, "PFILE:", interval)
+===================================================================
+pregrid/grib.misc/rrpr.F
+diff -r3.3 -r3.4
+1a2,22
+> !                                                                             !
+> ! In case you are wondering, RRPR stands for "Read, ReProcess, and wRite"     !
+> !                                                                             !
+> ! Recent changes:                                                             !
+> !    2001-02-14:                                                              !
+> !               - Allow file names to have date stamps out to minutes or      !
+> !                 seconds, if the user requests a time interval (in seconds)  !
+> !                 that is not evenly divisible into hours or minutes.         !
+> !                 INTERVAL is checked for divisibility into 3600 (for hours)  !
+> !                 or 60 (for minutes).  The local variable DATELEN is set     !
+> !                 to be the number of characters to use in our character      !
+> !                 dates.  Valid values for DATELEN are 13 (for hours),        !
+> !                 16 (for minutes), and 19 (for seconds).                     !
+> !                                                                             !
+> !                 This change also requires changes to pregrid_grib.F,        !
+> !                 output.F, datint.F, file_delete.F                           !
+> !                                                                             !
+> !               - Do processing not just if the requested date matches one we !
+> !                 want, but if the requested date falls between the startdate !
+> !                 and the enddate.                                            !
+> 
+8c29,30
+<   logical :: debug_print
+---
+> !------------------------------------------------------------------------------
+> ! Arguments:
+9a32
+> ! HSTART:  Starting date of times to process 
+10a34,35
+> 
+> ! NTIMES:  Number of time periods to process
+11a37,38
+> 
+> ! INTERVAL:  Time inteval (seconds) of time periods to process.
+12a40,54
+> 
+> ! NLVL:  The number of levels in the stored data.
+>   integer :: nlvl
+> 
+> ! MAXLVL: The parameterized maximum number of levels to allow.
+>   integer :: maxlvl
+> 
+> ! PLVL:  Array of pressure levels (Pa) in the dataset
+>   real , dimension(maxlvl) :: plvl
+> 
+> ! DEBUG_PRINT:  Flag to turn off or on debug printout.
+>   logical :: debug_print
+> 
+> !------------------------------------------------------------------------------
+> 
+21c63
+<   character(LEN=19) :: hdate
+---
+>   character(LEN=19) :: hdate, hend
+26,28c68,71
+<   integer nlvl
+<   integer :: maxlvl
+<   real , dimension(maxlvl) :: plvl
+---
+>   integer :: ntime, idts
+> 
+> ! DATELEN:  length of date strings to use for our output file names.
+>   integer :: datelen
+30c73,81
+<   integer ntime, idts
+---
+> ! Decide the length of date strings to use for output file names.  
+> ! DATELEN is 13 for hours, 16 for minutes, and 19 for hours.
+>   if (mod(interval,3600) == 0) then
+>      datelen = 13
+>   else if (mod(interval, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   endif
+35a87,90
+> ! Compute the ending time:
+> 
+>   call geth_newdate(hend, hstart, interval*ntimes)
+> 
+38,51c93,103
+< ! We want to do something for each of the requested times:
+<   TIMELOOP : do ntime = 1, ntimes
+<      idts = (ntime-1) * interval
+<      call geth_newdate(hdate, hstart, idts)
+<      print*, 'hstart, hdate = ', hstart, hdate, idts
+< 
+< ! Loop over the output file dates, and do stuff if the file date matches
+< ! the requested time we're working on now.
+< 
+<      FILELOOP : do n = 1, nfiles
+<         if (filedates(n)(1:13).ne.hdate(1:13)) cycle FILELOOP
+<         print*, filedates(n)(1:13)
+<         open(iunit, file='PFILE:'//filedates(n)(1:13), form='unformatted', &
+<              status='old')
+---
+> ! Loop over the output file dates, and do stuff if the file date falls
+> ! between the starting and ending times.
+> 
+>   FILELOOP : do n = 1, nfiles
+>      print*, 'hstart, hend = ', hstart//"  "//hend
+>      print*, 'filedates(n) = ', filedates(n)
+>      if (filedates(n)(1:datelen) < hstart(1:datelen)) cycle FILELOOP
+>      if (filedates(n)(1:datelen) >   hend(1:datelen)) cycle FILELOOP
+>      print*, "Doing it: ", filedates(n)(1:datelen)
+>      open(iunit, file='PFILE:'//filedates(n)(1:datelen),form='unformatted',&
+>           status='old')
+55,78c107,130
+<         rdloop: do 
+<            read (iunit, iostat=ierr) ifv
+<            if (ierr.ne.0) exit rdloop
+<            read (iunit) hdate_output, xfcst, field, units, Desc, &
+<                 level, map%nx, map%ny, map%igrid
+<            hdate = hdate_output(1:19)
+<            if (map%igrid.eq.3) then ! lamcon
+<               read (iunit) map%lat1, map%lon1, map%dx, map%dy, map%lov, &
+<                    map%truelat1, map%truelat2
+<            elseif (map%igrid.eq.5) then ! Polar Stereographic
+<               read (iunit) map%lat1, map%lon1, map%dx, map%dy, map%lov, &
+<                    map%truelat1
+<            elseif (map%igrid.eq.0)then ! lat/lon
+<               read (iunit) map%lat1, map%lon1, map%dy, map%dx
+<            else
+<               write(*,'("Unrecognized map%igrid: ", I20)') map%igrid
+<               stop
+<            endif
+< 
+<            allocate(ptr2d(map%nx,map%ny))
+<            read (iunit) ptr2d
+<            call refw_storage(nint(level), field, ptr2d, map%nx, map%ny)
+<            nullify (ptr2d)
+<         enddo rdloop
+---
+>      rdloop: do 
+>         read (iunit, iostat=ierr) ifv
+>         if (ierr.ne.0) exit rdloop
+>         read (iunit) hdate_output, xfcst, field, units, Desc, &
+>              level, map%nx, map%ny, map%igrid
+>         hdate = hdate_output(1:19)
+>         if (map%igrid.eq.3) then ! lamcon
+>            read (iunit) map%lat1, map%lon1, map%dx, map%dy, map%lov, &
+>                 map%truelat1, map%truelat2
+>         elseif (map%igrid.eq.5) then ! Polar Stereographic
+>            read (iunit) map%lat1, map%lon1, map%dx, map%dy, map%lov, &
+>                 map%truelat1
+>         elseif (map%igrid.eq.0)then ! lat/lon
+>            read (iunit) map%lat1, map%lon1, map%dy, map%dx
+>         else
+>            write(*,'("Unrecognized map%igrid: ", I20)') map%igrid
+>            stop
+>         endif
+> 
+>         allocate(ptr2d(map%nx,map%ny))
+>         read (iunit) ptr2d
+>         call refw_storage(nint(level), field, ptr2d, map%nx, map%ny)
+>         nullify (ptr2d)
+>      enddo rdloop
+82,83c134,135
+<         close(iunit)
+<         if (debug_print) call print_storage
+---
+>      close(iunit)
+>      if (debug_print) call print_storage
+91c143
+<         call get_plvls(plvl, maxlvl, nlvl)
+---
+>      call get_plvls(plvl, maxlvl, nlvl)
+95,96c147,148
+<         do k = 1, nlvl
+<            if ((plvl(k).gt.200100) .and. (plvl(k).lt.200200)) then
+---
+>      do k = 1, nlvl
+>         if ((plvl(k).gt.200100) .and. (plvl(k).lt.200200)) then
+99,103c151,155
+<               MLOOP : do m = 1, maxvar
+<                  if (is_there(nint(plvl(k)), namvar(m))) then
+<                     INLOOP : do kk = 200101, nint(plvl(k))
+<                        if (is_there(kk, namvar(m))) then
+<                           write(*, &
+---
+>            MLOOP : do m = 1, maxvar
+>               if (is_there(nint(plvl(k)), namvar(m))) then
+>                  INLOOP : do kk = 200101, nint(plvl(k))
+>                     if (is_there(kk, namvar(m))) then
+>                        write(*, &
+105,120c157,170
+<                           call get_dims(kk, namvar(m))
+<                           allocate(scr2d(map%nx,map%ny))
+<                           call get_storage &
+<                                (kk, namvar(m), scr2d, map%nx, map%ny)
+<                           call put_storage &
+<                                (200100,namvar(m), scr2d,map%nx,map%ny)
+<                           deallocate(scr2d)
+<                           EXIT INLOOP
+<                        endif
+<                     enddo INLOOP
+<                  endif
+<               enddo MLOOP
+<            endif
+<         enddo
+< 
+< 
+---
+>                        call get_dims(kk, namvar(m))
+>                        allocate(scr2d(map%nx,map%ny))
+>                        call get_storage &
+>                             (kk, namvar(m), scr2d, map%nx, map%ny)
+>                        call put_storage &
+>                             (200100,namvar(m), scr2d,map%nx,map%ny)
+>                        deallocate(scr2d)
+>                        EXIT INLOOP
+>                     endif
+>                  enddo INLOOP
+>               endif
+>            enddo MLOOP
+>         endif
+>      enddo
+124,134c174,183
+<         do k = 1, nlvl
+<            if (plvl(k).lt.200000.) then
+<               if (.not. is_there(nint(plvl(k)), 'HGT').and. &
+<                    is_there(nint(plvl(k)), 'GEOPT')) then
+<                  call get_dims(nint(plvl(k)), 'GEOPT')
+<                  allocate(scr2d(map%nx,map%ny))
+<                  call get_storage(nint(plvl(k)), 'GEOPT', scr2d, map%nx, map%ny)
+<                  scr2d = scr2d / 9.81
+<                  call put_storage(nint(plvl(k)), 'HGT',   scr2d, map%nx, map%ny)
+<                  deallocate(scr2d)
+<               endif
+---
+>      do k = 1, nlvl
+>         if (plvl(k).lt.200000.) then
+>            if (.not. is_there(nint(plvl(k)), 'HGT').and. &
+>                 is_there(nint(plvl(k)), 'GEOPT')) then
+>               call get_dims(nint(plvl(k)), 'GEOPT')
+>               allocate(scr2d(map%nx,map%ny))
+>               call get_storage(nint(plvl(k)), 'GEOPT', scr2d, map%nx, map%ny)
+>               scr2d = scr2d / 9.81
+>               call put_storage(nint(plvl(k)), 'HGT',   scr2d, map%nx, map%ny)
+>               deallocate(scr2d)
+136c185,186
+<         enddo
+---
+>         endif
+>      enddo
+140,146c190,195
+<         do k = 1, nlvl
+<            if (plvl(k).lt.200000.) then
+<               if (.not. is_there(nint(plvl(k)), 'RH').and. &
+<                    is_there(nint(plvl(k)), 'SPECHUMD')) then
+<                  call get_dims(nint(plvl(k)), 'T')
+<                  call compute_rh_spechumd_upa(map%nx, map%ny, plvl(k))
+<               endif
+---
+>      do k = 1, nlvl
+>         if (plvl(k).lt.200000.) then
+>            if (.not. is_there(nint(plvl(k)), 'RH').and. &
+>                 is_there(nint(plvl(k)), 'SPECHUMD')) then
+>               call get_dims(nint(plvl(k)), 'T')
+>               call compute_rh_spechumd_upa(map%nx, map%ny, plvl(k))
+148c197,198
+<         enddo
+---
+>         endif
+>      enddo
+153,159c203,208
+<         do k = 1, nlvl
+<            if (plvl(k).lt.200000.) then
+<               if (.not. is_there(nint(plvl(k)),'RH').and. &
+<                    is_there(nint(plvl(k)),'VAPP')) then
+<                  call get_dims(nint(plvl(k)),'T')
+<                  call compute_rh_vapp_upa(map%nx, map%ny, plvl(k))
+<               endif
+---
+>      do k = 1, nlvl
+>         if (plvl(k).lt.200000.) then
+>            if (.not. is_there(nint(plvl(k)),'RH').and. &
+>                 is_there(nint(plvl(k)),'VAPP')) then
+>               call get_dims(nint(plvl(k)),'T')
+>               call compute_rh_vapp_upa(map%nx, map%ny, plvl(k))
+161c210,211
+<         enddo
+---
+>         endif
+>      enddo
+165,171c215,220
+<         do k = 1, nlvl
+<            if (plvl(k).lt.200000.) then
+<               if (.not. is_there(nint(plvl(k)),'RH').and. &
+<                    is_there(nint(plvl(k)),'DEPR')) then
+<                  call get_dims(nint(plvl(k)),'T')
+<                  call compute_rh_depr(map%nx, map%ny, plvl(k))
+<               endif
+---
+>      do k = 1, nlvl
+>         if (plvl(k).lt.200000.) then
+>            if (.not. is_there(nint(plvl(k)),'RH').and. &
+>                 is_there(nint(plvl(k)),'DEPR')) then
+>               call get_dims(nint(plvl(k)),'T')
+>               call compute_rh_depr(map%nx, map%ny, plvl(k))
+173c222,223
+<         enddo
+---
+>         endif
+>      enddo
+182,189c232,238
+<         do k = 2, nlvl-1, 1
+<            if (plvl(k-1) .lt. 200000.) then
+<               if ( (.not. is_there(nint(plvl(k)),'RH')) .and. &
+<                    ( is_there(nint(plvl(k-1)), 'RH')) .and.&
+<                    ( is_there(nint(plvl(k+1)), 'RH')) ) then
+<                  call get_dims(nint(plvl(k+1)), 'RH')
+<                  call vntrp(plvl, maxlvl, k, "RH      ", map%nx, map%ny)
+<               endif
+---
+>      do k = 2, nlvl-1, 1
+>         if (plvl(k-1) .lt. 200000.) then
+>            if ( (.not. is_there(nint(plvl(k)),'RH')) .and. &
+>                 ( is_there(nint(plvl(k-1)), 'RH')) .and.&
+>                 ( is_there(nint(plvl(k+1)), 'RH')) ) then
+>               call get_dims(nint(plvl(k+1)), 'RH')
+>               call vntrp(plvl, maxlvl, k, "RH      ", map%nx, map%ny)
+191c240,241
+<         enddo
+---
+>         endif
+>      enddo
+196,205c246,254
+<         if (is_there(30000, 'RH')) then
+<            call get_dims(30000, 'RH')
+<            allocate(scr2d(map%nx,map%ny))
+<            scr2d = 10.
+< 
+<            do k = 1, nlvl
+<               if (plvl(k).lt.30000.) then
+<                  if (.not. is_there(nint(plvl(k)), 'RH')) then
+<                     call put_storage(nint(plvl(k)),'RH',scr2d,map%nx,map%ny)
+<                  endif
+---
+>      if (is_there(30000, 'RH')) then
+>         call get_dims(30000, 'RH')
+>         allocate(scr2d(map%nx,map%ny))
+>         scr2d = 10.
+> 
+>         do k = 1, nlvl
+>            if (plvl(k).lt.30000.) then
+>               if (.not. is_there(nint(plvl(k)), 'RH')) then
+>                  call put_storage(nint(plvl(k)),'RH',scr2d,map%nx,map%ny)
+207,209c256,259
+<            enddo
+<            deallocate(scr2d)
+<         endif
+---
+>            endif
+>         enddo
+>         deallocate(scr2d)
+>      endif
+214,228c264,277
+<         if (.not. is_there (200100, 'RH')) then
+<            if (is_there(200100, 'T').and. &
+<                 is_there(200100, 'PSFC'    )   .and. &
+<                 is_there(200100, 'SPECHUMD')) then
+<               call get_dims(200100, 'T')
+<               call compute_rh_spechumd(map%nx, map%ny)
+<            elseif (is_there(200100, 'T'       ).and. &
+<                 is_there(200100, 'DEWPT')) then
+<               call get_dims(200100, 'T')
+<               call compute_rh_dewpt(map%nx, map%ny)
+<            elseif (is_there(200100, 'T').and. &
+<                 is_there(200100, 'DEPR')) then
+<               call get_dims(200100, 'T')
+<               call compute_rh_depr(map%nx, map%ny, 200100.)
+<            endif
+---
+>      if (.not. is_there (200100, 'RH')) then
+>         if (is_there(200100, 'T').and. &
+>              is_there(200100, 'PSFC'    )   .and. &
+>              is_there(200100, 'SPECHUMD')) then
+>            call get_dims(200100, 'T')
+>            call compute_rh_spechumd(map%nx, map%ny)
+>         elseif (is_there(200100, 'T'       ).and. &
+>              is_there(200100, 'DEWPT')) then
+>            call get_dims(200100, 'T')
+>            call compute_rh_dewpt(map%nx, map%ny)
+>         elseif (is_there(200100, 'T').and. &
+>              is_there(200100, 'DEPR')) then
+>            call get_dims(200100, 'T')
+>            call compute_rh_depr(map%nx, map%ny, 200100.)
+229a279
+>      endif
+233,236c283,286
+<         if (is_there(200100, 'SEAICE')) then
+<            call get_dims(200100, 'SEAICE')
+<            call make_zero_or_one(map%nx, map%ny)
+<         endif
+---
+>      if (is_there(200100, 'SEAICE')) then
+>         call get_dims(200100, 'SEAICE')
+>         call make_zero_or_one(map%nx, map%ny)
+>      endif
+239,243c289,291
+<         call output(hdate, nlvl, maxlvl, plvl, 2)
+<         call clear_storage
+<         exit FILELOOP
+<      enddo FILELOOP
+<    enddo TIMELOOP
+---
+>      call output(hdate, nlvl, maxlvl, plvl, interval, 2)
+>      call clear_storage
+>   enddo FILELOOP
+===================================================================
+pregrid/ncep.grib/Makefile
+diff -r3.2 -r3.3
+7c7
+<         sstint.o  datint.o rd_grib.o
+---
+>         sstint.o  datint.o rd_grib.o snowprop.o
+===================================================================
+pregrid/ncep.grib/datint.F
+diff -r3.1 -r3.2
+1a2,8
+> 
+> ! Recent changes:                                                             !
+> !    2001-02-14:                                                              !
+> !               - Allow file names to have date stamps out to minutes or      !
+> !                 seconds, if the user requests a time interval (in seconds)  !
+> !                 that is not evenly divisible into hours or minutes.         !
+> 
+15a23,32
+>   integer :: datelen
+> 
+>   if (mod(delta_time, 3600) == 0) then
+>      datelen = 13
+>   else if (mod(delta_time, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   endif
+> 
+26c43
+<            open(10, file='PNG:'//hdate(1:13), status='old', &
+---
+>            open(10, file='PNG:'//hdate(1:datelen), status='old', &
+29c46
+<            open(11, file='NCEP:'//hdate(1:13), form='unformatted')
+---
+>            open(11, file='NCEP:'//hdate(1:datelen), form='unformatted')
+60c77
+<            open(11, file='NCEP:'//hdate(1:13), form='unformatted')
+---
+>            open(11, file='NCEP:'//hdate(1:datelen), form='unformatted')
+62c79
+<            open(10, file='PNG:'//fuldates(iful)(1:13), status='old', &
+---
+>            open(10, file='PNG:'//fuldates(iful)(1:datelen), status='old', &
+75c92
+<            open(10, file='PNG:'//fuldates(iful+1)(1:13), status='old', &
+---
+>            open(10, file='PNG:'//fuldates(iful+1)(1:datelen), status='old', &
+===================================================================
+pregrid/ncep.grib/output.F
+diff -r3.2 -r3.3
+1c1,2
+< subroutine output(scr2d, hdate, n2lat, nlvl, plvl, maxlvl, sstdates, nsst, fuldates, nful)
+---
+> subroutine output(scr2d, hdate, n2lat, nlvl, plvl, maxlvl, sstdates, nsst, &
+>      snowdates, nsnow, fuldates, nful, delta_time)
+2a4,11
+> !   2001-02-14:  Allow output file names to have date stamps out to minutes   !
+> !                or seconds, if the user requests a time interval (in         !
+> !                seconds) that is not evenly divisible into hours or minutes. !
+> !                                                                             !
+> !   2001-02-14:  Output the snow into PSNOW files, and send the snow date     !
+> !                information back to the calling routine.                     !
+> !                                                                             !
+> !                                                                             !
+10a20
+>   integer :: delta_time
+12,13c22,23
+<   integer :: nsst, nful
+<   character(len=19) :: hdate, sstdates(1000), fuldates(1000)
+---
+>   integer :: nsst, nful, nsnow
+>   character(len=19) :: hdate, sstdates(1000), fuldates(1000), snowdates(1000)
+27a38,48
+>   integer :: datelen
+> 
+>   if (mod(delta_time, 3600) == 0) then
+>      datelen = 13
+>   else if (mod(delta_time, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   endif
+> 
+> 
+81c102
+<      open(iunit, file='PNG:'//HDATE(1:13), form='unformatted')
+---
+>      open(iunit, file='PNG:'//HDATE(1:datelen), form='unformatted')
+94c115
+<               open(sunit, file='PSST:'//HDATE(1:13), form='unformatted')
+---
+>               open(sunit, file='PSST:'//HDATE(1:datelen), form='unformatted')
+105,106c126,128
+<               open(sunit, file='SNOW:'//HDATE(1:13), form='unformatted')
+< !  PREGRID Format Version 2, 3:
+---
+>               open(sunit, file='PSNOW:'//HDATE(1:datelen), form='unformatted')
+>               nsnow = nsnow+1
+>               snowdates(nsnow) = hdate
+===================================================================
+pregrid/ncep.grib/pregrid_ng.F
+diff -r3.3 -r3.4
+3,4c3,14
+< !   2000-08-31:  Allow the program to recognize SKINTEMP as something to be   !
+< !                used as a sea-surface temperature.                           !
+---
+> !                                                                             !
+> !   2001-02-14:                                                               !
+> !               - Allow file names to have date stamps out to minutes or      !
+> !                 seconds, if the user requests a time interval (in seconds)  !
+> !                 that is not evenly divisible into hours or minutes.         !
+> !                                                                             !
+> !   2001-02-14:                                                               !
+> !               - Propagate snow-cover data forward in time as necessary      !
+> !                                                                             !
+> !   2000-08-31:                                                               !
+> !               - Allow the program to recognize SKINTEMP as something to be  !
+> !                 used as a sea-surface temperature.                          !
+18,19c28,29
+<   character(len=19),  dimension(1000) :: sstdates, fuldates
+<   integer :: nsst=0, nful=0
+---
+>   character(len=19),  dimension(1000) :: sstdates, snowdates, fuldates
+>   integer :: nsst=0, nful=0, nsnow=0
+125,126c135,136
+<            call output(scratch, hsave, n2lat, nlvl, plvl, maxlvl, sstdates, nsst, fuldates, &
+<                 nful)
+---
+>            call output(scratch, hsave, n2lat, nlvl, plvl, maxlvl, sstdates, nsst, &
+>                 snowdates, nsnow, fuldates, nful, interval)
+161a172,174
+>      else if (nameout(n).eq.'WEASD   ') then
+>         ! Propagate the snow-cover data forward in time
+>         call snowprop(hstart, ntimes, interval, snowdates, nsnow)
+174,175c187,189
+<   call file_delete(fuldates, nful, "PNG:")
+<   call file_delete(sstdates, nsst, "PSST:")
+---
+>   call file_delete(fuldates, nful, "PNG:", interval)
+>   call file_delete(sstdates, nsst, "PSST:", interval)
+>   call file_delete(snowdates, nsnow, "PSNOW:", interval)
+186c200,207
+< subroutine file_delete(hdates, ndates, root)
+---
+> subroutine file_delete(hdates, ndates, root, interval)
+> ! Recent changes:                                                             !
+> !                                                                             !
+> !    2001-02-14:                                                              !
+> !               - Allow file names to have date stamps out to minutes or      !
+> !                 seconds, if the user requests a time interval (in seconds)  !
+> !                 that is not evenly divisible into hours or minutes.         !
+> 
+196a218,228
+>   integer :: interval
+>   integer :: datelen
+> 
+>   if (mod(interval, 3600) == 0) then
+>      datelen = 13
+>   else if (mod(interval, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   endif
+> 
+199c231
+<      flnm=trim(root)//hdates(idate)(1:13)
+---
+>      flnm=trim(root)//hdates(idate)(1:datelen)
+===================================================================
+pregrid/ncep.grib/sstint.F
+diff -r3.0 -r3.1
+1a2,6
+> ! Recent changes:                                                             !
+> !   2001-02-14:  Allow output file names to have date stamps out to minutes   !
+> !                or seconds, if the user requests a time interval (in         !
+> !                seconds) that is not evenly divisible into hours or minutes. !
+> !                                                                             !
+27a33,42
+>   integer :: datelen
+> 
+>   if (mod(delta_time, 3600) == 0) then
+>      datelen = 13
+>   else if (mod(delta_time, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   endif
+> 
+42c57
+<      write(*, '(2x,''Looking for SST at time '', A13,/)') reqdate(n)(1:13)
+---
+>      write(*, '(2x,''Looking for SST at time '', A19,/)') reqdate(n)(1:datelen)//"      "
+44c59
+<         write(*, '(5x,''sstdates = '', A13)') sstdates(isb)(1:13)
+---
+>         write(*, '(5x,''sstdates = '', A19)') sstdates(isb)(1:datelen)//"      "
+46c61
+<            open(15, file='PSST:'//sstdates(isb)(1:13), form='unformatted')
+---
+>            open(15, file='PSST:'//sstdates(isb)(1:datelen), form='unformatted')
+52,54c67,71
+<            write(*, '(/, 10x, ''Found file:     PSST:'', A13)') sstdates(isb)(1:13)
+<            write(*, '(   10x, ''Copying to file: SST:'', A13,//)') reqdate(n)(1:13)
+<            open(unit=13,file='SST:'//reqdate(n)(1:13), status='new', &
+---
+>            write(*, '(/, 10x, ''Found file:     PSST:'', A19)')  &
+>                 sstdates(isb)(1:datelen)//"      "
+>            write(*, '(   10x, ''Copying to file: SST:'', A19,//)') &
+>                 reqdate(n)(1:datelen)//"      "
+>            open(unit=13,file='SST:'//reqdate(n)(1:datelen), status='new', &
+67,70c84,88
+<               &  A13,2x,''PSST:'',A13)') sstdates(isb)(1:13), sstdates(isb+1)(1:13)
+<            write(*, '(10x, ''Interpolating to create file:  SST:'', A13,/)') &
+<               &  reqdate(n)(1:13)
+<            open(15, file='PSST:'//sstdates(isb)(1:13), form='unformatted')
+---
+>               &  A19,2x,''PSST:'',A19)') sstdates(isb)(1:datelen)//"      ",&
+>               sstdates(isb+1)(1:datelen)//"      "
+>            write(*, '(10x, ''Interpolating to create file:  SST:'', A19,/)') &
+>               &  reqdate(n)(1:datelen)//"      "
+>            open(15, file='PSST:'//sstdates(isb)(1:datelen), form='unformatted')
+76c94
+<            open(15, file='PSST:'//sstdates(isb+1)(1:13), form='unformatted')
+---
+>            open(15, file='PSST:'//sstdates(isb+1)(1:datelen), form='unformatted')
+93c111
+<            open(unit=13, file='SST:'//reqdate(n)(1:13), form='unformatted')
+---
+>            open(unit=13, file='SST:'//reqdate(n)(1:datelen), form='unformatted')
+101c119,120
+<            write(*, '(/,10x,''New file created:  SST:'', A13,//)') reqdate(n)(1:13)
+---
+>            write(*, '(/,10x,''New file created:  SST:'', A19,//)') &
+>                 reqdate(n)(1:datelen)//"      "
+===================================================================
+pregrid/on84/datint.F
+diff -r3.0 -r3.1
+1a2,13
+> ! Recent changes:                                                             !
+> !    2001-02-14:                                                              !
+> !                                                                             !
+> !             - Allow file names to have date stamps out to minutes or        !
+> !               seconds, if the user requests a time interval (in seconds)    !
+> !               that is not evenly divisible into hours or minutes.  Argument !
+> !               DELTA_TIME is checked for divisibility into 3600 (for hours)  !
+> !               or 60 (for minutes).  The local variable DATELEN is set       !
+> !               to be the number of characters to use in our character        !
+> !               dates.  Valid values for DATELEN are 13 (for hours),          !
+> !               16 (for minutes), and 19 (for seconds).                       !
+> !                                                                             !
+15a28,38
+>   integer :: datelen
+> 
+>   if (mod(delta_time, 3600) == 0) then
+>      datelen = 13
+>   else if (mod(delta_time, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   endif
+> 
+> 
+23c46
+<      write(*, '(2x,''Looking for data at time '', A13,/)') hdate(1:13)
+---
+>      write(*, '(2x,''Looking for data at time '', A19,/)') hdate(1:datelen)//"      "
+26,27c49,52
+<            write(*, '(/, 10x, ''Found file:     PON84:'', A13)') hdate(1:13)
+<            write(*, '(   10x, ''Copying to file: ON84:'', A13,//)') hdate(1:13)
+---
+>            write(*, '(/, 10x, ''Found file:     PON84:'', A19)') &
+>                 hdate(1:datelen)//"      "
+>            write(*, '(   10x, ''Copying to file: ON84:'', A19,//)') &
+>                 hdate(1:datelen)//"      "
+29c54
+<            open(10, file='PON84:'//hdate(1:13), form='unformatted', status='old')
+---
+>            open(10, file='PON84:'//hdate(1:datelen), form='unformatted', status='old')
+31c56
+<            open(11, file='ON84:'//hdate(1:13), status='new', &
+---
+>            open(11, file='ON84:'//hdate(1:datelen), status='new', &
+53,55c78,81
+<               &  A13,2x,''PON84:'',A13)') fuldates(iful)(1:13), fuldates(iful+1)(1:13)
+<            write(*, '(10x, ''Interpolating to create file:  ON84:'', A13,/)') &
+<               &  hdate(1:13)
+---
+>               &  A19,2x,''PON84:'',A19)') fuldates(iful)(1:datelen)//"      ",&
+>               fuldates(iful+1)(1:datelen)//"      "
+>            write(*, '(10x, ''Interpolating to create file:  ON84:'', A19,/)') &
+>               &  hdate(1:datelen)//"      "
+64c90
+<            open(10, file='PON84:'//fuldates(iful)(1:13), form='unformatted', &
+---
+>            open(10, file='PON84:'//fuldates(iful)(1:datelen), form='unformatted', &
+78c104
+<            open(10, file='PON84:'//fuldates(iful+1)(1:13), status='old', &
+---
+>            open(10, file='PON84:'//fuldates(iful+1)(1:datelen), status='old', &
+80c106
+<            open(11, file='ON84:'//hdate(1:13), status='new', form='unformatted')
+---
+>            open(11, file='ON84:'//hdate(1:datelen), status='new', form='unformatted')
+===================================================================
+pregrid/on84/get_on84.csh
+diff -r3.2 -r3.3
+51c51
+<    { hold = \$2
+---
+>    { hold = \$2 }
+===================================================================
+pregrid/on84/get_on84.deck
+diff -r3.3 -r3.4
+80c80
+<    { hold = \$2
+---
+>    { hold = \$2 }
+===================================================================
+pregrid/on84/output.F
+diff -r3.0 -r3.1
+2c2,15
+<      plvl, maxlvl, snowdates, nsnow, fuldates, nful)
+---
+>      plvl, maxlvl, snowdates, nsnow, fuldates, nful, delta_time)
+> ! Recent changes:                                                             !
+> !    2001-02-14:                                                              !
+> !                                                                             !
+> !             - Allow file names to have date stamps out to minutes or        !
+> !               seconds, if the user requests a time interval (in seconds)    !
+> !               that is not evenly divisible into hours or minutes.  Argument !
+> !               DELTA_TIME is checked for divisibility into 3600 (for hours)  !
+> !               or 60 (for minutes).  The local variable DATELEN is set       !
+> !               to be the number of characters to use in our character        !
+> !               dates.  Valid values for DATELEN are 13 (for hours),          !
+> !               16 (for minutes), and 19 (for seconds).                       !
+> !                                                                             !
+> 
+19a33
+>   integer :: delta_time
+27a42,51
+>   integer :: datelen
+> 
+>   if (mod(delta_time, 3600) == 0) then
+>      datelen = 13
+>   else if (mod(delta_time, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   endif
+> 
+82c106
+<      open(iunit, file='PON84:'//HDATE(1:13), form='unformatted')
+---
+>      open(iunit, file='PON84:'//HDATE(1:datelen), form='unformatted')
+95c119
+<               open(sunit, file='PSST:'//HDATE(1:13), form='unformatted')
+---
+>               open(sunit, file='PSST:'//HDATE(1:datelen), form='unformatted')
+108c132
+<               open(sunit, file='PSNOW:'//HDATE(1:13), form='unformatted')
+---
+>               open(sunit, file='PSNOW:'//HDATE(1:datelen), form='unformatted')
+===================================================================
+pregrid/on84/pregrid_on84.F
+diff -r3.1 -r3.2
+20a21,28
+> ! Recent changes:                                                             !
+> !    2001-02-14:                                                              !
+> !                                                                             !
+> !               - Allow file names to have date stamps out to minutes or      !
+> !                 seconds, if the user requests a time interval (in seconds)  !
+> !                 that is not evenly divisible into hours or minutes.         !
+> 
+> 
+151c159
+<                 plvl, maxlvl, snowdates, nsnow, fuldates, nful)
+---
+>                 plvl, maxlvl, snowdates, nsnow, fuldates, nful, interval)
+156c164
+<               call file_delete(snowdates(1), 1, "PSNOW:")
+---
+>               call file_delete(snowdates(1), 1, "PSNOW:", interval)
+166c174
+<               call file_delete(sstdates(1), 1, "PSST:")
+---
+>               call file_delete(sstdates(1), 1, "PSST:", interval)
+219,221c227,229
+<   call file_delete(fuldates, nful, "PON84:")
+<   call file_delete(sstdates, nsst, "PSST:")
+<   call file_delete(snowdates, nsnow, "PSNOW:")
+---
+>   call file_delete(fuldates, nful, "PON84:", interval)
+>   call file_delete(sstdates, nsst, "PSST:", interval)
+>   call file_delete(snowdates, nsnow, "PSNOW:", interval)
+232c240,252
+< subroutine file_delete(hdates, ndates, root)
+---
+> subroutine file_delete(hdates, ndates, root, delta_time)
+> ! Recent changes:                                                             !
+> !    2001-02-14:                                                              !
+> !                                                                             !
+> !             - Allow file names to have date stamps out to minutes or        !
+> !               seconds, if the user requests a time interval (in seconds)    !
+> !               that is not evenly divisible into hours or minutes.  Argument !
+> !               DELTA_TIME is checked for divisibility into 3600 (for hours)  !
+> !               or 60 (for minutes).  The local variable DATELEN is set       !
+> !               to be the number of characters to use in our character        !
+> !               dates.  Valid values for DATELEN are 13 (for hours),          !
+> !               16 (for minutes), and 19 (for seconds).                       !
+> !                                                                             !
+243a264,274
+>   integer :: delta_time
+>   integer :: datelen
+> 
+>   if (mod(delta_time, 3600) == 0) then
+>      datelen = 13
+>   else if (mod(delta_time, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   endif
+> 
+245c276
+<      flnm=trim(root)//hdates(idate)(1:13)
+---
+>      flnm=trim(root)//hdates(idate)(1:datelen)
+===================================================================
+pregrid/on84/snowprop.F
+diff -r3.0 -r3.1
+1a2,13
+> ! Recent changes:                                                             !
+> !    2001-02-14:                                                              !
+> !                                                                             !
+> !             - Allow file names to have date stamps out to minutes or        !
+> !               seconds, if the user requests a time interval (in seconds)    !
+> !               that is not evenly divisible into minutes or hours.  Argument !
+> !               DELTA_TIME is checked for divisibility into 3600 (for hours)  !
+> !               or 60 (for minutes).  The local variable DATELEN is set       !
+> !               to be the number of characters to use in our character        !
+> !               dates.  Valid values for DATELEN are 13 (for hours),          !
+> !               16 (for minutes), and 19 (for seconds).                       !
+> !                                                                             !
+3c15
+<   integer ntimes, nsnow, delta_time
+---
+>   integer :: ntimes, nsnow, delta_time
+24a37,47
+>   integer :: datelen
+> 
+>   if (mod(delta_time, 3600) == 0) then
+>      datelen = 13
+>   else if (mod(delta_time, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   endif
+> 
+> 
+38c61
+<      write(*, '(2x,"Looking for SNOW at time ", A13,/)') reqdate(n)(1:13)
+---
+>      write(*, '(2x,"Looking for SNOW at time ", A19,/)') reqdate(n)(1:datelen)//"      "
+40c63
+<         write(*, '(5x,"snowdates = ", A13)') snowdates(isb)(1:13)
+---
+>         write(*, '(5x,"snowdates = ", A19)') snowdates(isb)(1:datelen)//"      "
+42c65
+<            open(15, file='PSNOW:'//snowdates(isb)(1:13), form='unformatted')
+---
+>            open(15, file='PSNOW:'//snowdates(isb)(1:datelen), form='unformatted')
+48,50c71,75
+<            write(*, '(/, 10x, "Found file:     PSNOW:", A13)') snowdates(isb)(1:13)
+<            write(*, '(   10x, "Copying to file: SNOW:", A13,//)') reqdate(n)(1:13)
+<            open(unit=13,file='SNOW:'//reqdate(n)(1:13), status='new', &
+---
+>            write(*, '(/, 10x, "Found file:     PSNOW:", A19)') &
+>                 snowdates(isb)(1:datelen)//"      "
+>            write(*, '(   10x, "Copying to file: SNOW:", A19,//)') &
+>                 reqdate(n)(1:datelen)//"      "
+>            open(unit=13,file='SNOW:'//reqdate(n)(1:datelen), status='new', &
+62,63c87,88
+<            write(*,'(/, 10x,"Found appropriate SNOW file:  PSNOW:",A13)') &
+<                 snowdates(isb)(1:13)
+---
+>            write(*,'(/, 10x,"Found appropriate SNOW file:  PSNOW:",A19)') &
+>                 snowdates(isb)(1:datelen)//"      "
+66,67c91,92
+<                 & A13,/)') reqdate(n)(1:13)
+<            open(15, file='PSNOW:'//snowdates(isb)(1:13), form='unformatted')
+---
+>                 & A19,/)') reqdate(n)(1:datelen)//"      "
+>            open(15, file='PSNOW:'//snowdates(isb)(1:datelen), form='unformatted')
+75c100
+<            open(unit=13, file='SNOW:'//reqdate(n)(1:13), form='unformatted')
+---
+>            open(unit=13, file='SNOW:'//reqdate(n)(1:datelen), form='unformatted')
+83c108,109
+<            write(*, '(/,10x,"New file created:  SNOW:", A13,//)') reqdate(n)(1:13)
+---
+>            write(*, '(/,10x,"New file created:  SNOW:", A19,//)') &
+>                 reqdate(n)(1:datelen)//"      "
+88,89c114,115
+<            write(*,'("No snow cover data found appropriate for date ", A13)')&
+<                 reqdate(n)(1:13)
+---
+>            write(*,'("No snow cover data found appropriate for date ", A19)')&
+>                 reqdate(n)(1:datelen)//"      "
+===================================================================
+pregrid/on84/sstint.F
+diff -r3.0 -r3.1
+1a2,14
+> ! Recent changes:                                                             !
+> !    2001-02-14:                                                              !
+> !                                                                             !
+> !             - Allow file names to have date stamps out to minutes or        !
+> !               seconds, if the user requests a time interval (in seconds)    !
+> !               that is not evenly divisible into hours or minutes.  Argument !
+> !               DELTA_TIME is checked for divisibility into 3600 (for hours)  !
+> !               or 60 (for minutes).  The local variable DATELEN is set       !
+> !               to be the number of characters to use in our character        !
+> !               dates.  Valid values for DATELEN are 13 (for hours),          !
+> !               16 (for minutes), and 19 (for seconds).                       !
+> !                                                                             !
+> 
+3c16
+<   integer ntimes, nsst, delta_time
+---
+>   integer :: ntimes, nsst, delta_time
+27a41,50
+>   integer :: datelen
+> 
+>   if (mod(delta_time, 3600) == 0) then
+>      datelen = 13
+>   else if (mod(delta_time, 60) == 0) then
+>      datelen = 16
+>   else
+>      datelen = 19
+>   endif
+> 
+42c65
+<      write(*, '(2x,''Looking for SST at time '', A13,/)') reqdate(n)(1:13)
+---
+>      write(*, '(2x,''Looking for SST at time '', A19,/)') reqdate(n)(1:datelen)
+44c67
+<         write(*, '(5x,''sstdates = '', A13)') sstdates(isb)(1:13)
+---
+>         write(*, '(5x,''sstdates = '', A19)') sstdates(isb)(1:datelen)
+46c69
+<            open(15, file='PSST:'//sstdates(isb)(1:13), form='unformatted')
+---
+>            open(15, file='PSST:'//sstdates(isb)(1:datelen), form='unformatted')
+52,54c75,79
+<            write(*, '(/, 10x, ''Found file:     PSST:'', A13)') sstdates(isb)(1:13)
+<            write(*, '(   10x, ''Copying to file: SST:'', A13,//)') reqdate(n)(1:13)
+<            open(unit=13,file='SST:'//reqdate(n)(1:13), status='new', &
+---
+>            write(*, '(/, 10x, ''Found file:     PSST:'', A19)') &
+>                 sstdates(isb)(1:datelen)//"      "
+>            write(*, '(   10x, ''Copying to file: SST:'', A19,//)') &
+>                 reqdate(n)(1:datelen)//"      "
+>            open(unit=13,file='SST:'//reqdate(n)(1:datelen), status='new', &
+67,70c92,96
+<               &  A13,2x,''PSST:'',A13)') sstdates(isb)(1:13), sstdates(isb+1)(1:13)
+<            write(*, '(10x, ''Interpolating to create file:  SST:'', A13,/)') &
+<               &  reqdate(n)(1:13)
+<            open(15, file='PSST:'//sstdates(isb)(1:13), form='unformatted')
+---
+>               &  A19,2x,''PSST:'',A19)') sstdates(isb)(1:datelen)//"      ", &
+>               sstdates(isb+1)(1:datelen)//"      "
+>            write(*, '(10x, ''Interpolating to create file:  SST:'', A19,/)') &
+>               &  reqdate(n)(1:datelen)//"      "
+>            open(15, file='PSST:'//sstdates(isb)(1:datelen), form='unformatted')
+76c102
+<            open(15, file='PSST:'//sstdates(isb+1)(1:13), form='unformatted')
+---
+>            open(15, file='PSST:'//sstdates(isb+1)(1:datelen), form='unformatted')
+93c119
+<            open(unit=13, file='SST:'//reqdate(n)(1:13), form='unformatted')
+---
+>            open(unit=13, file='SST:'//reqdate(n)(1:datelen), form='unformatted')
+101c127,128
+<            write(*, '(/,10x,''New file created:  SST:'', A13,//)') reqdate(n)(1:13)
+---
+>            write(*, '(/,10x,''New file created:  SST:'', A19,//)') &
+>                 reqdate(n)(1:datelen)//"      "
+117d143
+< 
+===================================================================
+pregrid/on84/tv_to_t.F
+diff -r3.0 -r3.1
+1a2,10
+> ! Changes:
+> ! 2001-09-19 (KWM):
+> !    Slight change to the iterative algorithm which computes temperature
+> !    from virtual temperature.  We ran into a situation where it would
+> !    not converge.  The original algorithm updated t1 at the end of 
+> !    each iteration by "t1=t2".  In the particular situation we ran into, 
+> !    this was bouncing hither and yon and never converging.  Changing that
+> !    update to "t1 = 0.5*(t1+t2)" seems to control that, and we get 
+> !    convergence.
+24c33
+< 		
+---
+> 
+34,45c43,53
+< 5          continue
+<            es=svp1*exp(svp2*(t1-svpt0)/(t1-svp3))
+<            ws=eps*es/(p(i,j)-es)
+<            w=amax1(0.01*rh(i,j)*ws,0.0)
+<            t2=t(i,j)/(1+0.61*w)
+<            dt=t1-t2
+<            if(abs(dt).gt.0.1) then
+<               t1=t2
+<               go to 5
+<            else
+<               t(i,j)=t2
+<            endif
+---
+>            converge : do ll = 1, 100
+>               es=svp1*exp(svp2*(t1-svpt0)/(t1-svp3))
+>               ws=eps*es/(p(i,j)-es)
+>               w=amax1(0.01*rh(i,j)*ws,0.0)
+>               t2=t(i,j)/(1+0.61*w)
+>               dt=t1-t2
+>               if (abs(dt) .le. 0.005) exit converge
+>               t1=0.5*(t1+t2)
+>               if (ll == 100) stop "PROBLEM CONVERGING IN TV_TO_T."
+>            enddo converge
+>            t(i,j) = t2
+===================================================================
+pregrid/util/gribcode.F
+diff -r3.6 -r3.7
+15a16,33
+> !    2000-11-07:
+> !
+> !               - Add a cylindrical equidistant grid to gribllxy
+> !
+> !               - Define sec1(25) and sec1(26) as binary flags 
+> !                 (0=false, 1=true) for the presence of a GDS and a BMS,
+> !                 respectively.  
+> !
+> !               - Take gclon out of the module, and use gridinfo(6) instead.
+> !                 This makes for one less thing for the user to set in the
+> !                 the case of predefined grids.
+> !
+> !               - Add a number of predefined grids (61, 62, 63, 64, 105)
+> ! 
+> !               - Add a logical variable RECOGNIZED_GRID if the grid is 
+> !                 recognized, either from the GDS or from the list of 
+> !                 predefined grids.
+> !
+36c54
+< !  SUBROUTINE GRIBHEADER                                                      !
+---
+> !  SUBROUTINE GRIBHEADER(IERR)                                                !
+92a111,112
+> !      25  :  Is there a GDS (0=no, 1=yes; bit 1 of sec1(6))                  !
+> !      26  :  Is there a BMS (0=no, 1=yes; bit 2 of sec1(6))                  !
+120c140
+< !             9  :  Latitudinal incriment.                                    !
+---
+> !             9  :  Latitudinal increment.                                    !
+244a265
+>   logical :: recognized_grid
+257c278
+<   real :: glat1, glon1, gclon, gtrue1, gtrue2, grrth, gx1, gy1, gkappa
+---
+>   real :: glat1, glon1, gtrue1, gtrue2, grrth, gx1, gy1, gkappa
+911,912c932,933
+<   character(len=12) :: string = ',t40,":",i8)'
+<   character(len=15) :: rstring = ',t40,":",f12.5)'
+---
+>   character(len=12) :: string = ',t45,":",i8)'
+>   character(len=15) :: rstring = ',t45,":",f12.5)'
+925c946,959
+<      write(ou,'(5x,"Is there a BITMAP?", t40,":",B8.8)') sec1(6)
+---
+>      if (sec1(25) == 1) then
+>         write(ou,'(5x,"Is there a Grid Desc. Section (GDS)?",t45,":     Yes")')
+>      else if (sec1(25) == 0) then
+>         write(ou,'(5x,"Is there a Grid Desc. Section (GDS)?",t45,":      No")')
+>      else
+>         print*, 'Unrecognized sec1(25): ', sec1(25)
+>      endif
+>      if (sec1(26) == 1) then
+>         write(ou,'(5x,"Is there a Bit Map Section (BMS)?",t45,":     Yes")')
+>      else if (sec1(26) == 0) then
+>         write(ou,'(5x,"Is there a Bit Map Section (BMS)?",t45,":      No")')
+>      else
+>         print*, 'Unrecognized sec1(26): ', sec1(26)
+>      endif
+951c985
+<   elseif ((isec.eq.2) .and. ((sec1(6).eq.128).or.(sec1(6).eq.192))) then
+---
+>   elseif ((isec.eq.2) .and. (sec1(25).eq.1)) then
+966c1000
+<         write(ou,'(10x,"Resolution and Component:", t40,":",B8.8)') infogrid(5)
+---
+>         write(ou,'(10x,"Resolution and Component:", t45,":",B8.8)') infogrid(5)
+982c1016
+<         write(ou,'(10x,"Resolution and Component",t40,":", B8.8)') infogrid(5)
+---
+>         write(ou,'(10x,"Resolution and Component",t45,":", B8.8)') infogrid(5)
+998c1032
+<         write(ou,'(10x,"Resolution and Component",t40,":", B8.8)') infogrid(5)
+---
+>         write(ou,'(10x,"Resolution and Component",t45,":", B8.8)') infogrid(5)
+1016c1050
+<         write(ou,'(10x,"Resolution and Component", t40,":",B8.8)') infogrid(5)
+---
+>         write(ou,'(10x,"Resolution and Component", t45,":",B8.8)') infogrid(5)
+1032c1066
+<   elseif (isec.eq.3) then
+---
+>   elseif ((isec.eq.3) .and. (sec1(26).eq.1)) then
+1047c1081
+<      write(ou,'(5x,"Reference Value", t40, ":", F18.8)') xec4(1)
+---
+>      write(ou,'(5x,"Reference Value", t45, ":", F18.8)') xec4(1)
+1060c1094
+<   if ((sec1(6).eq.64).or.(sec1(6).eq.192)) then
+---
+>   if (sec1(26).eq.1) then
+1078c1112
+<   real :: r
+---
+>   real :: r, gclon
+1086a1121
+>      gclon = gridinfo(6)
+1092a1128
+>      gclon = gridinfo(6)
+1120c1156
+<   real :: r
+---
+>   real :: r, gclon
+1122c1158,1162
+<   if (sec2(4) == 3) then      ! Lambert Conformal grid
+---
+>   if (sec2(4) == 0) then      ! Cylindrical Equidistant grid
+>      x = 1. + (xlon-gridinfo(4)) / gridinfo(9)
+>      y = 1. + (xlat-gridinfo(3)) / gridinfo(8)
+>   else if (sec2(4) == 3) then      ! Lambert Conformal grid
+>      gclon = gridinfo(6)
+1128a1169
+>      gclon = gridinfo(6)
+1188a1230
+>   integer :: bmsize
+1238a1281,1284
+>   ! Pull out single bits from sec1(6) for the GDS and BMS flags:
+>   sec1(25) = sec1(6)/128
+>   sec1(26) = mod(sec1(6)/64,2)
+> 
+1240c1286
+<   if ((sec1(6) == 128) .or. (sec1(6) == 192)) then
+---
+>   if (sec1(25) == 1) then
+1293a1340
+>         recognized_grid = .TRUE.
+1379d1425
+< 
+1386,1388c1432,1433
+<         gclon = gridinfo(6)
+<         if (gclon.gt.180.) gclon = -(360.-gclon)
+<         if ((gclon<0).and.(glon1>180)) glon1 = glon1-360.  
+---
+>         if (gridinfo(6).gt.180.) gridinfo(6) = -(360.-gridinfo(6))
+>         if ((gridinfo(6)<0).and.(glon1>180)) glon1 = glon1-360.  
+1395,1396c1440,1441
+<         gx1 =  r*sind(gkappa*(glon1-gclon))
+<         gy1 = -r*cosd(gkappa*(glon1-gclon))
+---
+>         gx1 =  r*sind(gkappa*(glon1-gridinfo(6)))
+>         gy1 = -r*cosd(gkappa*(glon1-gridinfo(6)))
+1397a1443
+>         recognized_grid = .TRUE.
+1448a1495
+>         recognized_grid = .TRUE.
+1508,1509c1555
+<         gclon = gridinfo(6)
+<         if (gclon.gt.180.) gclon = -(360.-gclon)
+---
+>         if (gridinfo(6).gt.180.) gridinfo(6) = -(360.-gridinfo(6))
+1513,1514c1559,1560
+<         gx1 = r * sind(glon1-gclon)
+<         gy1 = - r * cosd(glon1-gclon)
+---
+>         gx1 = r * sind(glon1-gridinfo(6))
+>         gy1 = - r * cosd(glon1-gridinfo(6))
+1517a1564
+>         recognized_grid = .TRUE.
+1530a1578
+>         recognized_grid = .TRUE.
+1543a1592,1693
+>      ! A priori knowledge of specific grids:
+>   else if (sec1(5) == 61) then
+>      gridinfo(1)= 91.
+>      gridinfo(2)= 46.
+>      infogrid(1)= 91
+>      infogrid(2)= 46
+>      gridinfo(3)= 0
+>      gridinfo(4)= 0
+>      infogrid(5)= 0
+>      gridinfo(6)= 90.000
+>      gridinfo(7)= 180.000
+>      gridinfo(8)= 2.000
+>      gridinfo(9)= 2.000
+>      infogrid(10)= 0
+>      infogrid(21)= 1
+>      gridinfo(21)= 1.
+>      infogrid(22)= 1
+>      gridinfo(22)= 1.
+>      recognized_grid = .TRUE.
+>   else if (sec1(5) == 62) then
+>      gridinfo(1)= 91.
+>      gridinfo(2)= 46.
+>      infogrid(1)= 91
+>      infogrid(2)= 46
+>      gridinfo(3)= 0.
+>      gridinfo(4)= -180.000
+>      infogrid(5)= 0
+>      gridinfo(6)= 90.000
+>      gridinfo(7)= 0
+>      gridinfo(8)= 2.000
+>      gridinfo(9)= 2.000
+>      infogrid(10)= 0
+>      infogrid(21)= 1
+>      gridinfo(21)= 1.
+>      infogrid(22)= 1
+>      gridinfo(22)= 1.
+>      recognized_grid = .TRUE.
+>   else if (sec1(5) == 63) then
+>      gridinfo(1)= 91.
+>      gridinfo(2)= 46.
+>      infogrid(1)= 91
+>      infogrid(2)= 46
+>      gridinfo(3)= -90.000
+>      gridinfo(4)= 0.
+>      infogrid(5)= 0
+>      gridinfo(6)= 0.
+>      gridinfo(7)= 180.000
+>      gridinfo(8)= 2.000
+>      gridinfo(9)= 2.000
+>      infogrid(10)= 0
+>      infogrid(21)= 1
+>      gridinfo(21)= 1.
+>      infogrid(22)= 1
+>      gridinfo(22)= 1.
+>      recognized_grid = .TRUE.
+>   else if (sec1(5) == 64) then
+>      gridinfo(1)= 91.
+>      gridinfo(2)= 46.
+>      infogrid(1)= 91
+>      infogrid(2)= 46
+>      gridinfo(3)= -90.000
+>      gridinfo(4)= -180.000
+>      infogrid(5)= 0
+>      gridinfo(6)= 0.
+>      gridinfo(7)= 0.
+>      gridinfo(8)= 2.000
+>      gridinfo(9)= 2.000
+>      infogrid(10)= 0
+>      infogrid(21)= 1
+>      gridinfo(21)= 1.
+>      infogrid(22)= 1
+>      gridinfo(22)= 1.
+>      recognized_grid = .TRUE.
+>   else if (sec1(5) == 105) then
+>      sec2(4) = 5                 ! Polar Stereographic grid
+>      infogrid(1) = 83            ! 83 points in X
+>      infogrid(2) = 83            ! 83 points in Y
+>      gridinfo(1) = 83.           ! 83 points in X
+>      gridinfo(2) = 83.           ! 83 points in Y
+>      gridinfo(3) = 17.52646      ! Starting Latitude
+>      gridinfo(4) = -129.2958     ! Starting Longitude
+>      infogrid(5) = 0             ! Resolution and Component Flags
+>      gridinfo(6) = -105.         ! Central Longitude
+>      gridinfo(7) = 90.75464      ! Grid distance in X (km)
+>      gridinfo(8) = 90.75464      ! Grid distance in Y (km)
+>      infogrid(9) = 0             ! Projection Center flag (North)
+>      infogrid(10) = 0            ! Scanning Mode flag (Fortran I,J)
+>      infogrid(21) = 1            ! Grid increment sign factor
+>      gridinfo(21) = 1.           ! Grid increment sign factor
+>      infogrid(22) = 1            ! Grid increment sign factor
+>      gridinfo(22) = 1.           ! Grid increment sign factor
+>      gtrue1 = 60.                ! True Latitude = 60.
+>      grrth = 6370.949            ! Radius of the earth
+>      glat1 = gridinfo(3)
+>      glon1 = gridinfo(4)
+>      r = grrth/gridinfo(7) * tand((90.-glat1)/2.) * (1.+sind(gtrue1))
+>      gx1 = r * sind(glon1-gridinfo(6))
+>      gy1 = - r * cosd(glon1-gridinfo(6))
+>      recognized_grid = .TRUE.
+>   else
+>      write(*,'("WARNING: Unrecognized grid: ", I8)') sec1(5)
+>      recognized_grid = .FALSE.
+1547c1697
+<   if ((sec1(6).eq.64).or.(sec1(6).eq.192)) then
+---
+>   if (sec1(26).eq.1) then
+1564a1715,1722
+> ! Size of the bitmap is 6 bytes less than the size of the whole
+> ! of section 3.  Grids 61,62,63,64 are a special case:
+>      if (sec1(5) >= 61 .and. sec1(5) <= 64) then
+>         bmsize = 4186
+>      else
+>         bmsize = (sec3(1)-6)*8
+>      endif
+> 
+1567c1725
+<      allocate(bitmap((sec3(1)-6)*8))
+---
+>      allocate(bitmap(bmsize))
+1569c1727
+<      allocate(bm8((sec3(1)-6)*8))
+---
+>      allocate(bm8(bmsize))
+1571c1729
+<      bitmap(1:size(bm8)) = bm8(1:size(bm8))
+---
+>      bitmap(1:(sec3(1)-6)*8) = bm8(1:(sec3(1)-6)*8)
+1573a1732,1741
+> 
+> ! Grids 61,62,63,64 are a special case:
+>      if (sec1(5) == 61 .or. sec1(5) == 62) then
+>         bitmap(4186) = bitmap(4096) ! The last point represents the pole.
+>         bitmap(4096:4185) = 0       ! Fill the rest of the pole values with 0
+>      elseif (sec1(5) == 63 .or. sec1(5) == 64) then
+>         bitmap(92:4186) = bitmap(2:4096)
+>         bitmap(2:91) = 0
+>      endif
+> 
+1579c1747,1749
+<   if ((sec1(6).eq.128).or.(sec1(6).eq.192)) then
+---
+>   if ((sec1(25).eq.1) .or. (recognized_grid)) then
+>      ! Do this only if we recognize the grid, either from the GDS or from
+>      ! a priori knowledge.
+1682c1852
+<           if ((sec1(6).eq.64).or.(sec1(6).eq.192)) then ! There's a bitmap
+---
+>           if (sec1(26).eq.1) then ! There's a bitmap
+===================================================================
+pregrid/util/newdate.awpr
+diff -r3.0 -r3.1
+96c96
+<  {printf "%4i-%02i-%02i_%02i:%02i:%02i\n", year,month,day,hour,minute,second}
+---
+>  {printf "%4d-%02d-%02d_%02d:%02d:%02d\n", year,month,day,hour,minute,second}
+99c99
+<  {printf "%4i-%02i-%02i_%02i:%02i\n", year,month,day,hour,minute}
+---
+>  {printf "%4d-%02d-%02d_%02d:%02d\n", year,month,day,hour,minute}
+102c102
+<  {printf "%4i-%02i-%02i_%02i\n", year,month,day,hour}
+---
+>  {printf "%4d-%02d-%02d_%02d\n", year,month,day,hour}
+105c105
+<  {printf "%4i-%02i-%02i\n", year,month,day}
+---
+>  {printf "%4d-%02i-%02d\n", year,month,day}
+===================================================================
+pregrid/util/pregrid_version.F
+diff -r3.12 -r3.15
+4c4
+<   write(*,'(   " **   pregrid version number: 0.23  **")')
+---
+>   write(*,'(   " **   pregrid version number: 0.26  **")')
+===================================================================
+regridder/namelist.input
+diff -r3.5 -r3.6
+38a39
+>  print_tc                        = .FALSE. ,
+39a41,47
+> 
+> &record5
+>  insert_bogus_storm              = .FALSE.
+>  num_storm                       =    1
+>  latc_loc                        =   36.
+>  lonc_loc                        =  -35.
+>  vmax                            =   50. /
+===================================================================
+regridder/Doc/README.namelist
+diff -r3.5 -r3.7
+56a57,63
+> &record5
+>  insert_bogus_storm              = .FALSE.
+>  num_storm                       =    1
+>  latc_loc                        =   36.
+>  lonc_loc                        =  -35.
+>  vmax                            =   50. /
+> 
+203a211,243
+> 
+> 
+> TROPICAL STORM BOGUSSING - New namelist in V3.5 
+> -----------------------------------------------
+> 
+> A new namelist section is added in V3.5 to enable a user to do
+> tropical storm bogussing. The bogussing is based on the following
+> number of parameters:
+> 
+> num_storm: one may bogus up to 100 tropical storms in one domain
+> latc_loc:  latitude value of tropical storm center (negative in s. hemisphere)
+> lonc_loc:  longitude value of tropical storm center (negative in w. hemisphere)
+> vmax:      maximum wind speed in m/second
+> 
+> Other assumption is made inside bogussing routine. See 
+> regridder/src/module_tc_bogus.F. 
+> 
+> The procedure searches for the old storm in the vicinity of the new storm
+> (within 300 km of the new storm), remove it, and place the new storm with 
+> an assumed radius of maximum wind (50 km currently). The bogus vortex is
+> assumed to be an Rankine vortex (alpha=-0.75), and occupy an area of 300 km radius. 
+> 
+> References:
+> 
+> Low-Nam, S., and C. Davis, 2001: Development of a tropical cyclone bogussing
+>   scheme for the MM5 system. Preprint, The Eleventh PSU/NCAR Mesoscale Model
+>   Users' Workshop, June 25-27, 2001, Boulder, Colorado, p 130-134. 
+>   (Available online at 
+>    http://www.mmm.ucar.edu/mm5/workshop/workshop-program-2001.html)
+> 
+> Davis, C. and S. Lownam, 2001: The NCAR-AFWA tropical cyclone bogussing scheme.
+>   A report prepared for the Air Force Weather Agency (AFWA). 12pp.
+>   (Available online at http://www.mmm.ucar.edu/mm5/mm5v3/v3prep.html)
+===================================================================
+regridder/src/Makefile
+diff -r3.5 -r3.7
+8c8,9
+< MODULES	=	module_date_pack.o module_diags.o module_file_data.o module_first_guess_data.o module_gauss.o \
+---
+> MODULES	=	module_constants.o module_date_pack.o module_diags.o module_file_data.o  \
+> 		module_first_guess_data.o module_gauss.o \
+10c11,12
+< 		module_namelist_info.o module_terrain_data.o module_first_guess_map.o module_constants.o \
+---
+> 		module_map_utils.o \
+> 		module_namelist_info.o module_terrain_data.o module_tc_bogus.o \
+13,14c15
+< OBJS = 		llxy_lam.o llxy_mer.o llxy_ste.o \
+< 		proc_grid_store.o proc_ingest_first_guess.o proc_list_to_array.o \
+---
+> OBJS = 		proc_grid_store.o proc_ingest_first_guess.o proc_list_to_array.o \
+16,17c17,20
+< 		proc_make_small_header.o proc_map_to_met_winds.o proc_met_to_map_winds.o \
+< 		proc_namelist.o proc_output.o proc_read_terrain.o proc_zap_space_array.o \
+---
+> 		proc_make_small_header.o \
+> 		proc_map_to_met_winds.o proc_met_to_map_winds.o \
+> 		proc_namelist.o proc_output.o proc_tc_bogus.o \
+> 		proc_read_terrain.o proc_zap_space_array.o \
+38c41,42
+< 		module_first_guess_map.o module_constants.o module_gauss.o \
+---
+> 		module_constants.o module_gauss.o \
+> 		module_map_utils.o \
+76,79c80,82
+< proc_zap_space_array.o:   module_namelist_info.o module_terrain_data.o module_gridded_data.o  \
+< 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+< 
+< proc_zap_space_list.o:   module_link_list_info.o \
+---
+> proc_tc_bogus.o:   module_constants.o module_header_data.o module_file_data.o \
+> 		module_first_guess_data.o module_gridded_data.o module_namelist_info.o \
+> 		module_tc_bogus.o \
+82,85c85
+< llxy_lam.o:     module_constants.o \
+< 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+< 
+< llxy_mer.o:     module_constants.o \
+---
+> proc_zap_space_array.o:   module_namelist_info.o module_terrain_data.o module_gridded_data.o  \
+88c88
+< llxy_ste.o:     module_constants.o \
+---
+> proc_zap_space_list.o:   module_link_list_info.o \
+95c95
+< module_diags.o:	module_util.o \
+---
+> module_diags.o:	module_constants.o module_util.o \
+102,104d101
+< module_first_guess_map.o:  module_namelist_info.o module_constants.o \
+< 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+< 
+115a113,114
+> module_map_utils.o:  ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+> 
+117a117,121
+> module_tc_bogus.o:	module_constants.o module_diags.o module_header_data.o \
+> 			module_namelist_info.o module_map_utils.o \
+> 			module_terrain_data.o module_util.o \
+> 			../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+> 
+121c125,126
+< module_util.o:  ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+---
+> module_util.o:  module_constants.o \
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+===================================================================
+regridder/src/module_constants.F
+diff -r3.0 -r3.1
+2,4c2,17
+<    REAL , PARAMETER :: pi              = 3.14159265358
+<    REAL , PARAMETER :: radius_of_earth = 6370.
+<    REAL , PARAMETER :: small_positive  = 1.E-5
+---
+>    REAL , PARAMETER :: cp              = 1004.5
+>    REAL , PARAMETER :: es0             =    6.1121
+>    REAL , PARAMETER :: eps             =    0.622
+>    REAL , PARAMETER :: g               =    9.81
+>    REAL , PARAMETER :: pi              =    3.14159265358
+>    REAL , PARAMETER :: r               =  287.04
+>    REAL , PARAMETER :: radius_of_earth = 6370.0
+>    REAL , PARAMETER :: svp1            =    0.6112
+>    REAL , PARAMETER :: svp2            =   17.67
+>    REAL , PARAMETER :: svp3            =   29.65
+>    REAL , PARAMETER :: svpt0           =  273.15
+> 
+>    REAL , PARAMETER :: small_positive  = 1.0E-5
+> 
+>    REAL , PARAMETER :: degran          = pi/180.
+>    REAL , PARAMETER :: rovcp           =  r / cp
+===================================================================
+regridder/src/module_diags.F
+diff -r3.4 -r3.5
+2a3
+>    USE constants
+5,9c6
+<    REAL, PARAMETER    :: cp          =  1005.7
+<    REAL, PARAMETER    :: g           =     9.81
+<    REAL, PARAMETER    :: r           =   287.04
+<    REAL, PARAMETER    :: rovcp       =  r / cp
+<    REAL, PARAMETER    :: epsilon     = 1.0E-15
+---
+> CONTAINS
+10a8,9
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+12c11,98
+< CONTAINS
+---
+>    SUBROUTINE diverg(u,v,dmf,xmf,i1,j1,k1,ds,div)
+> 
+>    !  Computes divergence
+>    !  div = m*m (du/dx + dv/dy)
+> 
+>       IMPLICIT NONE
+> 
+>       INTEGER :: i1, j1 , k1
+> 
+>       REAL , DIMENSION(i1,j1,k1) :: u, v, div
+>       REAL , DIMENSION(i1,j1   ) :: xmf, dmf
+>       REAL :: ds
+> 
+>       REAL :: ds2r , u1 , u2 , u3 , u4 , v1 , v2 , v3 , v4
+>       INTEGER :: i , j , k
+> 
+>       ds2r = 1./(2.*ds)
+> 
+>       DO k = 1, k1
+>          DO j = 1, j1-1
+>             DO i = 1, i1-1
+>                u1=u(i  ,j  ,k)/dmf(i  ,j  )
+>                u2=u(i+1,j  ,k)/dmf(i+1,j  )
+>                u3=u(i  ,j+1,k)/dmf(i  ,j+1)
+>                u4=u(i+1,j+1,k)/dmf(i+1,j+1)
+>                v1=v(i  ,j  ,k)/dmf(i  ,j  )
+>                v2=v(i+1,j  ,k)/dmf(i+1,j  )
+>                v2=v(i+1,j  ,k)/dmf(i+1,j  )
+>                v3=v(i  ,j+1,k)/dmf(i  ,j+1)
+>                v4=v(i+1,j+1,k)/dmf(i+1,j+1)
+>                div(i,j,k) = xmf(i,j)*xmf(i,j)*ds2r*((u3-u1+u4-u2)+(v2-v1+v4-v3))
+>             END DO
+>          END DO
+>       END DO
+> 
+>    END SUBROUTINE diverg
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE geowind(height,xmf,dmf,cor,imx,jmx,kx,ds,ug,vg)
+> 
+>    !  Computes the geostrophic wind components from the height gradient.
+>    !  There is no Coriolis parameter used - this is the tropics.
+> 
+>       IMPLICIT NONE
+> 
+>       !     input       height   geopotential               cross    3d
+>       !                 xmf      map factors                cross    2d
+>       !                 dmf      map factors                dot      2d
+>       !                 imx      dot point dimension n-s
+>       !                 jmx      dot point dimension e-w
+>       !                 kx       number of vertical levels
+>       !
+>       !     output      ug       u component of geo wind    cross    3d
+>       !                 vg       v component of geo wind    cross    3D
+> 
+>       INTEGER :: imx , jmx , kx
+>       REAL :: ds
+>       REAL , DIMENSION(imx,jmx,kx) :: height
+>       REAL , DIMENSION(imx,jmx   ) :: xmf , dmf , cor
+> 
+>       REAL , DIMENSION(imx,jmx,kx) :: ug , vg
+> 
+>       REAL :: ds2r , h1 , h2 , h3 , h4
+>       INTEGER :: i , j , k
+> 
+>       ds2r=1./(2.*ds)
+> 
+>       DO k=1,kx
+>          DO j=2,jmx-1
+>             DO i=2,imx-1
+>                h1=height(i-1,j-1,k)
+>                h2=height(i  ,j-1,k)
+>                h3=height(i-1,j  ,k)
+>                h4=height(i  ,j  ,k)
+> !              ug(i,j,k)=-1.*g*dmf(i,j)/cor(i,j)*ds2r*(h4-h3+h2-h1)
+> !              vg(i,j,k)=    g*dmf(i,j)/cor(i,j)*ds2r*(h4-h2+h3-h1)
+>                ug(i,j,k)=-1.*dmf(i,j)*ds2r*(h4-h3+h2-h1)
+>                vg(i,j,k)=    dmf(i,j)*ds2r*(h4-h2+h3-h1)
+>             END DO
+>          END DO
+>       END DO
+> 
+>       CALL fillit(ug,imx,jmx,kx,imx,jmx,2,imx-1,2,jmx-1)
+>       CALL fillit(vg,imx,jmx,kx,imx,jmx,2,imx-1,2,jmx-1)
+> 
+>    END SUBROUTINE geowind
+39a126
+>       
+52,56d138
+<       REAL,         PARAMETER     :: eps         = 0.622
+<       REAL,         PARAMETER     :: svp1        = 0.6112
+<       REAL,         PARAMETER     :: svp2        = 17.67
+<       REAL,         PARAMETER     :: svp3        = 29.65
+<       REAL,         PARAMETER     :: svpt0       = 273.15
+87a170,199
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE qvtorh ( q , t , p , imx , jmx , kxs , rh )
+> 
+>       IMPLICIT NONE
+> 
+>       INTEGER , INTENT(IN) :: imx , jmx , kxs
+>       REAL , INTENT(IN) , DIMENSION(:,:,:) :: q , t
+>       REAL , INTENT(IN) , DIMENSION(:) :: p
+> 
+>       REAL , INTENT(OUT) , DIMENSION(:,:,:) :: rh
+> 
+>       !  Local variables.
+> 
+>       INTEGER :: i , j , k
+>       REAL :: es , qs
+> 
+>       DO k = 1 , kxs
+>          DO j = 1 , jmx - 1
+>             DO i = 1 , imx - 1
+>                es = svp1*10.*EXP(svp2*(t(i,j,k)-svpt0)/(t(i,j,k)-svp3))
+>                qs = eps*es/((0.01 *p(k))-(1.-eps)*es)
+>                rh(i,j,k) = MIN ( 100. , MAX ( 100.*q(i,j,k)/qs , 10. ) )
+>             END DO
+>          END DO
+>       END DO
+> 
+>    END SUBROUTINE qvtorh
+> 
+264a377,423
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE vor(u,v,dmf,xmf,i1,j1,k1,ds,vort)
+> 
+>       !  Compute k component of del cross velocity
+>       !  vort = m*m (dv/dx - du/dy), where u and v are coupled
+>       !  with map factors (dot point) and m is the map factors
+>       !  on cross points
+> 
+>       IMPLICIT NONE
+> 
+>       INTEGER :: i1 , j1 , k1
+> 
+>       REAL , DIMENSION(i1,j1,k1) :: u, v, vort
+>       REAL , DIMENSION(i1,j1   ) :: xmf, dmf
+> 
+>       REAL :: ds
+> 
+>       REAL :: ds2r , u1 , u2 , u3 , u4 , v1 , v2 , v3 , v4
+>       INTEGER :: i , j , k
+> 
+>       ds2r=1./(2.*ds)
+> 
+>       DO k=1,k1
+>          DO j=1,j1-1
+>             DO i=1,i1-1
+>                u1=u(i  ,j  ,k)/dmf(i  ,j  )
+>                u2=u(i+1,j  ,k)/dmf(i+1,j  )
+>                u3=u(i  ,j+1,k)/dmf(i  ,j+1)
+>                u4=u(i+1,j+1,k)/dmf(i+1,j+1)
+>                v1=v(i  ,j  ,k)/dmf(i  ,j  )
+>                v2=v(i+1,j  ,k)/dmf(i+1,j  )
+>                v3=v(i  ,j+1,k)/dmf(i  ,j+1)
+>                v4=v(i+1,j+1,k)/dmf(i+1,j+1)
+>                vort(i,j,k)=xmf(i,j)*xmf(i,j)*ds2r*((v4-v2+v3-v1)-(u2-u1+u4-u3))
+>             END DO
+>          END DO
+>       END DO
+> 
+>       CALL fillit(vort,i1,j1,k1,i1,j1,1,i1-1,1,j1-1)
+> 
+>    END SUBROUTINE vor
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+===================================================================
+regridder/src/module_namelist_info.F
+diff -r3.3 -r3.4
+40a41
+>       LOGICAL :: print_tc
+43a45,53
+>    INTEGER , PARAMETER :: num_max = 100
+>    TYPE r5
+>       LOGICAL :: insert_bogus_storm
+>       INTEGER :: num_storm
+>       REAL , DIMENSION(num_max) :: latc_loc 
+>       REAL , DIMENSION(num_max) :: lonc_loc
+>       REAL , DIMENSION(num_max) :: vmax
+>    END TYPE r5
+> 
+47a58
+>    TYPE (r5) :: rec5
+===================================================================
+regridder/src/module_util.F
+diff -r3.2 -r3.3
+2a3,4
+>    USE constants
+> 
+7a10,54
+>    SUBROUTINE balance (f,xlat,psi,ix,jx,ds,out)
+> 
+>    !  Calculates the forcing terms in balance equation
+> 
+>    IMPLICIT NONE
+> 
+>       !  f       coriolis force
+>       !  xlat    latitude
+>       !  psi     stream function
+>       !  ix, jx  grid points in east west, north south direction, respectively
+>       !  ds      grid distance
+>       !  out     output array
+>   
+>       INTEGER :: ix , jx
+>       REAL , DIMENSION(ix,jx) :: f,xlat,psi,out
+>       REAL :: ds
+> 
+>       REAL :: psixx , psiyy , psiy , psixy 
+>       REAL :: dssq , ds2 , dssq4
+> 
+>       INTEGER :: i , j
+> 
+>       dssq  = ds * ds
+>       ds2   = ds * 2.
+>       dssq4 = ds * ds * 4.
+> 
+>       DO i=2,ix-2
+>          DO j=2,jx-2
+>             psixx = ( psi(i,j+1) + psi(i,j-1) - 2.*psi(i,j) ) / dssq
+>             psiyy = ( psi(i+1,j) + psi(i-1,j) - 2.*psi(i,j) ) / dssq
+>             psiy  = ( psi(i+1,j) - psi(i-1,j) ) / ds2
+>             psixy = ( psi(i+1,j+1)+psi(i-1,j-1)-psi(i-1,j+1)-psi(i+1,j-1)) / dssq4
+>             out(i,j)=0.25*(f(i,j)+f(i+1,j)+f(i+1,j+1)+f(i,j+1))*(psixx+psiyy)    &
+>                    +psiy*(f(i+1,j+1)+f(i+1,j)-f(i,j)-f(i,j+1))/ ds2              &
+>                    -2.*(psixy*psixy-psixx*psiyy)
+>          END DO
+>       END DO
+> 
+>       CALL fill(out,ix,jx,ix,jx,2,ix-2,2,jx-2)
+> 
+>    END SUBROUTINE balance
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+41a89
+> 
+42a91
+> 
+57c106,108
+<    SUBROUTINE rh_cleanup ( rh , iew , jns , rh_min , rh_max )
+---
+>    SUBROUTINE expand(slab,istart,jstart,itot,jtot)
+> 
+>    !  Fill the nearest data to the empty rows or columns of a slab
+60,68c111,129
+<    
+<       INTEGER                        :: iew , jns
+<       REAL , DIMENSION ( iew , jns ) :: rh
+<       REAL                           :: rh_min , rh_max
+<    
+<       WHERE ( rh .GT. rh_max ) rh = rh_max
+<       WHERE ( rh .LT. rh_min ) rh = rh_min
+<    
+<    END SUBROUTINE rh_cleanup
+---
+> 
+>       INTEGER :: istart, jstart, itot, jtot
+>       REAL , DIMENSION(itot,jtot) :: slab
+> 
+>       INTEGER :: i1, j1, i, j
+> 
+>       DO j1=jstart,jtot-1
+>          DO i=1,istart
+>             slab(i,j1+1)=slab(i,j1)
+>          END DO
+>       END DO
+> 
+>       DO i1=istart,itot-1
+>          DO j=1,jtot
+>             slab(i1+1,j)=slab(i1,j)
+>          END DO
+>       END DO
+> 
+>    END SUBROUTINE expand
+107a169,456
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE fillit (f, ix, jx, kx, imx, jmx, ifirst, ilast, jfirst, jlast)
+> 
+>       IMPLICIT NONE
+> 
+>       INTEGER                     :: i
+>       INTEGER                     :: ifirst
+>       INTEGER                     :: ilast
+>       INTEGER                     :: imx
+>       INTEGER                     :: ix
+>       INTEGER                     :: j
+>       INTEGER                     :: jfirst
+>       INTEGER                     :: jlast
+>       INTEGER                     :: jmx
+>       INTEGER                     :: jx
+>       INTEGER                     :: k
+>       INTEGER                     :: kx
+> 
+>       REAL                        :: f           ( : , : , :)
+> 
+>       DO k = 1 , kx
+>          DO j = jfirst, jlast
+>             DO i = 1, ifirst - 1
+>                f(i,j,k) = f(ifirst,j,k)
+>             END DO
+>             DO i = ilast + 1, imx
+>                f(i,j,k) = f(ilast,j,k)
+>             END DO
+>          END DO
+>    
+>          DO j = 1, jfirst - 1
+>             f(:,j,k) = f(:,jfirst,k)
+>          END DO
+>          DO j = jlast + 1, jmx
+>             f(:,j,k) = f(:,jlast,k)
+>          END DO
+>       END DO
+> 
+>    END SUBROUTINE fillit
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE make_surface ( field , psfc , p , ix , jx , kx , icrsdot , field_sfc )
+> 
+>       IMPLICIT NONE
+> 
+>       !  Input variables.
+> 
+>       INTEGER , INTENT(IN) :: ix , jx , kx , icrsdot
+>       REAL , INTENT(IN) , DIMENSION(:,:,:) :: field
+>       REAL , INTENT(IN) , DIMENSION(:,:)   :: psfc
+>       REAL , INTENT(IN) , DIMENSION(:)     :: p
+> 
+>       !  Output variable.
+> 
+>       REAL , INTENT(OUT) , DIMENSION(:,:)   :: field_sfc
+> 
+>       !  Stack variables.
+> 
+>       INTEGER :: i , j , k
+>       REAL , DIMENSION(ix,jx)   :: psfcd
+> 
+>       !  Dot point option first.
+> 
+>       IF ( icrsdot .EQ. 0 ) THEN
+>          psfcd = psfc
+>          CALL crs2dot ( psfcd , ix , jx ) 
+>          DO i = 1 , ix
+>             DO j = 1 , jx
+>                IF ( psfcd(i,j) .GT. p(2) ) THEN
+>                   field_sfc(i,j) = field(i,j,2)
+>                ELSE
+>                   inner_dot : DO k = 2 , kx - 1
+>                      IF ( (psfcd(i,j)-p(k)) * (psfcd(i,j)-p(k+1)) .LE. 0. ) THEN
+>                         field_sfc(i,j) = ( field(i,j,k  )*(p(k+1)    -psfcd(i,j)) +   &
+>                                            field(i,j,k+1)*(psfcd(i,j)-p(k)      ) ) / &
+>                                                           (p(k+1)    -p(k)      )
+>                         EXIT inner_dot
+>                      END IF
+>                   END DO inner_dot
+>                END IF
+>             END DO
+>          END DO
+> 
+>       !  Or else cross point data.
+> 
+>       ELSE IF ( icrsdot .EQ. 1 ) THEN
+>          DO i = 1 , ix - 1
+>             DO j = 1 , jx - 1
+>                IF ( psfc(i,j) .GT. p(2) ) THEN
+>                   field_sfc(i,j) = field(i,j,2)
+>                ELSE
+>                   inner_cross : DO k = 2 , kx - 1
+>                      IF ( (psfc(i,j)-p(k)) * (psfc(i,j)-p(k+1)) .LE. 0. ) THEN
+>                         field_sfc(i,j) = ( field(i,j,k  )*(p(k+1)   -psfc(i,j)) +   &
+>                                            field(i,j,k+1)*(psfc(i,j)-p(k)     ) ) / &
+>                                                           (p(k+1)   -p(k)     )
+>                         EXIT inner_cross
+>                      END IF
+>                   END DO inner_cross
+>                END IF
+>             END DO
+>          END DO
+>       END IF
+> 
+>    END SUBROUTINE make_surface
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE rankine(dx,dy,ds,nlvl,vwgt,rmax,vmax,uu,vv,psi,vor)
+> 
+>    !  Define analytical bogus vortex
+> 
+>       IMPLICIT NONE
+> 
+>       INTEGER nlvl
+>       REAL , DIMENSION(nlvl) :: uu, vv, psi, vor
+>       REAL , DIMENSION(nlvl) :: vwgt
+>       REAL :: dx,dy,ds,rmax,vmax
+>  
+>       REAL , PARAMETER :: alpha1= 1.
+>       REAL , PARAMETER :: alpha2= -0.75
+> 
+>       INTEGER :: k
+>       REAL :: vr , ang , rr , term1 , bb , term2 , alpha
+> 
+>       !  Wind component
+> 
+>       DO k=1,nlvl
+>          rr = SQRT(dx**2+dy**2)*ds
+>          IF ( rr .LT. rmax ) THEN
+>             alpha = 1.
+>          ELSE IF ( rr .GE. rmax ) THEN
+>             alpha = alpha2
+>          END IF
+>          vr = vmax * (rr/rmax)**(alpha)
+>          IF ( dx.GE.0. ) THEN
+>             ang = (pi/2.) - ATAN2(dy,MAX(dx,1.e-6))
+>             uu(k) = vwgt(k)*(-vr*COS(ang))
+>             vv(k) = vwgt(k)*( vr*SIN(ang))
+>          ELSE IF ( dx.LT.0. ) THEN
+>             ang = ((3.*pi)/2.) + ATAN2(dy,dx)
+>             uu(k) = vwgt(k)*(-vr*COS(ang))
+>             vv(k) = vwgt(k)*(-vr*SIN(ang))
+>          END IF
+>       END DO
+> 
+>       !  psi
+> 
+>       DO k=1,nlvl
+>          rr = SQRT(dx**2+dy**2)*ds
+>          IF ( rr .LT. rmax ) THEN
+>             psi(k) = vwgt(k) * (vmax*rr*rr)/(2.*rmax)
+>          ELSE IF ( rr .GE. rmax ) THEN
+>             IF (alpha1.EQ.1.0 .AND. alpha2.eq.-1.0) THEN
+>                psi(k) = vwgt(k) * vmax*rmax*(0.5+LOG(rr/rmax))
+>             ELSE IF (alpha1.EQ.1.0 .AND. alpha2.NE.-1.0) THEN
+>                term1 = vmax/(rmax**alpha1)*(rmax**(alpha1+1)/(alpha1+1))
+>                bb    = (rr**(alpha2+1)/(alpha2+1))-(rmax**(alpha2+1))/(alpha2+1)
+>                term2 = vmax/(rmax**alpha2)*bb
+>                psi(k) = vwgt(k) * (term1 + term2)
+>             END IF
+>          END IF
+>       END DO
+> 
+>       ! vort
+> 
+>       DO k=1,nlvl
+>          rr = SQRT(dx**2+dy**2)*ds
+>          IF ( rr .LT. rmax ) THEN
+>             vor(k) = vwgt(k) * (2.*vmax)/rmax
+>          ELSE IF ( rr .GE. rmax ) THEN
+>             vor(k) = vwgt(k) * ( (vmax/rmax**alpha2)*(rr**(alpha2-1.))*(1.+alpha2) )
+>          END IF
+>       END DO
+> 
+>    END SUBROUTINE rankine
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE relax (chi, ff, rd, imx, jmx, ds, smallres, alpha)
+> 
+>       IMPLICIT NONE
+> 
+>       INTEGER, PARAMETER    :: mm = 20000
+> 
+>       INTEGER               :: i
+>       INTEGER               :: ie
+>       INTEGER               :: imx
+>       INTEGER               :: iter
+>       INTEGER               :: j
+>       INTEGER               :: je
+>       INTEGER               :: jm
+>       INTEGER               :: jmx
+>       INTEGER               :: mi
+> 
+>       REAL                  :: alpha
+>       REAL                  :: alphaov4
+>       REAL                  :: chi         ( : , : )
+>       REAL                  :: chimx       ( jmx ) 
+>       REAL                  :: ds
+>       REAL                  :: epx
+>       REAL                  :: fac
+>       REAL                  :: ff          ( : , : )
+>       REAL                  :: rd          ( : , : )
+>       REAL                  :: rdmax       ( jmx )
+>       REAL                  :: smallres
+> 
+>       LOGICAL               :: converged = .FALSE.
+> 
+>       fac = ds * ds
+>       alphaov4 = alpha * 0.25
+> 
+>       ie=imx-2
+>       je=jmx-2
+> 
+>       DO j = 1, jmx
+>          DO i = 1, imx
+>             ff(i,j) = fac * ff(i,j)
+>             rd(i,j) = 0.0
+>          END DO
+>       END DO
+> 
+>       iter_loop : DO iter = 1, mm
+>          mi = iter
+>          chimx = 0.0
+> 
+> 
+>          DO j = 2, je
+>             DO i = 2, ie
+>                chimx(j) = MAX(ABS(chi(i,j)),chimx(j))
+>             END DO
+>          END DO
+> 
+>          epx = MAXVAL(chimx) * SMALLRES * 4.0 / alpha
+> 
+>          DO j = 2, je
+>             DO i = 2, ie
+>                rd(i,j) = chi(i,j+1) + chi(i,j-1) + chi(i+1,j) + chi(i-1,j) - 4.0 * chi(i,j) - ff(i,j)
+>                chi(i,j) = chi(i,j) + rd(i,j) * alphaov4
+>             END DO
+>          END DO
+> 
+>          rdmax = 0.0
+> 
+>          DO j = 2, je
+>             DO i = 2, ie
+>                rdmax(j) = MAX(ABS(rd(i,j)),rdmax(j))
+>             END DO
+>          END DO
+> 
+>          IF (MAXVAL(rdmax) .lt. epx) THEN
+>             converged = .TRUE.
+>             EXIT iter_loop
+>          END IF
+> 
+>       END DO iter_loop
+> 
+>       IF (converged ) THEN
+> !        PRINT '(A,I5,A)','Relaxation converged in ',mi,' iterations.'
+>       ELSE
+>          PRINT '(A,I5,A)','Relaxation did not converge in',mm,' iterations.'
+>          STOP 'no_converge'
+>       END IF
+> 
+>    END SUBROUTINE relax
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE rh_cleanup ( rh , iew , jns , rh_min , rh_max )
+> 
+>       IMPLICIT NONE
+>    
+>       INTEGER                        :: iew , jns
+>       REAL , DIMENSION ( iew , jns ) :: rh
+>       REAL                           :: rh_min , rh_max
+>    
+>       WHERE ( rh .GT. rh_max ) rh = rh_max
+>       WHERE ( rh .LT. rh_min ) rh = rh_min
+>    
+>    END SUBROUTINE rh_cleanup
+> 
+245,312d593
+< 
+< !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+< !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+< 
+<    SUBROUTINE make_surface ( field , psfc , p , ix , jx , kx , icrsdot , field_sfc )
+< 
+<       IMPLICIT NONE
+< 
+<       !  Input variables.
+< 
+<       INTEGER , INTENT(IN) :: ix , jx , kx , icrsdot
+<       REAL , INTENT(IN) , DIMENSION(:,:,:) :: field
+<       REAL , INTENT(IN) , DIMENSION(:,:)   :: psfc
+<       REAL , INTENT(IN) , DIMENSION(:)     :: p
+< 
+<       !  Output variable.
+< 
+<       REAL , INTENT(OUT) , DIMENSION(:,:)   :: field_sfc
+< 
+<       !  Stack variables.
+< 
+<       INTEGER :: i , j , k
+<       REAL , DIMENSION(ix,jx)   :: psfcd
+< 
+<       !  Dot point option first.
+< 
+<       IF ( icrsdot .EQ. 0 ) THEN
+<          psfcd = psfc
+<          CALL crs2dot ( psfcd , ix , jx ) 
+<          DO i = 1 , ix
+<             DO j = 1 , jx
+<                IF ( psfcd(i,j) .GT. p(2) ) THEN
+<                   field_sfc(i,j) = field(i,j,2)
+<                ELSE
+<                   inner_dot : DO k = 2 , kx - 1
+<                      IF ( (psfcd(i,j)-p(k)) * (psfcd(i,j)-p(k+1)) .LE. 0. ) THEN
+<                         field_sfc(i,j) = ( field(i,j,k  )*(p(k+1)    -psfcd(i,j)) +   &
+<                                            field(i,j,k+1)*(psfcd(i,j)-p(k)      ) ) / &
+<                                                           (p(k+1)    -p(k)      )
+<                         EXIT inner_dot
+<                      END IF
+<                   END DO inner_dot
+<                END IF
+<             END DO
+<          END DO
+< 
+<       !  Or else cross point data.
+< 
+<       ELSE IF ( icrsdot .EQ. 1 ) THEN
+<          DO i = 1 , ix - 1
+<             DO j = 1 , jx - 1
+<                IF ( psfc(i,j) .GT. p(2) ) THEN
+<                   field_sfc(i,j) = field(i,j,2)
+<                ELSE
+<                   inner_cross : DO k = 2 , kx - 1
+<                      IF ( (psfc(i,j)-p(k)) * (psfc(i,j)-p(k+1)) .LE. 0. ) THEN
+<                         field_sfc(i,j) = ( field(i,j,k  )*(p(k+1)   -psfc(i,j)) +   &
+<                                            field(i,j,k+1)*(psfc(i,j)-p(k)     ) ) / &
+<                                                           (p(k+1)   -p(k)     )
+<                         EXIT inner_cross
+<                      END IF
+<                   END DO inner_cross
+<                END IF
+<             END DO
+<          END DO
+<       END IF
+< 
+<    END SUBROUTINE make_surface
+===================================================================
+regridder/src/proc_ingest_first_guess.F
+diff -r3.20 -r3.24
+6d5
+<    USE first_guess_map
+12a12
+>    USE map_utils
+17a18,19
+>    TYPE(proj_info) :: proj
+> 
+113c115,121
+<          file_name(file_name_len+1:) = ':' // rec1%current_date(1:13)
+---
+>          IF ( (rec1%time_increment_second/60)*60 .NE. rec1%time_increment_second ) THEN
+>             file_name(file_name_len+1:) = ':' // rec1%current_date(1:19)
+>          ELSE IF ( (rec1%time_increment_second/3600)*3600 .NE. rec1%time_increment_second ) THEN
+>             file_name(file_name_len+1:) = ':' // rec1%current_date(1:16)
+>          ELSE
+>             file_name(file_name_len+1:) = ':' // rec1%current_date(1:13)
+>          END IF
+334c342,343
+<             angle = 360. * deltax * (idim-1) / ( 2. * pi * radius_of_earth * COS(truelat1*radians_per_degree) )
+---
+>             angle = 360. * deltax * (idim-1) / &
+>                     ( 2. * pi * earth_radius_m/1000. * COS(truelat1*radians_per_degree) )
+361,363c370,371
+<    
+<             !  There are a few values that we need to compute from the available data.  These
+<             !  result in the center latitude being available.  But, do we need to do this?
+---
+> 
+>             !  There are a few values that we need to compute from the available data.
+366,381c374
+< 
+<                point_x = (idim+1)/2.
+<                IF  ( rec4%print_echo ) THEN
+<                   PRINT '(A,F10.4,A)','X-location of center longitude is ',point_x,'.'
+<                END IF
+<    
+<                CALL center_latitude_mercator ( lat1 , truelat1 , xlonc, 1., &
+<                                                point_x , 1., REAL(jdim+1)/2., deltax , xlatc , converged )
+<     
+<                IF          ( ( converged ) .AND. ( rec4%print_echo ) ) THEN
+<                   PRINT '(A,F10.4,A,/)','Iterated center latitude is ',xlatc,'.'
+<                ELSE IF ( .NOT. converged ) THEN
+<                   PRINT '(A)','Iterated center latitude did not converge.'
+<                   STOP 'Convergence_failure_xlatc_mercator'
+<                END IF
+< 
+---
+>                CALL map_set(proj_merc,lat1,lon1,deltax*1000.,xlonc,truelat1,truelat2,proj)
+383c376
+<        
+---
+>    
+411,412c404
+<             !  There are a few values that we need to compute from the available data.  These
+<             !  result in the center latitude being available.  But, do we need to do this?
+---
+>             !  There are a few values that we need to compute from the available data.
+415,433c407
+< 
+<                CALL lc_cone_factor ( truelat1, truelat2, cone_fac ) 
+<    
+<                CALL find_center_longitude_lambert ( deltax , cone_fac , &
+<                                                     lon1 , xlonc , truelat1 , lat1 , 1. , point_x )
+<                IF  ( rec4%print_echo ) THEN
+<                   PRINT '(A,F10.4,A)','X-location of center longitude is ',point_x,'.'
+<                END IF
+<    
+<                CALL center_latitude_lambert ( lat1 , cone_fac , truelat1 , xlonc, 1., &
+<                                               point_x , 1., REAL(jdim+1)/2., deltax , xlatc , converged )
+<     
+<                IF          ( ( converged ) .AND. ( rec4%print_echo ) ) THEN
+<                   PRINT '(A,F10.4,A,/)','Iterated center latitude is ',xlatc,'.'
+<                ELSE IF ( .NOT. converged ) THEN
+<                   PRINT '(A)','Iterated center latitude did not converge.'
+<                   STOP 'Convergence_failure_xlatc_Lambert'
+<                END IF
+< 
+---
+>                CALL map_set(proj_lc,lat1,lon1,deltax*1000.,xlonc,truelat1,truelat2,proj)
+441c415
+<                wind_cone_fac = cone_fac
+---
+>                wind_cone_fac = proj%cone
+485,486c459
+<             !  There are a few values that we need to compute from the available data.  These
+<             !  result in the center latitude being available.  But, do we need to do this?
+---
+>             !  There are a few values that we need to compute from the available data.
+489,504c462
+< 
+<                CALL find_center_longitude_polar ( deltax , lon1 , xlonc , truelat1 , lat1 , 1. , point_x )
+<                IF  ( rec4%print_echo ) THEN
+<                   PRINT '(A,F10.4,A)','X-location of center longitude is ',point_x,'.'
+<                END IF
+<    
+<                CALL center_latitude_polar ( lat1 , truelat1 , xlonc, 1., &
+<                                             point_x , 1., REAL(jdim+1)/2., deltax , xlatc , converged )
+<     
+<                IF          ( ( converged ) .AND. ( rec4%print_echo ) ) THEN
+<                   PRINT '(A,F10.4,A,/)','Iterated center latitude is ',xlatc,'.'
+<                ELSE IF ( .NOT. converged ) THEN
+<                   PRINT '(A)','Iterated center latitude did not converge.'
+<                   STOP 'Convergence_failure_xlatc_polar'
+<                END IF
+< 
+---
+>                CALL map_set(proj_ps,lat1,lon1,deltax*1000.,xlonc,truelat1,truelat2,proj)
+527c485
+<          !  Though -1e30 is a lovely flag value, to be sure, let's go with zero instead.
+---
+>          !  Though -1e20 is a lovely flag value, to be sure, let's go with zero instead.
+678,689c636,639
+<                         IF      ( llflag .EQ. 1 ) THEN
+<                            CALL llxy_mer(yla , xlo , xloc(j,i) , yloc(j,i) ,  &
+<                                          xlatc , xlonc_mod , cone_fac , deltax ,  &
+<                                          jdim , NINT((point_x-1.)*2)+1 , truelat1 , truelat2)
+<                         ELSE IF ( llflag .EQ. 3 ) THEN
+<                            CALL llxy_lam(yla , xlo , xloc(j,i) , yloc(j,i) ,  &
+<                                          xlatc , xlonc_mod , cone_fac , deltax ,  &
+<                                          jdim , NINT((point_x-1.)*2)+1 , truelat1 , truelat2)
+<                         ELSE IF ( llflag .EQ. 5 ) THEN
+<                            CALL llxy_ste(yla , xlo , xloc(j,i) , yloc(j,i) ,  &
+<                                          xlatc , xlonc_mod , cone_fac , deltax ,  &
+<                                          jdim , NINT((point_x-1.)*2)+1 , truelat1 , truelat2)
+---
+>                         IF ( ( llflag .EQ. 1 ) .OR. &
+>                              ( llflag .EQ. 3 ) .OR. &
+>                              ( llflag .EQ. 5 ) ) THEN
+>                            CALL latlon_to_ij(proj,yla,xlo,xloc(j,i) , yloc(j,i))
+838c788
+<                            dum2d(j,i) = tempgrd(j,i)
+---
+>                            dum2d(j,i) = tempgrd(j,i) + 0.0065 * terrain(j,i)
+840a791
+>                            dum2d(j,i) = dum2d(j,i) + 0.0065 * terrain(j,i)
+1215,1226c1166,1169
+<                         IF      ( llflag .EQ. 1 ) THEN
+<                            CALL llxy_mer(yla , xlo , xloc(j,i) , yloc(j,i) ,  &
+<                                          xlatc , xlonc_mod , cone_fac , deltax ,  &
+<                                          jdim , NINT((point_x-1.)*2)+1 , truelat1 , truelat2)
+<                         ELSE IF ( llflag .EQ. 3 ) THEN
+<                            CALL llxy_lam(yla , xlo , xloc(j,i) , yloc(j,i) ,  &
+<                                          xlatc , xlonc_mod , cone_fac , deltax ,  &
+<                                          jdim , NINT((point_x-1.)*2)+1 , truelat1 , truelat2)
+<                         ELSE IF ( llflag .EQ. 5 ) THEN
+<                            CALL llxy_ste(yla , xlo , xloc(j,i) , yloc(j,i) ,  &
+<                                          xlatc , xlonc_mod , cone_fac , deltax ,  &
+<                                          jdim , NINT((point_x-1.)*2)+1 , truelat1 , truelat2)
+---
+>                         IF ( ( llflag .EQ. 1 ) .OR. &
+>                              ( llflag .EQ. 3 ) .OR. &
+>                              ( llflag .EQ. 5 ) ) THEN
+>                            CALL latlon_to_ij(proj,yla,xlo,xloc(j,i) , yloc(j,i))
+1277a1221,1234
+>                         IF      ( ilo .EQ. 0 ) THEN
+>                            PRINT '(A)','Wrapping for ilo=0.'
+>                            ilo = 1
+>                         ELSE IF ( ilo .LT. 0 ) THEN
+>                            PRINT '(A)','Wrapping troubles for ilo.'
+>                            STOP 'Wrapping_woes_ilo'
+>                         END IF
+>                         IF      ( jla .EQ. 0 ) THEN
+>                            PRINT '(A)','Wrapping for jla=0.'
+>                            jla = 1
+>                         ELSE IF ( jla .LT. 0 ) THEN
+>                            PRINT '(A)','Wrapping troubles for jla.'
+>                            STOP 'Wrapping_woes_jla'
+>                         END IF
+===================================================================
+regridder/src/proc_make_big_header.F
+diff -r3.0 -r3.1
+18c18
+<    bhi ( 3, 2 ) = 1
+---
+>    bhi ( 3, 2 ) = 5
+21c21
+<    bhi ( 4, 2 ) = 2
+---
+>    bhi ( 4, 2 ) = 0
+===================================================================
+regridder/src/proc_namelist.F
+diff -r3.3 -r3.5
+32c32,35
+<                              print_file , print_f77_info
+---
+>                              print_file , print_tc , print_f77_info
+>    LOGICAL                :: insert_bogus_storm
+>    INTEGER                :: num_storm
+>    REAL , DIMENSION(num_max)  :: latc_loc , lonc_loc , vmax
+44c47,48
+<                         print_file , print_f77_info
+---
+>                         print_file , print_tc , print_f77_info
+>    NAMELIST / record5 / insert_bogus_storm , num_storm , latc_loc , lonc_loc , vmax
+94c98
+<    !  Undefined values for some fields ares OK.
+---
+>    !  Undefined values for some fields are OK.
+97a102
+>    insert_bogus_storm   = .FALSE.
+104a110
+>    READ ( UNIT = namelist_file , NML = record5 )
+205a212
+>    rec4%print_tc                  = print_tc
+207a215,220
+>    rec5%insert_bogus_storm        = insert_bogus_storm
+>    rec5%num_storm                 = num_storm
+>    rec5%latc_loc                  = latc_loc
+>    rec5%lonc_loc                  = lonc_loc
+>    rec5%vmax                      = vmax
+> 
+257a271,283
+> 
+>    !  Did the gentle user ask for a new level which is geometrically above the
+>    !  top pressure?  If so, then the gentle user is in error and we should proceed
+>    !  with the assumption that notification is preferred to continuing down this
+>    !  seg-fault riddled path.
+> 
+>    IF ( rec2%ptop .GT. rec2%new_levels(rec2%number_of_new_levels) ) THEN
+>       PRINT '(A,F7.1,A,F7.1,A)','You asked for a PTOP_in_Pa, ',rec2%ptop, &
+>                                 ', which is above a new level, ',rec2%new_levels(rec2%number_of_new_levels),'.'
+>       PRINT '(A,F7.1,A,F7.1,A)','Either set the PTOP_in_Pa value to ',rec2%new_levels(rec2%number_of_new_levels), &
+>                                 ', or remove all new_level_in_Pa above ',rec2%ptop,'.'
+>       STOP 'PTOP_larger_than_new_levels'
+>    END IF
+===================================================================
+regridder/src/regridder.F
+diff -r3.7 -r3.8
+1,5d0
+< !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+< !  bugs still to remove
+< !  southern hemisphere polar tests
+< !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+< 
+227c222,227
+< !          11) proc_output
+---
+> !          11) proc_tc_bogus
+> !                    Tropical bogussing scheme. The code will remove the old storm
+> !                    and replace it with a balanced symmetric vortex. The code will
+> !                    modify as many storms as are given in the namelist file.
+> 
+> !          12) proc_output
+236c236
+< !          12) proc_zap_space_array
+---
+> !          13) proc_zap_space_array
+383a384,397
+> 
+>       !  Do tropical cyclone bogussing, out with the old and in with the new.  Of
+>       !  course, the minimum requirement is that we are asking to do this option with
+>       !  at least one storm.  Also, it is reasonable to ONLY do this option during the
+>       !  first time period, as we have provided no mechanism for prescribing storms at more
+>       !  than just a single time.
+>        
+>       IF ( ( rec5%num_storm .GT. 0 ) .AND. &
+>            ( rec5%insert_bogus_storm ) .AND. &
+>            ( rec1%time_period_count .EQ. 1 ) ) THEN
+> 
+>          CALL proc_tc_bogus
+> 
+>       END IF

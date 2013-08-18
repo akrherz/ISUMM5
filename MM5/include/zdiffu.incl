@@ -1,0 +1,19 @@
+      real rmn                                                                   ZDIFFU.1
+      integer kmv(maxnes),oldnest,zdiffst(maxnes)                                ZDIFFU.2
+      integer kmip(MIX,MJX,maxnes),kmjp(MIX,MJX,maxnes),kmi(MIX,MJX),            ZDIFFU.3
+     + kmim(MIX,MJX,maxnes),kmjm(MIX,MJX,maxnes),kmj(MIX,MJX)                    ZDIFFU.4
+      real t0ij(MIX,MJX,maxnes),t0ij1(MIX,MJX,maxnes),                           ZDIFFU.5
+     + t0i1j(MIX,MJX,maxnes),t0i1j1(MIX,MJX,maxnes),                             ZDIFFU.6
+     + t0ijmn(MIX,MJX,maxnes),finv(MIX,MJX,maxnes),fjnv(MIX,MJX,maxnes)          ZDIFFU.7
+      real fjt04(MIX,MJX),fit04(MIX,MJX),fit0o(MIX,MJX),fit0u(MIX,MJX),          ZDIFFU.8
+     + fjt0o(MIX,MJX),fjt0u(MIX,MJX),fion(MIX,MJX),fiun(MIX,MJX),                ZDIFFU.9
+     + fjon(MIX,MJX),fjun(MIX,MJX),fionf(MIX,MJX),fiunf(MIX,MJX),                ZDIFFU.10
+     + fjonf(MIX,MJX),fjunf(MIX,MJX)                                             ZDIFFU.11
+       logical diffpar(maxnes)                                                   ZDIFFU.12
+CB       integer diffpar(maxnes)                                                 ZDIFFU.13
+                                                                                 ZDIFFU.14
+       common /zdiffu/ rmn,kmv,diffpar,zdiffst,                                  ZDIFFU.15
+     + kmip,kmjp,kmim,kmjm,kmi,kmj,                                              ZDIFFU.16
+     + t0ij,t0ij1,t0i1j,t0i1j1,t0ijmn,finv,fjnv,oldnest,                         ZDIFFU.17
+     + fjt04,fit04,fit0o,fit0u,fjt0o,fjt0u,fion,fiun,fjon,fjun,                  ZDIFFU.18
+     + fionf,fiunf,fjonf,fjunf                                                   ZDIFFU.19

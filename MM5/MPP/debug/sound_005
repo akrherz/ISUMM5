@@ -1,0 +1,39 @@
+c            PTEND(I,1)=-CC(I,1)*0.5*(VA(I+1,J,1)*MSFD(I+1,J)-VA(I,J,1)*          SOUND.310
+c     +                 MSFD(I,J)+VA(I+1,J+1,1)*MSFD(I+1,J+1)-VA(I,J+1,1)         SOUND.311
+c     +                 *MSFD(I,J+1)-2.*PYVP(I,1)*MSFX(I,J))/MSFX(I,J)-           SOUND.312
+c     +                 CC(I,1)*0.5*(UA(I,J+1,1)*MSFD(I,J+1)-UA(I,J,1)*           SOUND.313
+c     +                 MSFD(I,J)+UA(I+1,J+1,1)*MSFD(I+1,J+1)-UA(I+1,J,1)         SOUND.314
+c     +                 *MSFD(I+1,J)-2.*PXUP(I,1)*MSFX(I,J))/MSFX(I,J)+           SOUND.315
+c     +                 PPTENS(I,J,1)*PMASK(I,J)                                  SOUND.316
+c#ifdef DEBUGGAL
+c#  include <sound_005>
+c#endif
+cC                                                                                SOUND.317
+c          ENDDO                                                                  SOUND.318
+
+      if(i.eq.IDEBUG.and.j.eq.JDEBUG.and.inest.eq.NESTDEBUG ) then
+         k = 1
+         print*,'sound_005: calc of ptend',ig,jg,k
+         print*,'ptend',ptend(i,k)
+         print*,'dts',dts
+         print*,'dx',dx
+         print*,'dsigma',dsigma(1)
+         print*,'va(i+1,j,k)',va(i+1,j,k)
+         print*,'va(i,j,k)',va(i,j,k)
+         print*,'va(i+1,j+1,k)',va(i+1,j+1,k)
+         print*,'va(i,j+1,k)',va(i,j,k+1)
+         print*,'ua(i,j+1,k)',ua(i,j,k+1)
+         print*,'ua(i,j,k)',ua(i,j,k)
+         print*,'ua(i+1,j+1,k)',ua(i+1,j+1,k)
+         print*,'ua(i+1,j,k)',ua(i+1,j,k)
+         print*,'tb(i,j,k)',tb(i,j,k)
+         print*,'qvb(i,j,k)',qvb(i,j,k)
+         print*,'ppb(i,j,k)',ppb(i,j,k)
+         print*,'pxup(i,k)',pxup(i,k)
+         print*,'pyvp(i,k)',pyvp(i,k)
+         print*,'cc(i,k)',cc(i,k)
+         print*,'pxup(i,k)',pxup(i,k)
+         print*,'pptens(i,j,k)',pptens(i,j,k)
+         print*,'pmask(i,j)',pmask(i,j)
+      endif
+

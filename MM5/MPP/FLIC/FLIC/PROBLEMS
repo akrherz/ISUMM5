@@ -1,0 +1,42 @@
+C 1.  FLIC does not handle functions
+C 2.  FLIC does not handle files with multiple subroutines.
+C 3.  FLIC does not properly handle this: (adapted from sint.F)
+
+      subroutine bug3
+      real a(mix,mjx),b(mix,mjx)
+      integer igo(mix,mjx),jgo(mix,mjx) ! assume entries are local indices
+      do ii = 1, il
+        do j = -2, 2		! should not be converted but is
+          do i = -2, 2		! should not be converted but is
+            do jj = 1, jl
+              a(ii,jj) = b(igo(ii,jj)+i,jgo(ii,jj)+j)
+            enddo
+          enddo
+        enddo
+      enddo
+      end
+
+C 4.  Flic puts a lot of the IFLICT_ and JFLICT_ constant assignments
+C     at the beginning of the routine (as first executables).  Got
+C     into trouble with this in solve3.F, because there was a call
+C     to MP_INITDOMAIN there that changed the state of the model
+C     to for a different nest level.  But this ended up occurring
+C     *after* the IFLICT and JFLICT variables had already been set
+C     using old state for the prev. nest.  Temporary solution was
+C     to move call call to MP_INITDOMAIN out of solve3 into the caller.
+
+C 5.  FLIC doesn't handle multiple instances of a local to global 
+C     index conversion in a conditional:
+C
+C       if(inest.eq.2.and.(j.eq.28.or.j.eq.29))then
+C
+Cconverts to:
+C
+C       IF(INEST.EQ.2.AND.((((J)-jdif_x0) ).EQ.28.OR.J.EQ.29))THEN
+C                                                    ^^^^^^^
+C                                               didn't get converted
+C      FIXED -- MODIFIED CODE AT THE BOTTOM
+C      OF depends_on.c; parenK nodes weren't handing back more than
+C      the first one from their subexpression.
+C
+

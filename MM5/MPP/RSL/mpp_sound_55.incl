@@ -1,0 +1,21 @@
+CSTART   mpp_sound_55.incl
+C
+C  This is a fix to the indexing of ESTORE, which needs to be communicated
+C  on a 168pt stencil (6-wide pad areas).  Except for this one 2-d array,
+C  none of the rest of the model needs a pad wider than 2.  Earlier versions
+C  just made everything have 6-wide pads at a tremendous cost in needless
+C  memory usage.  This special indexing, along with the special way that
+C  ESTORE is declared here and in define_comms.F, allows only ESTORE to 
+C  have the extra 6-wide padding.
+C
+C  Further additional note: at the time this was written, FLIC did not see
+C  through intrinsic calls (ie. it wouldnt trace an index back through 
+C  a call to max or min).  If FLIC is updated with this ability, this will
+C  need to be looked at again.
+C
+
+                WPVAL(I)=WPVAL(I)
+     &        + ESTORE((min(max(-3,(IN)+idif_x0),MIX+4)),
+     &                 (min(max(-3,(JN)+jdif_x0),MJX+4)))
+     &           *TMASK(NSI,NSJ)*WTIJ(I,J,INEST)
+CEND   mpp_sound_55.incl

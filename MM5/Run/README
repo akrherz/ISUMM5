@@ -1,0 +1,45 @@
+
+The files residing in this directory are
+
+Makefile
+mm5.F       - mm5 main program
+LANDUSE.TBL - ascii file for land-surface characteristics
+
+Once 'make' is executed from the top directory, the mm5.exe
+will be generated in this directory.
+
+When running mm5, the following file also appears here:
+
+mmlif 
+
+which is contains all namelists needed to run MM5.
+
+The MM5 input files are expected to be in this directory.
+When mm5 is executed, all output files are created in this
+directory.
+
+Expected input files:
+
+MMINPUT_DOMAIN1  - output from V3 Interpf
+BDYOUT_DOMAIN1   - output from V3 Interpf
+LOWBDY_DOMAIN1   - output from V3 Interpf
+TERRAIN_DOMAIN{2,3,...}   - output from V3 Terrain for nests
+
+MM5 output files:
+
+MMOUT_DOMAIN{1,2,...}
+SAVE_DOMAIN{1,2,...}  - if IFSAVE = .TRUE.
+
+For a restart run:
+
+MMINPUT_DOMAIN1  - output from V3 Interpf
+BDYOUT_DOMAIN1   - output from V3 Interpf
+RESTART_DOMAIN{1,2,...} - renamed from SAVE_DOMAIN{1,2,..}
+
+For a 4DDA run with surface analysis:
+
+RW4DDA_DOMAIN{1,2,...}
+
+For an observational 4DDA run:
+
+MM5OBS_DOMAIN{1,2,...}

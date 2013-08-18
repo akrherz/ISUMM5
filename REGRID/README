@@ -1,0 +1,127 @@
+
+VERSION 3 REGRID PROGRAM (release 3-7)
+(Updated December 23, 2004)
+
+This is the main directory of the REGRID program in the MM5 modeling 
+system Version 3. Everything a user needs to run the REGRID program 
+is contained in this directory.
+
+For questions, please send emails to mesouser@ucar.edu
+
+For detailed documentation about REGRID program, please see
+pregrid/Doc, and regridder/Doc directory.
+
+---------------------------------------------------------------
+
+What is in V3 REGRID?
+
+V3 REGRID is replacing V2 Datagrid program, is structured similarly to
+V2 REGRID. For initial information on REGRID development, please see
+
+http://www.mmm.ucar.edu/mm5/mm5v2/regrid.html
+
+V3 REGRID program uses V3 data format, which is different from
+that in V2. For details on V3 data format, please see
+
+http://www.mmm.ucar.edu/mm5/mm5v3.html
+
+REGRID is a Fortran 90 program, and requires Fortran 90 compiler.
+
+REGRID is supported for Cray, Alpha, HP, IBM, SGI, SUN, and Fujitsu with
+their native compilers, and PC running Linux using Portland Group Fortran
+90 compiler. If your machine isn't one of the ones supported or the
+compiler isn't the native one from the vendor, you need to edit the Makefile.
+
+---------------------------------------------------------------
+
+***************************************************************
+Also see the online self-tutorial at
+http://www.mmm.ucar.edu/mm5/mm5v3/tutorial/teachyourself.html
+***************************************************************
+
+To compile for both pregrid and regridder:
+
+- Type 'make' in the REGRID directory to compile.
+
+- When make is successful, executables will be created in appropriate
+  subdirectories.
+
+---------------------------------------------------------------
+
+To run pregrid:
+
+If you have a dataset that is supported by pregrid, cd to pregrid
+directory, edit pregrid.csh to execute the program.
+
+To obtain dataset requested by pregrid, see pregrid/Doc for details.
+
+If you have a dataset that is NOT supported by pregrid, read the
+documentation in pregrid/Doc/Format carefully, prepare your own program
+and put your data in the format described in the document.
+
+---------------------------------------------------------------
+
+To run regridder:
+
+Once you have data written in the intermediate format, whether it is
+done by pregrid program, or your own program, cd to regridder directory,
+edit namelist.input, and type regridder to execute the program.
+
+Required input data for regridder include TERRAIN_DOMAIN1 generated from
+running TERRAIN program, and output from pregrid.
+
+The output file from regridder is REGRID_DOAMIN1.
+
+If you need to run regridder for multiple domains, edit namelist to
+set appropriate input TERRAIN output files. regridder will produce
+output files accordingly, i.e. TERRAIN_DOMAIN2 --> REGRID_DOAMIN2, etc.
+
+For information how to use the namelist, please read Doc/README.namelist.
+
+---------------------------------------------------------------
+
+Note on minimum data requirement:
+
+There is a minimum amount of data required to run the MM5 model. These
+are U and V component of wind, temperature, relative humidity and height at 
+mandatory levels: 100, 150, 200, 250, 300, 400, 500, 700, 850, 1000 mb, 
+and at surface. Sea-level pressure (SLP) and SST are also mandatory. 
+Without SLP and SST, regridder will stop. Without first guess fields 
+for U, V, T, RH at surface, regridder will currently use 1000 mb data 
+to fill surface fields. Please note that this is not a realistic 
+representation of surface condition when there is significant topography
+in the model domain. 
+If regridder does not find surface data, it will print out a warning
+message at each processing time.  One can use namelist option in INTERPF: 
+usesfc = .FALSE. to exclude the use of improperly generated surface data.
+Still, providing surface data is a preferred choice.
+
+---------------------------------------------------------------
+
+Note on data required to run land-surface model (LSM) option in MM5:
+
+The LSM option in MM5 requires additional data than what are normally
+required to run MM5 (for example, 3-dimensional pressure level and surface
+analyses of wind, temperature, relative humidity, etc.). 
+See 'Land-Surface Model' section of 'Version 3 MM5 Modeling System at a Glance'
+on the Web for a list of required data for LSM:
+
+http://www.mmm.ucar.edu/mm5/mm5v3/v3-intro.html
+
+These additional data unfortunately are not available in every dataset.  
+Currently the datasets that provide these data are: NCEP/NCAR Reanalysis (NNRP),
+and Eta212 grid real-time data provided on NCEP ftp server.
+
+---------------------------------------------------------------
+
+Files/directories in this directory:
+
+CHANGES:   description of changes since early releases
+Makefile:  makefile for both pregrid and regridder
+README:    general information about how to run REGRID
+configure.rules: make rules (do not require change)
+pregrid:   directory of pregrid programs
+regridder: directory of regridder program
+ibm-regrid.deck:  batch job deck for NCAR's IBM
+cray-regrid.deck: batch job deck for NCAR's Cray 
+           (may be modified for other Cray environment)

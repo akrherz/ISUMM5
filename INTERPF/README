@@ -1,0 +1,116 @@
+
+VERSION 3 INTERPF PROGRAM (release 3-7)
+(Updated December 23, 2004)
+
+This is the main directory of the INTERPF program in the MM5 modeling 
+system Version 3. Everything a user needs to run the INTERPF program 
+is contained in this directory.
+
+For questions, please send emails to mesouser@ucar.edu
+
+For detailed documentation about INTERPF program, please see Doc/.
+
+---------------------------------------------------------------
+
+What is in V3 INTERPF?
+
+V3 INTERPF takes care of the frontend V3 Interp task. However, V3
+INTERPF works for one domain only. Depending on the domain of input file
+from REGRID/RAWINS/little_r, INTERPF will create output file for MM5
+for that domain. This decision is made because MM5 model is now
+capable of initializing nest with high resolution terrain input.
+
+V3 INTERPF is written in Fortran 90.
+
+V3 INTERPF program uses V3 data format, which is different from
+that in V2. For details on V3 data format, please see
+
+http://www.mmm.ucar.edu/mm5/mm5v3.html
+
+INTERPF is a Fortran 90 program, and requires Fortran 90 compiler.
+
+INTERPF is supported for Cray, Alpha, HP, IBM, SGI, SUN, and Fujitsu with
+their native compilers, and PC running Linux using Portland Group Fortran
+90 compiler. If your machine isn't one of the ones supported or the
+compiler isn't the native one from the vendor, you need to edit the Makefile.
+
+---------------------------------------------------------------
+
+***************************************************************
+Also see the online self-tutorial at
+http://www.mmm.ucar.edu/mm5/mm5v3/tutorial/teachyourself.html
+***************************************************************
+
+To compile INTERPF:
+
+- Type 'make' in the INTERPF directory to compile;
+
+- When make is successful, executable interpf will appear in this
+  directory.
+
+---------------------------------------------------------------
+
+To run INTERPF:
+
+Edit namelist.input, and type ./interpf to execute the program.
+
+Required input file for INTERPF can come from either 
+REGRID (REGRID_DOMAINx, where x = 1,2,3,...), or 
+RAWINS (RAWINS_DOAMINx) or 
+little_r (LITTLE_R_DOMAINx).
+The directory and name of the input file are set in namelist.input.
+
+The output files from INTERPF are
+
+MMINPUT_DOMAIN1
+BDYOUT_DOMAIN1
+LOWBDY_DOMAIN1
+
+If you need to run INTERPF for multiple domains, edit namelist.input 
+to set appropriate input files from REGRID/RAWINS/little_r, and INTERPF 
+will then produce corresponding outputs, e.g., 
+RAWINS_DOMAIN2 --> MMINPUT_DOMAIN2, etc.
+
+Note: Because Interpf calculates the substrate temperature used in the MM5
+      model, it requires at least a full-day of input data. For example,
+      if your input is 12 hourly apart, Interpf requires at least one 0 Z
+      and one 12 Z data to calculate substrate temperature. If the input
+      is 3 hourly apart, it will need at least 0, 3, 6, 9, 12, 15, 18, and
+      21 Z data to calculate this temperature.
+
+Note for release-3-4: Begin with this release, INTERPF is able to generate
+      time-varying SST, snow cover and sea ice fields in LOWBDY file, if
+      these fields exist in the input. If the input contains SKIPTEMP, then
+      INTERPF will only compute a time-averaged SST, and snow cover and
+      sea ice at first time period will be produced in LOWBDY.
+
+
+---------------------------------------------------------------
+
+Namelist:
+
+On machines that do not support comments (Cray, SGI, HP and Linux, for example),
+you can use namelist.input.SOC as a template to build your namelist,
+or simply delele all comments after the ! sign.
+
+---------------------------------------------------------------
+
+Trouble shooting:
+
+If the job gets a 'Segmentation fault' immediately at run time, it may mean 
+there isn't enough memory to run the job. On some machine, type 'unlimit'
+helps.
+
+---------------------------------------------------------------
+
+Files/directories in this directory:
+
+CHANGES:   description of changes made since 3.0
+Doc:       directory containing more documentation on INTERPF
+Makefile:  top-level makefile
+README:    general information about how to run INTERPF
+configure.rules:   rules for compilation
+interpf.deck.cray: batch job deck for NCAR's Cray
+namelist.input: namelist file requiring user modification
+namelist.input.SOC: namelist input file for SOC case
+src:       directory of INTERPF source code

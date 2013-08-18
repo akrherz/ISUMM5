@@ -1,0 +1,47 @@
+C                                                                                POINT2D.1
+C----------------------------------------------------------------------          POINT2D.2
+C                                                                                POINT2D.3
+C ADD POINTERS FOR 2D SEAICE VARIABLES                                           19DEC02.1314
+      REAL MSFX,MSFD,MAVAIL,MOL                                                  POINT2D.4
+      REAL ALB,EMISS,F,HOL,HT,PSA,PSB,RAINC,RAINNC,SHC,THC,TMN,XLAND,            POINT2D.5
+     1 XLAT,XLONG,ZNT,ZOL                                                        POINT2D.6
+      POINTER (IAPA,   PSA(MIX,MJX)), (IAPB,   PSB(MIX,MJX)),                    POINT2D.7
+     1        (IARC, RAINC(MIX,MJX)), (IARN,RAINNC(MIX,MJX)),                    POINT2D.8
+     2        (IAF ,     F(MIX,MJX)), (IAMX,  MSFX(MIX,MJX)),                    POINT2D.9
+     3        (IAMD,  MSFD(MIX,MJX)), (IAHT,    HT(MIX,MJX)),                    POINT2D.10
+     4        (IALT,  XLAT(MIX,MJX)), (IALO, XLONG(MIX,MJX)),                    POINT2D.11
+     5        (IALD, XLAND(MIX,MJX)), (IAAL,   ALB(MIX,MJX)),                    POINT2D.12
+     6        (IATH,   THC(MIX,MJX)), (IASH,   SHC(MIX,MJX)),                    POINT2D.13
+     7        (IAZN,   ZNT(MIX,MJX)), (IATM,   TMN(MIX,MJX)),                    POINT2D.14
+     8        (IAMA,MAVAIL(MIX,MJX)), (IAEM, EMISS(MIX,MJX)),                    POINT2D.15
+     9        (IAZO,   ZOL(MIX,MJX)), (IAHO,   HOL(MIX,MJX))                     POINT2D.16
+      REAL CAPG,COSROT,EF,GLW,GSW,HFX,PBL,PRW,PSAINI,QFX,RAINP,REGIME,           POINT2D.17
+     1 SATBRT,SINROT,SNOWC,TGA,TGB,TSS,UST,OLW,OSW                               07NOV00.1138
+      POINTER (IAMO,   MOL(MIX,MJX)), (IAPL,   PBL(MIX,MJX)),                    POINT2D.19
+     1        (IARE,REGIME(MIX,MJX)), (IAHX,   HFX(MIX,MJX)),                    POINT2D.20
+     2        (IAQX,   QFX(MIX,MJX)), (IAUT,   UST(MIX,MJX)),                    POINT2D.21
+     3        (IAPR,   PRW(MIX,MJX)), (IATGA,  TGA(MIX,MJX)),                    POINT2D.22
+     4       (IATGB,   TGB(MIX,MJX)), (IASA,SATBRT(MIX,MJX)),                    POINT2D.23
+     5       (IAPSI,PSAINI(MIX,MJX)), (IARP, RAINP(MIX,MJX)),                    POINT2D.24
+     6        (IAGS,   GSW(MIX,MJX)), (IAGL,   GLW(MIX,MJX)),                    POINT2D.25
+     6        (IAOS,   OSW(MIX,MJX)), (IAOL,   OLW(MIX,MJX)),                    07NOV00.1139
+     7        (IACG,  CAPG(MIX,MJX)), (IASC, SNOWC(MIX,MJX)),                    POINT2D.26
+     8        (IAEF,    EF(MIX,MJX)), (IACR,COSROT(MIX,MJX)),                    POINT2D.27
+     9        (IASR,SINROT(MIX,MJX)), (IATSS,  TSS(MIX,MJX))                     24SEP99.406
+      REAL TA2,QA2,UA10,VA10,SNOWNCT                                             05DEC01.645
+      POINTER (IATA2,  TA2(MIX,MJX)), (IAQA2,  QA2(MIX,MJX)),                    07NOV00.1141
+     1        (IAUA10,UA10(MIX,MJX)), (IAVA10,VA10(MIX,MJX)),                    05DEC01.646
+     2        (IASNT,SNOWNCT(MIX,MJX))                                           05DEC01.647
+      REAL SEAICE,TGSI,HFXSI,QFXSI                                               19DEC02.1315
+      POINTER (IASI,SEAICE(MIX,MJX)), (IATGS, TGSI(MIX,MJX)),                    19DEC02.1316
+     1        (IAHXS,HFXSI(MIX,MJX)), (IAQXS,QFXSI(MIX,MJX))                     19DEC02.1317
+      COMMON/ADDR2/ IAPA, IAPB, IARC, IARN,  IAF, IAMX, IAMD, IAHT,              POINT2D.29
+     1              IALT, IALO, IALD, IAAL, IATH, IASH, IAZN, IATM,              POINT2D.30
+     2              IAMA, IAEM, IAZO, IAHO, IAMO, IAPL, IARE, IAHX,              POINT2D.31
+     3              IAQX, IAUT, IAPR,IATGA,IATGB, IASA,IAPSI, IARP,              POINT2D.32
+     4              IAGS, IAGL, IAOS, IAOL, IACG, IASC, IAEF, IACR,              07NOV00.1143
+     5              IASR, IATSS,IATA2,IAQA2,IAUA10,IAVA10,IASNT,IASI,            19DEC02.1318
+     6              IATGS,IAHXS,IAQXS                                            19DEC02.1319
+C                                                                                POINT2D.34
+C----------------------------------------------------------------------          POINT2D.35
+C                                                                                POINT2D.36

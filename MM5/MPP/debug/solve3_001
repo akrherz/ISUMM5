@@ -1,0 +1,20 @@
+C      CALL DOTS(PSB,HSCR2,IL,JL,MIX,MJX)                                         02DEC96.271
+C#ifdef DEBUGGAL
+C#  include <solve3_001>
+C#endif
+CC                                                                                SOLVE3.79
+CC 1./PSTAR                                                                       SOLVE3.80
+CC                                                                                SOLVE3.81
+      if (inest.eq.NESTDEBUG) then
+        print*,'solve3_001: delta t ', inest, ' nn = ' ,nn
+        print*,'dtbc = (xtime+dtmin-tbdybe)*60.',
+     $       dtbc,xtime,dtmin,tbdybe
+        print*,'dtba = (xtime-tbdybe)*60.',
+     $       dtba,xtime,tbdybe
+        print *,'dtb ',dtb
+        i = IDEBUG
+        j = JDEBUG
+        print*,'HSCR1 ',HSCR1(I,J)
+        print*,'HSCR2 ',HSCR2(I,J)
+      endif
+

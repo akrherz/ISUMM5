@@ -1,0 +1,426 @@
+===================================================================
+CHANGES
+diff -r3.12 -r3.17
+11c11
+< The current release is 3.5 (December 5, 2001)
+---
+> The current release is 3.6 (December 19, 2002)
+14a15,83
+> Bug fixes and changes in V3.6:
+> 
+> Bug fixes:
+> 
+> - A fix to correct problems to generate terrain and deep soil
+>   temperature on NCAR's IBM using xlf 8.1 compiler. (This change 
+>   has been in the TERRAIN.TAR file since 10/09/02)
+> 
+>   Affected file:
+>   src/ia.F
+> 
+> - Modify ftp script so that old 13-category landuse data are
+>   always downloaded. This will correct a problem with using
+>   old landuse data with IFEZFUG = .F. option (which requires
+>   new land-water mask data).
+> 
+>   Affected file:
+>   Data/ftp.csh
+> 
+> - Modify the ftp scripts so that 30sec data is still processed
+>   when the data is downloaded manually.
+> 
+>   Affected files:
+>   Data/ftp30s.csh
+>   Templates/terrain.deck.*
+> 
+> - Correction to job script if switching input data types between
+>   USGS and SiB.
+> 
+>   Affected files:
+>   Templates/terrain.deck.*
+> 
+> - Correct the problem of calculating core factor for Lambert-Conformal 
+>   projection when TRUELAT1=TRUELAT2. Not commonly done.
+>   (Thanks to Mariusz Pagowski of NOAA.)
+> 
+>   Affected files:
+>   src/setup.F, plots.F
+> 
+> 
+> Changes and improvements:
+> 
+> - Add a print statement when 30sec elevation data is accessed.
+> 
+>   Affected files:
+>   src/terdrv.F
+> 
+> - Add option "dataclean" to Makefile 
+>   This will clean up all data files in the TERRAIN/Data 
+>   directory and well as remove the entire TERRAIN/Data30s
+>   directory
+> 
+>   Affected files:
+>   Makefile
+> 
+> - Make IBM batch jobs more user friendly
+> 
+>   Affected files:
+>   Templates/terrain.deck.ibm.batch
+> 
+> - Add batch terrain job script for NCAR IBM for running large
+>   terrain jobs. This deck is available on NCAR's computer under
+>   ~mesouser/MM5V3/IBM
+> 
+> 
+> ========================================================
+> 
+> Bug fixes and changes in V3.5:
+> 
+133c202
+< Bug fixes and changes in V.34:
+---
+> Bug fixes and changes in V3.4:
+===================================================================
+Makefile
+diff -r3.13 -r3.14
+13a14
+> RM_Data =       DEM_*_GLOBAL LWMASK* SOILCAT.* SOILTEMP.* VEG-FRACTION.* VEG-USGS.* VEG-SIB.* new_30sdata*
+162a164,166
+> 
+> dataclean:
+> 	( $(CD) Data ; $(RM) $(RM_Data) ; $(CD) .. ; $(RM) -r Data30s )
+===================================================================
+README
+diff -r3.11 -r3.12
+2,3c2,3
+< VERSION 3 TERRAIN PROGRAM (release-3-5)
+< (Updated December 5, 2001)
+---
+> VERSION 3 TERRAIN PROGRAM (release-3-6)
+> (Updated December 19, 2002)
+===================================================================
+Data/ftp.csh
+diff -r3.3 -r3.4
+93a94,100
+>       if ( ! -e LANDUSE.30 ) then
+>          cat >! ftp_low << EOF
+>          get LANDUSE-OLD.TAR.gz
+> EOF
+>          cat ftp_low >> ftp.tmp
+>       endif
+> 
+===================================================================
+Data/ftp30s.csh
+diff -r3.2 -r3.3
+130c130
+<                gunzip -c ${File30s[$Num2]}.gz | tar xvf -
+---
+>                gunzip -c ${where30s}/${File30s[$Num2]}.gz | tar xvf -
+131a132
+>                ln -s $File30s[$Num0]  ${ForUnit}$File30s[$Num3]
+136c137
+<                tar xvf ${File30s[$Num2]}
+---
+>                tar xvf ${where30s}/${File30s[$Num2]}
+137a139
+>                ln -s $File30s[$Num0]  ${ForUnit}$File30s[$Num3]
+===================================================================
+Templates/terrain.deck.cray
+diff -r3.14 -r3.16
+301a302,309
+> else if ( $LandUse == USGS ) then
+> 
+>    cp src/paramesv1.incl src/paramesv.incl.tmp
+>    ./Templates/incldiff.sh src/paramesv.incl.tmp src/paramesv.incl
+>    cp src/vs_data2.incl  src/vs_data.incl.tmp
+>    ./Templates/incldiff.sh src/vs_data.incl.tmp src/vs_data.incl
+>    make >& make2.print.out
+> 
+312,313c320,321
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+319,320c327,328
+<    ftp.csh >& ftp.out
+<    rm ftp.csh 
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+326,327c334,335
+<    ftp30s.csh $Where30sTer $users >& ftp30s.out
+<    rm ftp30s.csh
+---
+>    ./ftp30s.csh $Where30sTer $users >& ftp30s.out
+> #  rm ftp30s.csh ftp30s.out
+===================================================================
+Templates/terrain.deck.cray-ia
+diff -r3.13 -r3.16
+234a235,242
+> else if ( $LandUse == USGS ) then
+> 
+>    cp src/paramesv1.incl src/paramesv.incl.tmp
+>    ./Templates/incldiff.sh src/paramesv.incl.tmp src/paramesv.incl
+>    cp src/vs_data2.incl  src/vs_data.incl.tmp
+>    ./Templates/incldiff.sh src/vs_data.incl.tmp src/vs_data.incl
+>    make >& make2.print.out
+> 
+245,246c253,254
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+252,253c260,261
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+256c264
+< if ( $?IfUsgsTopo && $ftpdata == true ) then
+---
+> if ( $?IfUsgsTopo && $?IfProcData ) then
+260,261c268,269
+<    ftp30s.csh $Where30sTer $users >& ftp30s.out
+<    rm ftp30s.csh ftp30s.out
+---
+>    ./ftp30s.csh $Where30sTer $users >& ftp30s.out
+> #  rm ftp30s.csh ftp30s.out
+===================================================================
+Templates/terrain.deck.dec
+diff -r3.13 -r3.16
+234a235,242
+> else if ( $LandUse == USGS ) then
+> 
+>    cp src/paramesv1.incl src/paramesv.incl.tmp
+>    ./Templates/incldiff.sh src/paramesv.incl.tmp src/paramesv.incl
+>    cp src/vs_data2.incl  src/vs_data.incl.tmp
+>    ./Templates/incldiff.sh src/vs_data.incl.tmp src/vs_data.incl
+>    make >& make2.print.out
+> 
+245,246c253,254
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+252,253c260,261
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+256c264
+< if ( $?IfUsgsTopo && $ftpdata == true ) then
+---
+> if ( $?IfUsgsTopo && $?IfProcData ) then
+260,261c268,269
+<    ftp30s.csh $Where30sTer $users >& ftp30s.out
+<    rm ftp30s.csh ftp30s.out
+---
+>    ./ftp30s.csh $Where30sTer $users >& ftp30s.out
+> #  rm ftp30s.csh ftp30s.out
+===================================================================
+Templates/terrain.deck.hp
+diff -r3.13 -r3.16
+234a235,242
+> else if ( $LandUse == USGS ) then
+> 
+>    cp src/paramesv1.incl src/paramesv.incl.tmp
+>    ./Templates/incldiff.sh src/paramesv.incl.tmp src/paramesv.incl
+>    cp src/vs_data2.incl  src/vs_data.incl.tmp
+>    ./Templates/incldiff.sh src/vs_data.incl.tmp src/vs_data.incl
+>    make >& make2.print.out
+> 
+245,246c253,254
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+252,253c260,261
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+256c264
+< if ( $?IfUsgsTopo && $ftpdata == true ) then
+---
+> if ( $?IfUsgsTopo && $?IfProcData ) then
+260,261c268,269
+<    ftp30s.csh $Where30sTer $users >& ftp30s.out
+<    rm ftp30s.csh ftp30s.out
+---
+>    ./ftp30s.csh $Where30sTer $users >& ftp30s.out
+> #  rm ftp30s.csh ftp30s.out
+===================================================================
+Templates/terrain.deck.ibm
+diff -r3.12 -r3.15
+234a235,242
+> else if ( $LandUse == USGS ) then
+> 
+>    cp src/paramesv1.incl src/paramesv.incl.tmp
+>    ./Templates/incldiff.sh src/paramesv.incl.tmp src/paramesv.incl
+>    cp src/vs_data2.incl  src/vs_data.incl.tmp
+>    ./Templates/incldiff.sh src/vs_data.incl.tmp src/vs_data.incl
+>    make >& make2.print.out
+> 
+245,246c253,254
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+252,253c260,261
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+256c264
+< if ( $?IfUsgsTopo && $ftpdata == true ) then
+---
+> if ( $?IfUsgsTopo && $?IfProcData ) then
+260,261c268,269
+<    ftp30s.csh $Where30sTer $users >& ftp30s.out
+<    rm ftp30s.csh ftp30s.out
+---
+>    ./ftp30s.csh $Where30sTer $users >& ftp30s.out
+> #  rm ftp30s.csh ftp30s.out
+===================================================================
+Templates/terrain.deck.sgi
+diff -r3.14 -r3.17
+234a235,242
+> else if ( $LandUse == USGS ) then
+> 
+>    cp src/paramesv1.incl src/paramesv.incl.tmp
+>    ./Templates/incldiff.sh src/paramesv.incl.tmp src/paramesv.incl
+>    cp src/vs_data2.incl  src/vs_data.incl.tmp
+>    ./Templates/incldiff.sh src/vs_data.incl.tmp src/vs_data.incl
+>    make >& make2.print.out
+> 
+245,246c253,254
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+252,253c260,261
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+256c264
+< if ( $?IfUsgsTopo && $ftpdata == true ) then
+---
+> if ( $?IfUsgsTopo && $?IfProcData ) then
+260,261c268,269
+<    ftp30s.csh $Where30sTer $users >& ftp30s.out
+<    rm ftp30s.csh ftp30s.out
+---
+>    ./ftp30s.csh $Where30sTer $users >& ftp30s.out
+> #  rm ftp30s.csh ftp30s.out
+===================================================================
+Templates/terrain.deck.sun
+diff -r3.12 -r3.15
+234a235,242
+> else if ( $LandUse == USGS ) then
+> 
+>    cp src/paramesv1.incl src/paramesv.incl.tmp
+>    ./Templates/incldiff.sh src/paramesv.incl.tmp src/paramesv.incl
+>    cp src/vs_data2.incl  src/vs_data.incl.tmp
+>    ./Templates/incldiff.sh src/vs_data.incl.tmp src/vs_data.incl
+>    make >& make2.print.out
+> 
+245,246c253,254
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+252,253c260,261
+<    ftp.csh >& ftp.out
+<    rm ftp.csh ftp.out
+---
+>    ./ftp.csh >& ftp.out
+> #  rm ftp.csh ftp.out
+256c264
+< if ( $?IfUsgsTopo && $ftpdata == true ) then
+---
+> if ( $?IfUsgsTopo && $?IfProcData ) then
+260,261c268,269
+<    ftp30s.csh $Where30sTer $users >& ftp30s.out
+<    rm ftp30s.csh ftp30s.out
+---
+>    ./ftp30s.csh $Where30sTer $users >& ftp30s.out
+> #  rm ftp30s.csh ftp30s.out
+===================================================================
+src/ia.F
+diff -r3.0 -r3.2
+41a42,43
+> C new IBM xlf 8.1 compiler fix: thanks to Jim Edwards                            19DEC02.1
+>            if (ii2.lt.0) ii2 = ii2 + 256                                         19DEC02.2
+===================================================================
+src/output.F
+diff -r3.13 -r3.15
+74c74
+<       BHI (3,1) = 5                                                              06NOV00.114
+---
+>       BHI (3,1) = 6                                                              19DEC02.3
+===================================================================
+src/plots.F
+diff -r3.9 -r3.11
+963a964
+>       if ( abs(fsplat-ssplat) .gt. 1.e-1 ) then                                  19DEC02.4
+968a970,972
+>       else                                                                       19DEC02.5
+>       confac = sign*sin(fsplat * conv)                                           19DEC02.6
+>       end if                                                                     19DEC02.7
+===================================================================
+src/rdldtr.F
+diff -r3.8 -r3.10
+72,75c72
+< C AND LONGITUDE BEFORE THE COMPARISON. FOR 5-MINUTE AND 30-SECOND DATA,          RDLDTR.72
+< C SINCE NO LAND-USE DATA ARE AVAILABLE AT THESE RESOLUTIONS, THE SOURCE          RDLDTR.73
+< C DATA ARE LOCATED AT THE UPPER LEFT CORNER OF THE LATITUDE AND                  RDLDTR.74
+< C LONGITUDE BOX. THEREFORE, NO SHIFT IS NEEDED.                                  RDLDTR.75
+---
+> C AND LONGITUDE BEFORE THE COMPARISON.                                           19DEC02.8
+93c90
+< C TO THE FORMAT DESCRIBED IN TERRAIN DOCUMENTATION SECTION 2.2.  AFTER           RDLDTR.93
+---
+> C TO THE FORMAT DESCRIBED IN TERRAIN CHAPTER OF TUTORIAL NOTES.  AFTER           19DEC02.9
+120,125d116
+< C .. LND=0 FOR 5 MIN. OLD 13-CAT LANDUSE (NOT AVAIL FOR RESOL > 10MIN)           05DEC01.17
+< C    AND 30 SEC. ELEVATION DATA, SET SHIFT=0,                                    05DEC01.18
+<       IF (NI.GT.5 .AND. LND.EQ.0) CSHIFT = 0.0                                   05DEC01.19
+< C .. NI < 0 AND NI >= -4: FOR VEGETATION, SOIL, VEGETATION                       05DEC01.20
+< C    FRACTION, AND DEEP SOIL TEMP DATA, SHIFT .NE. 0:                            05DEC01.21
+< C     IF (NI.LE.-1 .AND. NI.GE.-3) CSHIFT = 0.0                                  05DEC01.22
+===================================================================
+src/setup.F
+diff -r3.14 -r3.18
+61c61
+<       PRINT *,'THIS IS TERRAIN VERSION 3.4'                                      06NOV00.288
+---
+>       PRINT *,'THIS IS TERRAIN VERSION 3.6'                                      19DEC02.10
+400a401
+>       IF (ABS(TRUELAT1-TRUELAT2) .GT. 1.E-1) THEN                                19DEC02.11
+404a406,408
+>       ELSE                                                                       19DEC02.12
+>       XN=SIGN*SIN(TRUELAT1/CONV)                                                 19DEC02.13
+>       ENDIF                                                                      19DEC02.14
+===================================================================
+src/terdrv.F
+diff -r3.16 -r3.18
+175,177c175,177
+<         IF(IPRINT.EQ.1)PRINT 997,NVOL1,LENGTH,ID2(NI)                            06NOV00.495
+<  997    FORMAT('TILED-30S: OPEN(',I2,'  Data/new_30sdata, RECL=',I6,             TERDRV.154
+<      -         '  ID2=',I6)                                                      TERDRV.155
+---
+>         PRINT 997, NI, NVOL1, LENGTH                                             19DEC02.15
+>  997    FORMAT(/,I2,'==> OPEN DIRECT-ACCESS: FORT.',I2.2,'  FILE=',              19DEC02.16
+>      -         'Data/new_30sdata      RECORD LENGTH=',I6,/)                      19DEC02.17

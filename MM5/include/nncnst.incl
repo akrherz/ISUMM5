@@ -1,0 +1,6 @@
+      REAL PR0N,PS0N,RHO0N,T0N                                                   NNCNST.1
+      POINTER (INNT0,T0N(MIXNH,MJXNH,MKXNH)),                                    NNCNST.2
+     1        (INNPS0,PS0N(MIXNH,MJXNH)),                                        NNCNST.3
+     2        (INNPR0,PR0N(MIXNH,MJXNH,MKXNH)),                                  NNCNST.4
+     3        (INNRHO0,RHO0N(MIXNH,MJXNH,MKXNH))                                 NNCNST.5
+      COMMON /NNCNS/INNT0,INNPS0,INNPR0,INNRHO0                                  NNCNST.6

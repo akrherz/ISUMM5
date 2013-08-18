@@ -1,0 +1,3 @@
+CSTART   mpp_errob_10.incl
+      CALL RSL_EXCH_STENCIL(DOMAINS(IN),STEN_FDOBS(IN))
+CEND   mpp_errob_10.incl

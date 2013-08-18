@@ -1,0 +1,6 @@
+CSTART   mpp_mm5_20.incl
+#ifdef UPSHOT
+      CALL MM5_FINISHLOG
+#endif
+      CALL RSL_SHUTDOWN
+CEND   mpp_mm5_20.incl

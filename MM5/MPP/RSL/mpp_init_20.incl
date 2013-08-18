@@ -1,0 +1,3 @@
+CSTART   mpp_init_20.incl
+      CALL RSL_READ(9,IO2D_IJ,TMN,DOMAINS(1),RSL_REAL,GLEN,LLEN)
+CEND   mpp_init_20.incl

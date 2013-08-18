@@ -1,0 +1,60 @@
+
+(Last updated: 02/11/00)
+
+The INTERPF v3 program is a f90 source code that handles only the
+standard front-end tasks on a single domain for model input
+generation.  The code has been modified by NOAA/FSL, AFWA and
+by NCAR.  The direct access files have been replaced by 
+dynamically allocated memory, which implies that INTERPF uses 
+significantly more memory than previous versions.  Because the
+INTERPF program dynamically allocates the required memory, there
+is no need to re-compile the code for different sized 
+horizontal configurations, input vertical levels or output
+vertical levels.
+
+The MM5 v3 code expects three types of input files: initial
+condition of the meteorological fields, lateral boundary conditions
+of the meteorological fields and the lower boundary condition
+(the reservoir temperature [a daily mean], snow cover, seaice
+fractional seaice, and time-averaged SST).  
+These files are named MMINPUT_DOMAINx, BDYOUT_DOMAINx and LOWBDY_DOMAINx, 
+where "x" is the grid identifier bhi(13,1).  The INTERPF code must be 
+run multiple times to generate more than a single domain of
+input for the model.
+
+The files from the INTERPF program are all in the v3 format,
+including the BDYOUT_DOMAINx file.  The MMINPUT_DOMAINx file
+does not have coupled output, but for convenience inside the model,
+the BDYOUT_DOMAINx file is coupled with p* (kPa).  The boundary
+file no longer has p* or p* tendencies in the data set.
+
+There is no hydrostatic option in INTERPF, consistent with removing 
+this capability from the model in the v3 release.  The user may have
+the output for the initial condition MMINPUT_DOMAINx contain only
+a specified number of time slices to permit analysis nudging in the
+model.  An option for diagnosing mixing ratio with respect to water
+only or water and ice is available.  The choice of using surface
+data in the vertical interpolation is now located in the namelist.
+Users may also spread the surface data through several sigma layers
+in the vertical interpolation.  
+
+All of the date computations are y2k compliant.  The date information
+input to the program through the namelist is split into multiple
+integers (year, month, day, hour).  The only input file other than
+the namelist is the first-guess file that is specified in the 
+namelist.
+
+The code is built with a 2-level Makefile.  In the top directory,
+the user types
+# make 
+
+Note, compiling INTERPF requires Fortran 90 compiler of version 2.0 
+or higher on a Sun.
+
+The file "namelist.input" must be in the working directory.  If the 
+vendor does not support comments in the namelist (part of the f95
+standard), then the user needs to remove them (just delete everything
+after the "!" character on each line) from the namelist.input file.
+
+Output files are named: MMINPUT_DOMAINx, LOWBDY_DOMAINx,
+and BDYOUT_DOMAINx.

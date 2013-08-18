@@ -1,0 +1,49 @@
+!---------------------------------------------------------------------
+!
+integer :: NO     ! ON84 Code number for variables
+integer :: NS1
+integer :: NF1
+integer :: NT
+integer :: NC1
+integer :: NE1
+integer :: NM
+integer :: NX
+integer :: NS2
+integer :: NF2
+integer :: NI
+integer :: NC2
+integer :: NE2
+integer :: NCD
+integer :: NCM
+integer :: NKS
+integer :: NK ! Grid code [29 (Northern) or 30 (Southern)]
+integer :: NUN
+integer :: NRW
+integer :: NNW
+integer :: NYR
+integer :: NMO
+integer :: NDY
+integer :: NHR
+integer :: NR
+integer :: NG
+integer :: NJ
+integer :: NBB
+integer :: NZ
+integer :: NBSN
+integer :: NBEX
+integer :: NBFR
+integer :: NUN7
+integer :: NUN8
+integer :: NSCL
+real    :: BASE
+real    :: SFC1
+real    :: SFC2
+integer :: NIDIM ! I dimension of the Array
+integer :: NJDIM ! J Dimension of the Array
+integer :: NSFC1
+integer :: NSFC2
+
+COMMON/CON84/NO,NS1,NF1,NT,NC1,NE1,NM,NX,NS2,NF2,NI,NC2,NE2,             &
+      NCD,NCM,NKS,NK,NUN,NRW,NNW,NYR,NMO,NDY,NHR,NR,NG,NJ,NBB,NZ,        &
+      NBSN,NBEX,NBFR,NUN7,NUN8,NSCL,BASE,SFC1,SFC2,NIDIM,NJDIM,          &
+      NSFC1,NSFC2

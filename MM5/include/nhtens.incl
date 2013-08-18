@@ -1,0 +1,5 @@
+      REAL  WTENS,PPTENS,UTENS,VTENS                                             NHTENS.1
+      COMMON /NHTENS/WTENS,PPTENS,UTENS,VTENS                                    NHTENS.2
+      DIMENSION WTENS(MIXNH,MJXNH,KXP1NH),PPTENS(MIXNH,MJXNH,MKXNH),             NHTENS.3
+     1     UTENS(MIXNH,MJXNH,MKXNH),VTENS(MIXNH,MJXNH,MKXNH)                     NHTENS.4
+C                                                                                NHTENS.5

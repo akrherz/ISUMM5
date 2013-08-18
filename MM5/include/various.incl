@@ -1,0 +1,33 @@
+C                                                                                VARIOUS.1
+C----------------------------------------------------------------------          VARIOUS.2
+C                                                                                VARIOUS.3
+      INTEGER IL,ILX,ILXM,JL,JLX,JLXM,JULDAY,KL,KLM,KLP1,KTAU,KTAUR,             VARIOUS.4
+     $  ITAPCNT                                                                  VARIOUS.5
+      POINTER ( IAIL,    IL), ( IAJL,    JL), ( IAKL,    KL),                    VARIOUS.6
+     1        (IAKP1,  KLP1), ( IAKM,   KLM), (IAILX,   ILX),                    VARIOUS.7
+     2        (IAILM,  ILXM), (IAJLX,   JLX), (IAJLM,  JLXM),                    VARIOUS.8
+     3        (IAKTU,  KTAU), (IAKTR, KTAUR), (IATPC, ITAPCNT),                  VARIOUS.9
+     4        (IAJUL,JULDAY)                                                     VARIOUS.10
+C                                                                                VARIOUS.11
+      REAL C200,C201,C203,DT,DT2,DTMIN,DX,DX16,DX2,DX4,DX8,DXSQ,FNUDGE,          VARIOUS.12
+     $ GMT,GNUDGE,TDADV,TDINI,TQADV,TQEVA,TQINI,TQRAI,XKHMAX,XKHZ,XTIME          VARIOUS.13
+      POINTER ( IAXT, XTIME), ( IADT,    DT), (IADT2,   DT2),                    VARIOUS.14
+     1        (IADTM, DTMIN), ( IADX,    DX), (IADX2,   DX2),                    VARIOUS.15
+     2        (IADX4,   DX4), (IADX8,   DX8), (IAD16,  DX16),                    VARIOUS.16
+     3        (IADXQ,  DXSQ), ( IAXK,  XKHZ), (IAXKM,XKHMAX),                    VARIOUS.17
+     4        ( IAC0,  C200), ( IAC1,  C201), ( IAC3,  C203),                    VARIOUS.18
+     5        (IAGMT,   GMT),                                                    VARIOUS.19
+     6        (IADMI, TDINI), (IADMA, TDADV),                                    VARIOUS.20
+     7        (IAQMI, TQINI), (IAQMA, TQADV), (IAQME, TQEVA),                    VARIOUS.21
+     8        (IAQMR, TQRAI), (IAFNG,FNUDGE), (IAGNG,GNUDGE)                     VARIOUS.22
+C                                                                                VARIOUS.23
+C----------------------------------------------------------------------          VARIOUS.24
+C                                                                                VARIOUS.25
+      COMMON/ADDR4/  IAIL,  IAJL,  IAKL, IAKP1,  IAKM, IAILX, IAILM,             VARIOUS.26
+     1              IAJLX, IAJLM, IAKTU, IAKTR, IATPC, IAJUL,                    VARIOUS.27
+     1               IAXT,  IADT, IADT2,                                         VARIOUS.28
+     2              IADTM,  IADX, IADX2, IADX4, IADX8, IAD16, IADXQ,             VARIOUS.29
+     3               IAXK, IAXKM,  IAC0,  IAC1,  IAC3, IAGMT,                    VARIOUS.30
+     4               IADMI, IADMA, IAQMI, IAQMA, IAQME,                          VARIOUS.31
+     5              IAQMR, IAFNG, IAGNG                                          VARIOUS.32
+C                                                                                VARIOUS.33

@@ -1,0 +1,2586 @@
+===================================================================
+CHANGES
+diff -r3.8 -r3.11
+6c6
+< The current release is 3.4 (November 6, 2000)
+---
+> The current release is 3.5 (December 5, 2001)
+8a9,41
+> 
+> 1. Bug fixes:
+> 
+> - Correct an error in computing mixing ratio when namelist
+>   option WRTH2O is set to FALSE. Thanks to Lt Col Mike Walters of AFIT.
+> 
+>   Affected file:
+>   src/module_diags.F
+> 
+> 2. Changes and improvements
+> 
+> - Allow additional 3D fields to pass through, and compute lateral
+>   boundary conditions for model microphysical fields (e.g. cloud
+>   and rain water, cloud ice and snow, etc.) if they are present
+>   in the input files.
+> 
+> - Add comments in namelist back. If you are using a machine that
+>   doesn't like comments in namelist, copy namelist.input.SOC to
+>   namelist.input.
+> 
+>   Affected file:
+>   namelist.input
+> 
+> - Change default output time periods in interpf.deck.cray.
+> 
+>   Affected file:
+>   interpf.deck.cray
+> 
+> ========================================================
+> 
+> Bug fixes and Changes in release 3.4
+> 
+> 1. Bug fixes:
+===================================================================
+README
+diff -r3.4 -r3.5
+55c55
+< Edit namelist.input, and type interpf to execute the program.
+---
+> Edit namelist.input, and type ./interpf to execute the program.
+===================================================================
+interpf.deck.cray
+diff -r3.4 -r3.6
+119c119
+<  ifdatim        = 1 /                                 # # of IC time periods to output
+---
+>  ifdatim        = -1 /                                # of IC time periods to output
+167c167
+< interpf >&! interpf.print.out
+---
+> ./interpf >&! interpf.print.out
+===================================================================
+namelist.input
+diff -r3.7 -r3.8
+2c2
+<  input_file     = '../LITTLE_R/LITTLE_R_DOMAIN1' /    
+---
+>  input_file     = '../LITTLE_R/LITTLE_R_DOMAIN1' /   ! pressure-level data file name
+5,7c5,7
+<  start_year     =  1993                               
+<  start_month    =    03                               
+<  start_day      =    13                               
+---
+>  start_year     =  1993                              ! The starting and
+>  start_month    =    03                              ! ending dates to
+>  start_day      =    13                              ! process
+13,14c13,14
+<  interval       = 43200                               
+<  less_than_24h  = .FALSE. /                           
+---
+>  interval       = 43200                              ! time difference (s)
+>  less_than_24h  = .FALSE. /                          ! if input is less than 24 h
+17,19c17,19
+<  sigma_f_bu     = 1.00,0.99,0.98,0.96,0.93,0.89,      
+<                   0.85,0.80,0.75,0.70,0.65,0.60,      
+<                   0.55,0.50,0.45,0.40,0.35,0.30,      
+---
+>  sigma_f_bu     = 1.00,0.99,0.98,0.96,0.93,0.89,     ! full sigma, bottom-up,
+>                   0.85,0.80,0.75,0.70,0.65,0.60,     ! start with 1.0, end
+>                   0.55,0.50,0.45,0.40,0.35,0.30,     ! with 0.0
+21,23c21,23
+<  ptop           = 10000
+<  isfc           = 0 /                                 
+<                                                       
+---
+>  ptop           = 10000                              ! top pressure if need to be redefined
+>  isfc           = 0 /                                ! # sigma levels to spread
+>                                                      ! surface information
+26,29c26,29
+<  p0             = 1.e5                                
+<  tlp            = 50.                                 
+<  ts0            = 275.                                
+<  tiso           = 0./                                 
+---
+>  p0             = 1.e5                               ! base state sea-level pres (Pa)
+>  tlp            = 50.                                ! base state lapse rate d(T)/d(ln P)
+>  ts0            = 275.                               ! base state sea-level temp (K)
+>  tiso           = 0./                                ! base state isothermal stratospheric temp (K)
+32,34c32,34
+<  removediv      = .TRUE.                              
+<  usesfc         = .TRUE.                              
+<  wrth2o         = .TRUE. /                            
+---
+>  removediv      = .TRUE.                             ! T/F remove integrated mean divergence
+>  usesfc         = .TRUE.                             ! T/F use surface data
+>  wrth2o         = .TRUE. /                           ! T/F specific humidity wrt H2O
+37c37
+<  ifdatim        = -1 /                                
+---
+>  ifdatim        = -1 /                               ! # of IC time periods to output
+===================================================================
+Doc/README
+diff -r3.1 -r3.2
+48,50c48,51
+< # make XXX
+< where "XXX" is cray, dec, hp, ibm or sgi.  The code does not currently
+< work on the Sun architecture. 
+---
+> # make 
+> 
+> Note, compiling INTERPF requires Fortran 90 compiler of version 2.0 
+> or higher on a Sun.
+===================================================================
+src/Makefile
+diff -r3.6 -r3.7
+50c50
+< 			module_bdy.o module_date_pack.o module_header_data.o
+---
+> 			module_all_io.o module_bdy.o module_date_pack.o module_header_data.o
+60c60
+< 			$(RM) $(FOBJS) $(MODULES) interpf core
+---
+> 			$(RM) $(FOBJS) $(MODULES) $(OBJS) interpf core
+===================================================================
+src/interpf.F
+diff -r3.10 -r3.13
+1c1
+< PROGRAM INTERP
+---
+> PROGRAM interp
+17,165c17,57
+<    REAL                        :: p0
+<    REAL                        :: tlp
+<    REAL                        :: ts0
+<    REAL                        :: tiso=0
+< 
+<    LOGICAL                     :: daily_mean_sst
+< 
+<    INTEGER                     :: ENDTIME
+<    INTEGER                     :: EXCGFLAG
+<    INTEGER                     :: I
+<    INTEGER                     :: IALREADY
+< 
+<    INTEGER                     :: IFIRST
+<    INTEGER                     :: IMMOUT
+<    INTEGER                     :: IMX
+<    INTEGER                     :: IMXEXCG
+<    INTEGER                     :: IMXM
+<    INTEGER                     :: INDEX
+<    INTEGER                     :: INPUT_COUNT
+<    INTEGER                     :: IOFFSET
+<    INTEGER                     :: IPROCESS
+<    INTEGER                     :: ITIMES
+<    INTEGER                     :: IUNIT
+<    INTEGER                     :: IUSESFC
+<    INTEGER                     :: J
+<    INTEGER                     :: JMX
+<    INTEGER                     :: JMXEXCG
+<    INTEGER                     :: JMXM
+<    INTEGER                     :: JOFFSET
+<    INTEGER                     :: K
+<    INTEGER                     :: K_LOOP
+<    INTEGER                     :: KX
+<    INTEGER                     :: KXS
+<    INTEGER                     :: LEVIDN
+<    INTEGER                     :: LOOP
+<    INTEGER                     :: LOOP_COUNT
+<    INTEGER                     :: LP
+<    INTEGER                     :: MDATE
+<    INTEGER                     :: MDATEOLD
+<    INTEGER                     :: NESTI  
+<    INTEGER                     :: NESTIX 
+<    INTEGER                     :: NESTJ  
+<    INTEGER                     :: NESTJX 
+<    INTEGER                     :: NUMNC  
+<    INTEGER                     :: num_lowbdy_fields
+< 
+<    REAL,          ALLOCATABLE  :: A           ( : )
+<    REAL,          ALLOCATABLE  :: CORIOLIS    ( : , : )
+<    REAL                        :: DS
+<    REAL,          ALLOCATABLE  :: DSIGMA      ( : )
+<    REAL,          ALLOCATABLE  :: GROUND_T    ( : , : )
+<    TYPE(sh)                    :: GROUND_T_SH , tseasfc_sh , sfc_t_sh
+<    REAL,          ALLOCATABLE  :: HEIGHT      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: KSAFEC      ( : , : )
+<    REAL,          ALLOCATABLE  :: KSAFED      ( : , : )
+<    REAL,          ALLOCATABLE  :: LAND_USE    ( : , : )
+<    REAL,          ALLOCATABLE  :: LATITCRS    ( : , : )
+<    REAL,          ALLOCATABLE  :: LATITDOT    ( : , : )
+<    REAL,          ALLOCATABLE  :: LONGICRS    ( : , : )
+<    REAL,          ALLOCATABLE  :: LONGIDOT    ( : , : )
+<    REAL,          ALLOCATABLE  :: MAPFACCR    ( : , : )
+<    REAL,          ALLOCATABLE  :: MAPFACDT    ( : , : )
+<    REAL                        :: NESTDS   
+<    REAL                        :: NEWCOORD    ( 100 ) 
+<    REAL,          ALLOCATABLE  :: P           ( : ) 
+<    REAL,          ALLOCATABLE  :: PCORIG      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PP_SIG      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PPCLIN      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PPCLOG      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PPDLIN      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PPDLOG      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PPEB3D      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PPNB3D      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PPSB3D      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PPWB3D      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PR0         ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PS0         ( : , : )
+<    REAL,          ALLOCATABLE  :: PS0CSMALL   ( : , : )
+<    REAL,          ALLOCATABLE  :: PS0DOT      ( : , : )
+<    REAL,          ALLOCATABLE  :: PS0DSMALL   ( : , : )
+<    REAL,          ALLOCATABLE  :: PSCLIN      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PSCLOG      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PSCSMALL    ( : , : )
+<    REAL,          ALLOCATABLE  :: PSDLIN      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PSDLOG      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PSDSMALL    ( : , : )
+<    REAL                        :: PT
+<    REAL,          ALLOCATABLE  :: PTRAPCRS    ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PTRAPDOT    ( : , : , : )
+<    REAL,          ALLOCATABLE  :: PUP         ( : )
+<    REAL,          ALLOCATABLE  :: PSEALVLC    ( : , : )
+<    REAL,          ALLOCATABLE  :: PSEALVLD    ( : , : )
+<    REAL,          ALLOCATABLE  :: PSTARCRS    ( : , : )
+<    REAL,          ALLOCATABLE  :: PSTARDOT    ( : , : )
+<    REAL,          ALLOCATABLE  :: Q           ( : , : , : )
+<    REAL,          ALLOCATABLE  :: Q_SIG       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: QEB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: QNB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: QSB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: QWB3D       ( : , : , : )
+<    LOGICAL                     :: REPEAT
+<    REAL,          ALLOCATABLE  :: RH          ( : , : , : )
+<    REAL,          ALLOCATABLE  :: RH_SIG      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: RHO0        ( : , : , : )
+<    REAL,          ALLOCATABLE  :: SFC_P       ( : , : )
+<    REAL,          ALLOCATABLE  :: SFC_RH      ( : , : )
+<    REAL,          ALLOCATABLE  :: SFC_T       ( : , : )
+<    REAL,          ALLOCATABLE  :: SFC_THETA   ( : , : )
+<    REAL,          ALLOCATABLE  :: SFC_U       ( : , : )
+<    REAL,          ALLOCATABLE  :: SFC_V       ( : , : )
+<    REAL,          ALLOCATABLE  :: SIGH        ( : ) 
+<    REAL,          ALLOCATABLE  :: SIGHUP      ( : ) 
+<    REAL,          ALLOCATABLE  :: SNOWCOVR    ( : , : )
+<    REAL,          ALLOCATABLE  :: T           ( : , : , : )
+<    REAL,          ALLOCATABLE  :: T0          ( : , : , : )
+<    REAL,          ALLOCATABLE  :: T_SIG       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: TEB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: TERRAIN     ( : , : )
+<    REAL,          ALLOCATABLE  :: TERRDOT     ( : , : )
+<    REAL,          ALLOCATABLE  :: THE_SIG     ( : , : , : )
+<    REAL,          ALLOCATABLE  :: THETAP      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: TNB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: TSB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: TSEASFC     ( : , : )
+<    REAL,          ALLOCATABLE  :: TV_SIG      ( : , : , : )
+<    REAL,          ALLOCATABLE  :: TWB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: U           ( : , : , : )
+<    REAL,          ALLOCATABLE  :: U_SIG       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: UEB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: UNB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: USB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: UWB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: V           ( : , : , : )
+<    REAL,          ALLOCATABLE  :: V_SIG       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: VCOORD      ( : )
+<    REAL,          ALLOCATABLE  :: VEB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: VNB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: VSB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: VWB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: W_SIG       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: W_TOP       ( : , : )
+<    REAL,          ALLOCATABLE  :: WEB2D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: WEB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: WNB2D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: WNB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: WSB2D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: WSB3D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: WWB2D       ( : , : , : )
+<    REAL,          ALLOCATABLE  :: WWB3D       ( : , : , : )
+---
+>    LOGICAL :: daily_mean_sst , repeat
+> 
+>    LOGICAL :: cloud_and_rain       = .FALSE. , &
+>               snow_and_ice         = .FALSE. , &
+>               graupel              = .FALSE. , &
+>               number_concentration = .FALSE. 
+> 
+>    INTEGER :: endtime ,  excgflag ,  i ,  ialready ,  ifirst ,  immout ,  imx ,  imxexcg ,  imxm ,  index , &
+>               input_count ,  ioffset ,  iprocess ,  itimes ,  iunit ,  iusesfc ,  j ,  jmx ,  jmxexcg , &
+>               jmxm ,  joffset ,  k ,  k_loop ,  kx ,  kxs ,  levidn ,  loop ,  loop_count ,  lp ,  mdate , &
+>               mdateold ,  nesti  ,  nestix ,  nestj  ,  nestjx ,  numnc  ,  num_lowbdy_fields
+> 
+>    REAL :: ds , nestds ,  pt
+> 
+>    REAL , DIMENSION(100) :: newcoord
+> 
+>    REAL , ALLOCATABLE , DIMENSION(:) :: a , dsigma , p , pup , sigh , sighup , vcoord
+> 
+>    REAL , ALLOCATABLE , DIMENSION(:,:) :: coriolis , ground_t , ksafec , ksafed , land_use , latitcrs , &
+>                                           latitdot , longicrs , longidot , mapfaccr , mapfacdt , ps0 , &
+>                                           ps0csmall , ps0dot , ps0dsmall , pscsmall , psdsmall , psealvlc , &
+>                                           psealvld , pstarcrs , pstardot , sfc_p , sfc_rh , sfc_t , &
+>                                           sfc_theta , sfc_u , sfc_v , snowcovr , terrain , terrdot , &
+>                                           tseasfc , w_top
+> 
+>    REAL , ALLOCATABLE , DIMENSION(:,:,:) :: height , pcorig , pp_sig , ppclin , ppclog , ppdlin , ppdlog , &
+>                                             ppeb3d , ppnb3d , ppsb3d , ppwb3d , pr0 , psclin , psclog , psdlin , &
+>                                             psdlog , ptrapcrs , ptrapdot , q , q_sig , qeb3d , qnb3d , qsb3d , &
+>                                             qwb3d , rh , rh_sig , rho0 , t , t0 , t_sig , teb3d , the_sig , thetap , &
+>                                             tnb3d , tsb3d , tv_sig , twb3d , u , u_sig , ueb3d , unb3d , usb3d , &
+>                                             uwb3d , v , v_sig , veb3d , vnb3d , vsb3d , vwb3d , w_sig , web2d , &
+>                                             web3d , wnb2d , wnb3d , wsb2d , wsb3d , wwb2d , wwb3d
+> 
+>    REAL , ALLOCATABLE , DIMENSION(:,:)   :: sfc_qc , sfc_qr , sfc_qs , sfc_qi , sfc_qg , sfc_qn
+> 
+>    REAL , ALLOCATABLE , DIMENSION(:,:,:) :: qc , qc_sig , &
+>                                             qr , qr_sig , &
+>                                             qs , qs_sig , &
+>                                             qi , qi_sig , &
+>                                             qg , qg_sig , &
+>                                             qn , qn_sig
+166a59,60
+>    TYPE(sh) :: ground_t_sh , tseasfc_sh , sfc_t_sh
+> 
+171,174c65,66
+<    INTEGER :: start_year , start_month , start_day , start_hour , &
+<               start_minute=0 , start_second=0 , start_frac=0
+<    INTEGER ::   end_year ,   end_month ,   end_day ,   end_hour , &
+<                 end_minute=0 ,   end_second=0 ,   end_frac=0
+---
+>    INTEGER :: start_year , start_month , start_day , start_hour , start_minute=0 , start_second=0 , start_frac=0
+>    INTEGER ::   end_year ,   end_month ,   end_day ,   end_hour ,   end_minute=0 ,   end_second=0 ,   end_frac=0
+182,184c74,76
+<    LOGICAL :: removediv
+<    LOGICAL :: usesfc   
+<    LOGICAL :: wrth2o   
+---
+>    REAL :: p0 , tlp , ts0 , tiso=0
+> 
+>    LOGICAL :: removediv , usesfc , wrth2o   
+372,377d263
+<    ALLOCATE ( PP_SIG      ( IMX , JMX , KXS ) )
+<    ALLOCATE ( PPEB3D      ( IMX , KXS , NSPGD ) )
+<    ALLOCATE ( PPNB3D      ( JMX , KXS , NSPGD ) )
+<    ALLOCATE ( PPSB3D      ( JMX , KXS , NSPGD ) )
+<    ALLOCATE ( PPWB3D      ( IMX , KXS , NSPGD ) )
+<    ALLOCATE ( PR0         ( IMX , JMX , KXS ) )
+381a268,275
+>    ALLOCATE ( PSCSMALL    ( IMX , JMX ) )
+>    ALLOCATE ( PSDSMALL    ( IMX , JMX ) )
+>    ALLOCATE ( SFC_THETA   ( IMX , JMX ) )
+>    ALLOCATE ( TERRDOT     ( IMX , JMX ) )
+>    ALLOCATE ( W_TOP       ( IMX , JMX ) )
+> 
+>    ALLOCATE ( PP_SIG      ( IMX , JMX , KXS ) )
+>    ALLOCATE ( PR0         ( IMX , JMX , KXS ) )
+384d277
+<    ALLOCATE ( PSCSMALL    ( IMX , JMX ) )
+387d279
+<    ALLOCATE ( PSDSMALL    ( IMX , JMX ) )
+391,394d282
+<    ALLOCATE ( QEB3D       ( IMX , KXS , NSPGD ) )
+<    ALLOCATE ( QNB3D       ( JMX , KXS , NSPGD ) )
+<    ALLOCATE ( QSB3D       ( JMX , KXS , NSPGD ) )
+<    ALLOCATE ( QWB3D       ( IMX , KXS , NSPGD ) )
+397d284
+<    ALLOCATE ( SFC_THETA   ( IMX , JMX ) )
+400,401d286
+<    ALLOCATE ( TEB3D       ( IMX , KXS , NSPGD ) )
+<    ALLOCATE ( TERRDOT     ( IMX , JMX ) )
+402a288,301
+>    ALLOCATE ( TV_SIG      ( IMX , JMX , KXS ) )
+>    ALLOCATE ( U_SIG       ( IMX , JMX , KXS ) )
+>    ALLOCATE ( V_SIG       ( IMX , JMX , KXS ) )
+>    ALLOCATE ( W_SIG       ( IMX , JMX , KXS ) )
+> 
+>    ALLOCATE ( PPEB3D      ( IMX , KXS , NSPGD ) )
+>    ALLOCATE ( PPNB3D      ( JMX , KXS , NSPGD ) )
+>    ALLOCATE ( PPSB3D      ( JMX , KXS , NSPGD ) )
+>    ALLOCATE ( PPWB3D      ( IMX , KXS , NSPGD ) )
+>    ALLOCATE ( QEB3D       ( IMX , KXS , NSPGD ) )
+>    ALLOCATE ( QNB3D       ( JMX , KXS , NSPGD ) )
+>    ALLOCATE ( QSB3D       ( JMX , KXS , NSPGD ) )
+>    ALLOCATE ( QWB3D       ( IMX , KXS , NSPGD ) )
+>    ALLOCATE ( TEB3D       ( IMX , KXS , NSPGD ) )
+405d303
+<    ALLOCATE ( TV_SIG      ( IMX , JMX , KXS ) )
+407d304
+<    ALLOCATE ( U_SIG       ( IMX , JMX , KXS ) )
+412d308
+<    ALLOCATE ( V_SIG       ( IMX , JMX , KXS ) )
+417,419c313
+<    ALLOCATE ( W_SIG       ( IMX , JMX , KXS ) )
+<    ALLOCATE ( W_TOP       ( IMX , JMX ) )
+<    ALLOCATE ( WEB2D       ( IMX ,   1 , KXS ) )
+---
+>    ALLOCATE ( WEB2D       ( IMX , KXS , 1     ) )
+421c315
+<    ALLOCATE ( WNB2D       ( JMX ,   1 , KXS ) )
+---
+>    ALLOCATE ( WNB2D       ( JMX , KXS , 1     ) )
+423c317
+<    ALLOCATE ( WSB2D       ( JMX ,   1 , KXS ) )
+---
+>    ALLOCATE ( WSB2D       ( JMX , KXS , 1     ) )
+425c319
+<    ALLOCATE ( WWB2D       ( IMX ,   1 , KXS ) )
+---
+>    ALLOCATE ( WWB2D       ( IMX , KXS , 1     ) )
+435,437c329,333
+<    ALLOCATE ( all_3d( 20) )
+<    ALLOCATE ( all_2d(100) )
+<    ALLOCATE ( all_1d( 20) )
+---
+>    ALLOCATE ( allp_3d( 20) )
+>    ALLOCATE ( alls_3d( 20) )
+>    ALLOCATE ( allm_3d(  6) )
+>    ALLOCATE ( all_2d (100) )
+>    ALLOCATE ( all_1d ( 20) )
+446c342
+<       !  the all_3d, all_2d and all_1d is just the input data from the
+---
+>       !  the allp_3d, all_2d and all_1d is just the input data from the
+451c347,348
+<          NULLIFY(all_3d(loop)%array)
+---
+>          NULLIFY(allp_3d(loop)%array)
+>          NULLIFY(alls_3d(loop)%array)
+460c357,358
+<       CALL read_data ( input_press , input_file , input_count , kx , daily_mean_sst )
+---
+>       CALL read_data ( input_press , input_file , input_count , kx , daily_mean_sst , &
+>                        cloud_and_rain , snow_and_ice , graupel , number_concentration )
+476,477c374,378
+<             IF ( ASSOCIATED(all_3d(loop)%array) ) THEN
+<                DEALLOCATE ( all_3d(loop)%array )
+---
+>             IF ( ASSOCIATED(allp_3d(loop)%array) ) THEN
+>                DEALLOCATE ( allp_3d(loop)%array )
+>             END IF
+>             IF ( ASSOCIATED(alls_3d(loop)%array) ) THEN
+>                DEALLOCATE ( alls_3d(loop)%array )
+496a398
+> 
+526a429,524
+>       !  Allocate space for the pressure level moisture fields (if we have any of them).
+> 
+>       IF ( cloud_and_rain ) THEN
+>          ALLOCATE ( qc     ( imx , jmx , kx ) )
+>          ALLOCATE ( qr     ( imx , jmx , kx ) )
+>          ALLOCATE ( sfc_qc ( imx , jmx      ) )
+>          ALLOCATE ( sfc_qr ( imx , jmx      ) )
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice ) THEN
+>          ALLOCATE ( qs     ( imx , jmx , kx ) )
+>          ALLOCATE ( qi     ( imx , jmx , kx ) )
+>          ALLOCATE ( sfc_qs ( imx , jmx      ) )
+>          ALLOCATE ( sfc_qi ( imx , jmx      ) )
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel ) THEN
+>          ALLOCATE ( qg     ( imx , jmx , kx ) )
+>          ALLOCATE ( sfc_qg ( imx , jmx      ) )
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel .AND. number_concentration ) THEN
+>          ALLOCATE ( qn     ( imx , jmx , kx ) )
+>          ALLOCATE ( sfc_qn ( imx , jmx      ) )
+>       END IF
+> 
+>       !  During the first time period, we get the space for the sigma level data and the lateral
+>       !  boundary arrays.
+> 
+>       IF ( itimes .EQ. 1 ) THEN
+> 
+>          IF ( cloud_and_rain ) THEN
+>             ALLOCATE ( qc_sig          ( imx , jmx , kxs   ) )
+>             ALLOCATE ( allm_3d(1)%array( imx , jmx , kxs   ) ) 
+>             ALLOCATE ( allm_3d(1)%ebdy ( imx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(1)%nbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(1)%sbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(1)%wbdy ( imx , kxs , nspgd ) )
+>             ALLOCATE ( qr_sig          ( imx , jmx , kxs   ) )
+>             ALLOCATE ( allm_3d(2)%array( imx , jmx , kxs   ) ) 
+>             ALLOCATE ( allm_3d(2)%ebdy ( imx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(2)%nbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(2)%sbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(2)%wbdy ( imx , kxs , nspgd ) )
+>          END IF
+>    
+>          IF ( cloud_and_rain .AND. snow_and_ice ) THEN
+>             ALLOCATE ( qs_sig          ( imx , jmx , kxs   ) )
+>             ALLOCATE ( allm_3d(3)%array( imx , jmx , kxs   ) ) 
+>             ALLOCATE ( allm_3d(3)%ebdy ( imx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(3)%nbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(3)%sbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(3)%wbdy ( imx , kxs , nspgd ) )
+>             ALLOCATE ( qi_sig          ( imx , jmx , kxs   ) )
+>             ALLOCATE ( allm_3d(4)%array( imx , jmx , kxs   ) ) 
+>             ALLOCATE ( allm_3d(4)%ebdy ( imx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(4)%nbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(4)%sbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(4)%wbdy ( imx , kxs , nspgd ) )
+>          END IF
+>    
+>          IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel ) THEN
+>             ALLOCATE ( qg_sig          ( imx , jmx , kxs   ) )
+>             ALLOCATE ( allm_3d(5)%array( imx , jmx , kxs   ) ) 
+>             ALLOCATE ( allm_3d(5)%ebdy ( imx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(5)%nbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(5)%sbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(5)%wbdy ( imx , kxs , nspgd ) )
+>          END IF
+>    
+>          IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel .AND. number_concentration ) THEN
+>             ALLOCATE ( qn_sig          ( imx , jmx , kxs   ) )
+>             ALLOCATE ( allm_3d(6)%array( imx , jmx , kxs   ) ) 
+>             ALLOCATE ( allm_3d(6)%ebdy ( imx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(6)%nbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(6)%sbdy ( jmx , kxs , nspgd ) )
+>             ALLOCATE ( allm_3d(6)%wbdy ( imx , kxs , nspgd ) )
+>          END IF
+> 
+>       END IF
+>  
+>       !  Assign the moisture data.
+> 
+>       IF ( cloud_and_rain ) THEN
+>          CALL assign_cloud_and_rain ( qc , qr , sfc_qc , sfc_qr , kx )
+>       END IF
+>       IF ( cloud_and_rain .AND. snow_and_ice ) THEN
+>          CALL assign_snow_and_ice ( qs , qi , sfc_qs , sfc_qi , kx )
+>       END IF
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel ) THEN
+>          CALL assign_graupel ( qg , sfc_qg , kx )
+>       END IF
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel .AND. number_concentration ) THEN
+>          CALL assign_number_concentration ( qn , sfc_qn , kx )
+>       END IF
+> 
+682a681,774
+>           
+>       !  Interpolate the possibly available additional moisture fields.
+> 
+>       IF ( cloud_and_rain ) THEN
+> 
+>          CALL intdrvr (qc, sfc_qc, sfc_p, imx, jmx, kx, 1, 1, &
+>                        iusesfc, ialready, 1, sighup, pstarcrs, &
+>                        ptop, pup, qc_sig, kxs, imxm, jmxm, &
+>                        ksafec, ksafed, ppdlin, ppdlog, ppclin, ppclog, &
+>                        psdlin, psdlog, psclin, psclog, ptrapdot, &
+>                        ptrapcrs, pcorig, 1, isfc)
+> 
+>          CALL intdrvr (qr, sfc_qr, sfc_p, imx, jmx, kx, 1, 1, &
+>                        iusesfc, ialready, 1, sighup, pstarcrs, &
+>                        ptop, pup, qr_sig, kxs, imxm, jmxm, &
+>                        ksafec, ksafed, ppdlin, ppdlog, ppclin, ppclog, &
+>                        psdlin, psdlog, psclin, psclog, ptrapdot, &
+>                        ptrapcrs, pcorig, 1, isfc)
+> 
+>          DO k = 1 , kxs
+>             CALL clean_rh ( qc_sig(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+>             CALL clean_rh ( qr_sig(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+>          END DO
+> 
+>          allm_3d(1)%array = qc_sig
+>          allm_3d(2)%array = qr_sig
+>          allm_3d(1)%small_header = allp_3d(index_qc)%small_header
+>          allm_3d(2)%small_header = allp_3d(index_qr)%small_header
+> 
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice ) THEN
+> 
+>          CALL intdrvr (qs, sfc_qs, sfc_p, imx, jmx, kx, 1, 1, &
+>                        iusesfc, ialready, 1, sighup, pstarcrs, &
+>                        ptop, pup, qs_sig, kxs, imxm, jmxm, &
+>                        ksafec, ksafed, ppdlin, ppdlog, ppclin, ppclog, &
+>                        psdlin, psdlog, psclin, psclog, ptrapdot, &
+>                        ptrapcrs, pcorig, 1, isfc)
+> 
+>          CALL intdrvr (qi, sfc_qi, sfc_p, imx, jmx, kx, 1, 1, &
+>                        iusesfc, ialready, 1, sighup, pstarcrs, &
+>                        ptop, pup, qi_sig, kxs, imxm, jmxm, &
+>                        ksafec, ksafed, ppdlin, ppdlog, ppclin, ppclog, &
+>                        psdlin, psdlog, psclin, psclog, ptrapdot, &
+>                        ptrapcrs, pcorig, 1, isfc)
+> 
+>          DO k = 1 , kxs
+>             CALL clean_rh ( qs_sig(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+>             CALL clean_rh ( qi_sig(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+>          END DO
+> 
+>          allm_3d(3)%array = qs_sig
+>          allm_3d(4)%array = qi_sig
+>          allm_3d(3)%small_header = allp_3d(index_qs)%small_header
+>          allm_3d(4)%small_header = allp_3d(index_qi)%small_header
+> 
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel ) THEN
+> 
+>          CALL intdrvr (qg, sfc_qg, sfc_p, imx, jmx, kx, 1, 1, &
+>                        iusesfc, ialready, 1, sighup, pstarcrs, &
+>                        ptop, pup, qg_sig, kxs, imxm, jmxm, &
+>                        ksafec, ksafed, ppdlin, ppdlog, ppclin, ppclog, &
+>                        psdlin, psdlog, psclin, psclog, ptrapdot, &
+>                        ptrapcrs, pcorig, 1, isfc)
+> 
+>          DO k = 1 , kxs
+>             CALL clean_rh ( qg_sig(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+>          END DO
+> 
+>          allm_3d(5)%array = qg_sig
+>          allm_3d(5)%small_header = allp_3d(index_qg)%small_header
+> 
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel .AND. number_concentration ) THEN
+> 
+>          CALL intdrvr (qn, sfc_qn, sfc_p, imx, jmx, kx, 1, 1, &
+>                        iusesfc, ialready, 1, sighup, pstarcrs, &
+>                        ptop, pup, qn_sig, kxs, imxm, jmxm, &
+>                        ksafec, ksafed, ppdlin, ppdlog, ppclin, ppclog, &
+>                        psdlin, psdlog, psclin, psclog, ptrapdot, &
+>                        ptrapcrs, pcorig, 1, isfc)
+> 
+>          DO k = 1 , kxs
+>             CALL clean_rh ( qn_sig(1,1,k) , imx , jmx , 0.0 , 1.0E20 )
+>          END DO
+> 
+>          allm_3d(6)%array = qn_sig
+>          allm_3d(6)%small_header = allp_3d(index_qn)%small_header
+> 
+>       END IF
+745a838,895
+>       !  Interpolate the additional moisture fields.
+> 
+>       IF ( cloud_and_rain ) THEN
+>          CALL nhinterp (allm_3d(1)%array, tv_sig, terrain, pscsmall, ps0, vcoord, 2, imx, jmx, kxs, 1,  &
+>                         sighup, ptop, pt, p0, tlp, ts0, tiso)
+> 
+>          PRINT '(A)','Non-hydrostatic interp of qc complete.'
+> 
+>          CALL nhinterp (allm_3d(2)%array, tv_sig, terrain, pscsmall, ps0, vcoord, 2, imx, jmx, kxs, 1,  &
+>                         sighup, ptop, pt, p0, tlp, ts0, tiso)
+> 
+>          PRINT '(A)','Non-hydrostatic interp of qr complete.'
+> 
+>          DO k = 1 , kxs
+>             CALL clean_rh ( allm_3d(1)%array(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+>             CALL clean_rh ( allm_3d(2)%array(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+>          END DO
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice ) THEN
+>          CALL nhinterp (allm_3d(3)%array, tv_sig, terrain, pscsmall, ps0, vcoord, 2, imx, jmx, kxs, 1,  &
+>                         sighup, ptop, pt, p0, tlp, ts0, tiso)
+> 
+>          PRINT '(A)','Non-hydrostatic interp of qs complete.'
+> 
+>          CALL nhinterp (allm_3d(4)%array, tv_sig, terrain, pscsmall, ps0, vcoord, 2, imx, jmx, kxs, 1,  &
+>                         sighup, ptop, pt, p0, tlp, ts0, tiso)
+> 
+>          PRINT '(A)','Non-hydrostatic interp of qi complete.'
+> 
+>          DO k = 1 , kxs
+>             CALL clean_rh ( allm_3d(3)%array(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+>             CALL clean_rh ( allm_3d(4)%array(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+>          END DO
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel ) THEN
+>          CALL nhinterp (allm_3d(5)%array, tv_sig, terrain, pscsmall, ps0, vcoord, 2, imx, jmx, kxs, 1,  &
+>                         sighup, ptop, pt, p0, tlp, ts0, tiso)
+> 
+>          PRINT '(A)','Non-hydrostatic interp of qg complete.'
+> 
+>          DO k = 1 , kxs
+>             CALL clean_rh ( allm_3d(5)%array(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+>          END DO
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel .AND. number_concentration ) THEN
+>          CALL nhinterp (allm_3d(6)%array, tv_sig, terrain, pscsmall, ps0, vcoord, 2, imx, jmx, kxs, 1,  &
+>                         sighup, ptop, pt, p0, tlp, ts0, tiso)
+> 
+>          PRINT '(A)','Non-hydrostatic interp of qn complete.'
+> 
+>          DO k = 1 , kxs
+>             CALL clean_rh ( allm_3d(6)%array(1,1,k) , imx , jmx , 0.0 , 1.0E20 )
+>          END DO
+>       END IF
+> 
+757a908,913
+>       !  The date in the ground_t_sh data structure is used in several places.
+>       !  It is set in the outmodel routine, but that does not have to be called
+>       !  for every time period.  This is some bullet-proofing.
+> 
+>       ground_t_sh%current_date = current_date // '.0000'
+> 
+769c925,926
+<                         pp_sig, q_sig, t_sig, u_sig, v_sig, w_sig, w_top)
+---
+>                         pp_sig, q_sig, t_sig, u_sig, v_sig, w_sig, w_top, &
+>                         cloud_and_rain , snow_and_ice , graupel , number_concentration )
+784c941
+<                         interval , less_than_24h , num_lowbdy_fields , iprocess )
+---
+>                         interval , less_than_24h , num_lowbdy_fields , iprocess , daily_mean_sst )
+788c945
+<                         interval , less_than_24h , num_lowbdy_fields , iprocess )
+---
+>                         interval , less_than_24h , num_lowbdy_fields , iprocess , daily_mean_sst )
+799a957,970
+>          IF ( cloud_and_rain ) THEN
+>             allm_3d(1)%array(:imx-1,:jmx-1,k) =  allm_3d(1)%array(:imx-1,:jmx-1,k) * ps0(:imx-1,:jmx-1) * 0.001
+>             allm_3d(2)%array(:imx-1,:jmx-1,k) =  allm_3d(2)%array(:imx-1,:jmx-1,k) * ps0(:imx-1,:jmx-1) * 0.001
+>          END IF
+>          IF ( cloud_and_rain .AND. snow_and_ice ) THEN
+>             allm_3d(3)%array(:imx-1,:jmx-1,k) =  allm_3d(3)%array(:imx-1,:jmx-1,k) * ps0(:imx-1,:jmx-1) * 0.001
+>             allm_3d(4)%array(:imx-1,:jmx-1,k) =  allm_3d(4)%array(:imx-1,:jmx-1,k) * ps0(:imx-1,:jmx-1) * 0.001
+>          END IF
+>          IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel ) THEN
+>             allm_3d(5)%array(:imx-1,:jmx-1,k) =  allm_3d(5)%array(:imx-1,:jmx-1,k) * ps0(:imx-1,:jmx-1) * 0.001
+>          END IF
+>          IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel .AND. number_concentration ) THEN
+>             allm_3d(6)%array(:imx-1,:jmx-1,k) =  allm_3d(6)%array(:imx-1,:jmx-1,k) * ps0(:imx-1,:jmx-1) * 0.001
+>          END IF
+814c985,986
+<                    w_sig,  web3d,  wnb3d,  wsb3d,  wwb3d)
+---
+>                    w_sig,  web3d,  wnb3d,  wsb3d,  wwb3d, &
+>                    cloud_and_rain , snow_and_ice , graupel , number_concentration ) 
+834,835c1006,1007
+<          IF ( ASSOCIATED(all_3d(loop)%array) ) THEN
+<             DEALLOCATE ( all_3d(loop)%array )
+---
+>          IF ( ASSOCIATED(allp_3d(loop)%array) ) THEN
+>             DEALLOCATE ( allp_3d(loop)%array )
+859a1032,1055
+> 
+>       IF ( cloud_and_rain ) THEN
+>          DEALLOCATE ( qc )
+>          DEALLOCATE ( qr )
+>          DEALLOCATE ( sfc_qc )
+>          DEALLOCATE ( sfc_qr )
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice ) THEN
+>          DEALLOCATE ( qs )
+>          DEALLOCATE ( qi )
+>          DEALLOCATE ( sfc_qs )
+>          DEALLOCATE ( sfc_qi )
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel ) THEN
+>          DEALLOCATE ( qg )
+>          DEALLOCATE ( sfc_qg )
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel .AND. number_concentration ) THEN
+>          DEALLOCATE ( qn )
+>          DEALLOCATE ( sfc_qn )
+>       END IF
+===================================================================
+src/module_all_io.F
+diff -r3.14 -r3.19
+21c21,22
+<    TYPE(input_fields_3d) , ALLOCATABLE , DIMENSION(:) :: all_3d
+---
+>    TYPE(input_fields_3d) , ALLOCATABLE , DIMENSION(:) :: allp_3d
+>    TYPE(input_fields_3d) , ALLOCATABLE , DIMENSION(:) :: alls_3d
+25c26,34
+<    INTEGER :: num_3d , num_2d , num_1d
+---
+>    TYPE input_and_bdy_fields_3d
+>       REAL , POINTER , DIMENSION(:,:,:) :: array
+>       REAL , POINTER , DIMENSION(:,:,:) :: ebdy , wbdy , nbdy , sbdy
+>       TYPE(sh)                          :: small_header
+>    END TYPE input_and_bdy_fields_3d
+> 
+>    TYPE(input_and_bdy_fields_3d) , ALLOCATABLE , DIMENSION(:) :: allm_3d
+> 
+>    INTEGER :: nump_3d , nums_3d , numm_3d , num_2d , num_1d
+31a41,48
+>    INTEGER :: index_t , index_u , index_v , index_height , index_rh
+>    INTEGER :: index_qc , index_qr , index_qs , index_qi , index_qg , index_qn
+>    INTEGER :: index_sfc_qc , index_sfc_qr , index_sfc_qs , index_sfc_qi , index_sfc_qg , index_sfc_qn
+>    INTEGER :: index_sfc_t , index_sfc_u , index_sfc_v , index_sfc_rh , index_terrain , index_land_use , index_mapfaccr , &
+>               index_mapfacdt , index_coriolis , index_latitcrs , index_longicrs , index_latitdot , index_longidot , &
+>               index_snowcovr , index_psealvld , index_psealvlc , index_tseasfc
+>    INTEGER :: index_p
+> 
+37c54,55
+<    SUBROUTINE read_data ( unit_fg , file_fg , count_fg , kx , daily_mean_sst )
+---
+>    SUBROUTINE read_data ( unit_fg , file_fg , count_fg , kx , daily_mean_sst , &
+>                           cloud_and_rain , snow_and_ice , graupel , number_concentration )
+51a70,71
+>       LOGICAL , INTENT(INOUT) :: cloud_and_rain , snow_and_ice , graupel , number_concentration
+> 
+55a76,79
+>       LOGICAL :: cloud = .FALSE. , &
+>                  rain  = .FALSE. , &
+>                  ice   = .FALSE. , &
+>                  snow  = .FALSE.
+129c153
+<             ALLOCATE ( all_3d(loop3)%array(small_header%end_dims(1),small_header%end_dims(2),small_header%end_dims(3)-1) )
+---
+>             ALLOCATE ( allp_3d(loop3)%array(small_header%end_dims(1),small_header%end_dims(2),small_header%end_dims(3)-1) )
+134c158
+<             READ ( unit_fg ) all_2d(loop2)%array , all_3d(loop3)%array
+---
+>             READ ( unit_fg ) all_2d(loop2)%array , allp_3d(loop3)%array
+144c168,185
+<             all_3d(loop3)%small_header = small_header
+---
+>             allp_3d(loop3)%small_header = small_header
+> 
+>             !  Check to see if this 3d data contains any of the non-traditional hydrometeor fields that may
+>             !  be used with lateral boundary conditions in the model.
+> 
+>             IF      ( small_header%name(1:8) .EQ. 'CLW     ' ) THEN
+>                cloud                = .TRUE.
+>             ELSE IF ( small_header%name(1:8) .EQ. 'RNW     ' ) THEN
+>                rain                 = .TRUE.
+>             ELSE IF ( small_header%name(1:8) .EQ. 'ICE     ' ) THEN
+>                ice                  = .TRUE.
+>             ELSE IF ( small_header%name(1:8) .EQ. 'SNOW    ' ) THEN
+>                snow                 = .TRUE.
+>             ELSE IF ( small_header%name(1:8) .EQ. 'GRAUPEL ' ) THEN
+>                graupel              = .TRUE.
+>             ELSE IF ( small_header%name(1:8) .EQ. 'NCI     ' ) THEN
+>                number_concentration = .TRUE.
+>             END IF
+194,195c235
+<       !  A few values that we want out of here: the date, and the number of
+<       !  fields.
+---
+>       !  A few values that we want out of here: the date, and the number of fields.
+199c239
+<       num_3d = loop3
+---
+>       nump_3d = loop3
+201a242,269
+> 
+>       !  We'd also be interested in knowing if there are enough additional moisture species to make
+>       !  some fields available from the lateral boundaries.  Note that there is a hierarchy for the
+>       !  hydrometeors, based on the various physical parameterization assumptions in the model.  
+> 
+>       IF ( cloud .AND. rain ) THEN
+>          cloud_and_rain       = .TRUE.
+>       ELSE
+>          cloud_and_rain       = .FALSE.
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. ( ice .AND. snow ) ) THEN
+>          snow_and_ice         = .TRUE.
+>       ELSE
+>          snow_and_ice         = .FALSE.
+>       ENDIF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel ) THEN
+>          graupel              = .TRUE.
+>       ELSE
+>          graupel              = .FALSE.
+>       END IF
+> 
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel .AND. number_concentration ) THEN
+>          number_concentration = .TRUE.
+>       ELSE
+>          number_concentration = .FALSE.
+>       END IF
+257,259c325,327
+<       DO loop = 1 , num_3d
+<          IF      ( all_3d(loop)%small_header%name(1:8) .EQ. 'T       ' ) THEN
+<             t      = all_3d(loop)%array(is:ie,js:je,:)
+---
+>       DO loop = 1 , nump_3d
+>          IF      ( allp_3d(loop)%small_header%name(1:8) .EQ. 'T       ' ) THEN
+>             t      = allp_3d(loop)%array(is:ie,js:je,:)
+261,262c329,331
+<          ELSE IF ( all_3d(loop)%small_header%name(1:8) .EQ. 'U       ' ) THEN
+<             u      = all_3d(loop)%array(is:ie,js:je,:)
+---
+>             index_t = loop
+>          ELSE IF ( allp_3d(loop)%small_header%name(1:8) .EQ. 'U       ' ) THEN
+>             u      = allp_3d(loop)%array(is:ie,js:je,:)
+264,265c333,335
+<          ELSE IF ( all_3d(loop)%small_header%name(1:8) .EQ. 'V       ' ) THEN
+<             v      = all_3d(loop)%array(is:ie,js:je,:) 
+---
+>             index_u = loop
+>          ELSE IF ( allp_3d(loop)%small_header%name(1:8) .EQ. 'V       ' ) THEN
+>             v      = allp_3d(loop)%array(is:ie,js:je,:) 
+267,268c337,339
+<          ELSE IF ( all_3d(loop)%small_header%name(1:8) .EQ. 'H       ' ) THEN
+<             height = all_3d(loop)%array(is:ie,js:je,:)
+---
+>             index_v = loop
+>          ELSE IF ( allp_3d(loop)%small_header%name(1:8) .EQ. 'H       ' ) THEN
+>             height = allp_3d(loop)%array(is:ie,js:je,:)
+270,271c341,343
+<          ELSE IF ( all_3d(loop)%small_header%name(1:8) .EQ. 'RH      ' ) THEN
+<             rh     = all_3d(loop)%array(is:ie,js:je,:)
+---
+>             index_height = loop
+>          ELSE IF ( allp_3d(loop)%small_header%name(1:8) .EQ. 'RH      ' ) THEN
+>             rh     = allp_3d(loop)%array(is:ie,js:je,:)
+272a345
+>             index_rh = loop
+274c347
+<             PRINT '(A,A,A)','Unnecessary 3d array: ',all_3d(loop)%small_header%name(1:8),'.'
+---
+> !           PRINT '(A,A,A)','Unnecessary 3d array: ',allp_3d(loop)%small_header%name(1:8),'.'
+282a356
+>             index_sfc_t = loop
+284a359
+>             index_sfc_u = loop
+286a362
+>             index_sfc_v = loop
+290a367
+>             index_sfc_rh = loop
+292a370
+>             index_terrain = loop
+294a373
+>             index_land_use = loop
+296a376
+>             index_mapfaccr = loop
+298a379
+>             index_mapfacdt = loop
+300a382
+>             index_coriolis = loop
+302a385
+>             index_latitcrs = loop
+304a388
+>             index_longicrs = loop
+306a391
+>             index_latitdot = loop
+308a394
+>             index_longidot = loop
+310a397
+>             index_snowcovr = loop
+312a400
+>             index_psealvld = loop
+314a403
+>             index_psealvlc = loop
+316a406
+>             index_tseasfc = loop
+319a410
+>             index_tseasfc = loop
+321c412
+<             PRINT '(A,A,A)','Found extra 2d array, probably for LSM: ',TRIM( all_2d(loop)%small_header%name(1:8) ),'.'
+---
+> !           PRINT '(A,A,A)','Found extra 2d array, probably for LSM: ',TRIM( all_2d(loop)%small_header%name(1:8) ),'.'
+329a421
+>             index_p = loop
+336a429,661
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE assign_cloud_and_rain ( qc , qr , sfc_qc , sfc_qr , kx ) 
+> 
+>       IMPLICIT NONE
+> 
+>       !  Input variables.
+> 
+>       REAL , DIMENSION(:,:,:) :: qc , qr
+>       REAL , DIMENSION(:,:) :: sfc_qc , sfc_qr
+> 
+>       INTEGER :: kx
+> 
+>       !  Local variables.
+> 
+>       INTEGER :: loop
+>       INTEGER :: is , js , ie , je
+>  
+>       !  If the data are expanded, we need to chop down the size on the assignment for
+>       !  the horizontal dimensions.
+> 
+>       IF ( ( bhi( 1,1) .EQ. 2 ) .AND. &
+>            ( bhi( 8,1) .EQ. 1 ) .AND. &
+>            ( bhi(15,1) .EQ. 0 ) ) THEN
+>          is = 1         + bhi(11,1)
+>          js = 1         + bhi(12,1)
+>          ie = bhi(16,1) + bhi(11,1)
+>          je = bhi(17,1) + bhi(12,1)
+>       ELSE
+>          is = 1
+>          js = 1
+>          ie = bhi(16,1)
+>          je = bhi(17,1)
+>       END IF
+> 
+>       !  Assign the 3d data.
+> 
+>       DO loop = 1 , nump_3d
+>          IF      ( allp_3d(loop)%small_header%name(1:8) .EQ. 'CLW     ' ) THEN
+>             qc     = allp_3d(loop)%array(is:ie,js:je,:)
+>             CALL invert2 ( qc     , bhi(16,1) , bhi(17,1) , kx )
+>             index_qc = loop
+>          ELSE IF ( allp_3d(loop)%small_header%name(1:8) .EQ. 'RNW     ' ) THEN
+>             qr     = allp_3d(loop)%array(is:ie,js:je,:)
+>             CALL invert2 ( qr     , bhi(16,1) , bhi(17,1) , kx )
+>             index_qr = loop
+>          END IF
+>       END DO
+> 
+>       DO loop = 1 , num_2d
+>          IF      ( all_2d(loop)%small_header%name(1:8) .EQ. 'CLWSFC  ' ) THEN
+>             sfc_qc    = all_2d(loop)%array(is:ie,js:je)
+>             index_sfc_qc = loop
+>          ELSE IF ( all_2d(loop)%small_header%name(1:8) .EQ. 'RNWSFC  ' ) THEN
+>             sfc_qr    = all_2d(loop)%array(is:ie,js:je)
+>             index_sfc_qr = loop
+>          END IF
+>       END DO
+> 
+>    END SUBROUTINE assign_cloud_and_rain
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE assign_snow_and_ice ( qs , qi , sfc_qs , sfc_qi ,  kx ) 
+> 
+>       IMPLICIT NONE
+> 
+>       !  Input variables.
+> 
+>       REAL , DIMENSION(:,:,:) :: qs , qi
+>       REAL , DIMENSION(:,:) :: sfc_qs , sfc_qi
+> 
+>       INTEGER :: kx
+> 
+>       !  Local variables.
+> 
+>       INTEGER :: loop
+>       INTEGER :: is , js , ie , je
+>  
+>       !  If the data are expanded, we need to chop down the size on the assignment for
+>       !  the horizontal dimensions.
+> 
+>       IF ( ( bhi( 1,1) .EQ. 2 ) .AND. &
+>            ( bhi( 8,1) .EQ. 1 ) .AND. &
+>            ( bhi(15,1) .EQ. 0 ) ) THEN
+>          is = 1         + bhi(11,1)
+>          js = 1         + bhi(12,1)
+>          ie = bhi(16,1) + bhi(11,1)
+>          je = bhi(17,1) + bhi(12,1)
+>       ELSE
+>          is = 1
+>          js = 1
+>          ie = bhi(16,1)
+>          je = bhi(17,1)
+>       END IF
+> 
+>       !  Assign the 3d data.
+> 
+>       DO loop = 1 , nump_3d
+>          IF      ( allp_3d(loop)%small_header%name(1:8) .EQ. 'SNOW    ' ) THEN
+>             qs   = allp_3d(loop)%array(is:ie,js:je,:)
+>             CALL invert2 ( qs   , bhi(16,1) , bhi(17,1) , kx )
+>             index_qs = loop
+>          ELSE IF ( allp_3d(loop)%small_header%name(1:8) .EQ. 'ICE     ' ) THEN
+>             qi    = allp_3d(loop)%array(is:ie,js:je,:)
+>             CALL invert2 ( qi    , bhi(16,1) , bhi(17,1) , kx )
+>             index_qi = loop
+>          END IF
+>       END DO
+> 
+>       DO loop = 1 , num_2d
+>          IF      ( all_2d(loop)%small_header%name(1:8) .EQ. 'SNOWSFC ' ) THEN
+>             sfc_qs    = all_2d(loop)%array(is:ie,js:je)
+>             index_sfc_qs = loop
+>          ELSE IF ( all_2d(loop)%small_header%name(1:8) .EQ. 'ICESFC  ' ) THEN
+>             sfc_qi    = all_2d(loop)%array(is:ie,js:je)
+>             index_sfc_qi = loop
+>          END IF
+>       END DO
+> 
+>    END SUBROUTINE assign_snow_and_ice
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE assign_graupel ( qg , sfc_qg , kx ) 
+> 
+>       IMPLICIT NONE
+> 
+>       !  Input variables.
+> 
+>       REAL , DIMENSION(:,:,:) :: qg
+>       REAL , DIMENSION(:,:) :: sfc_qg
+> 
+>       INTEGER :: kx
+> 
+>       !  Local variables.
+> 
+>       INTEGER :: loop
+>       INTEGER :: is , js , ie , je
+>  
+>       !  If the data are expanded, we need to chop down the size on the assignment for
+>       !  the horizontal dimensions.
+> 
+>       IF ( ( bhi( 1,1) .EQ. 2 ) .AND. &
+>            ( bhi( 8,1) .EQ. 1 ) .AND. &
+>            ( bhi(15,1) .EQ. 0 ) ) THEN
+>          is = 1         + bhi(11,1)
+>          js = 1         + bhi(12,1)
+>          ie = bhi(16,1) + bhi(11,1)
+>          je = bhi(17,1) + bhi(12,1)
+>       ELSE
+>          is = 1
+>          js = 1
+>          ie = bhi(16,1)
+>          je = bhi(17,1)
+>       END IF
+> 
+>       !  Assign the 3d data.
+> 
+>       DO loop = 1 , nump_3d
+>          IF      ( allp_3d(loop)%small_header%name(1:8) .EQ. 'GRAUPEL ' ) THEN
+>             qg     = allp_3d(loop)%array(is:ie,js:je,:)
+>             CALL invert2 ( qg     , bhi(16,1) , bhi(17,1) , kx )
+>             index_qg = loop
+>          END IF
+>       END DO
+> 
+>       DO loop = 1 , num_2d
+>          IF      ( all_2d(loop)%small_header%name(1:8) .EQ. 'GRAUPELS' ) THEN
+>             sfc_qg    = all_2d(loop)%array(is:ie,js:je)
+>             index_sfc_qg = loop
+>          END IF
+>       END DO
+> 
+>    END SUBROUTINE assign_graupel
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE assign_number_concentration ( qn , sfc_qn , kx ) 
+> 
+>       IMPLICIT NONE
+> 
+>       !  Input variables.
+> 
+>       REAL , DIMENSION(:,:,:) :: qn
+>       REAL , DIMENSION(:,:) :: sfc_qn
+> 
+>       INTEGER :: kx
+> 
+>       !  Local variables.
+> 
+>       INTEGER :: loop
+>       INTEGER :: is , js , ie , je
+>  
+>       !  If the data are expanded, we need to chop down the size on the assignment for
+>       !  the horizontal dimensions.
+> 
+>       IF ( ( bhi( 1,1) .EQ. 2 ) .AND. &
+>            ( bhi( 8,1) .EQ. 1 ) .AND. &
+>            ( bhi(15,1) .EQ. 0 ) ) THEN
+>          is = 1         + bhi(11,1)
+>          js = 1         + bhi(12,1)
+>          ie = bhi(16,1) + bhi(11,1)
+>          je = bhi(17,1) + bhi(12,1)
+>       ELSE
+>          is = 1
+>          js = 1
+>          ie = bhi(16,1)
+>          je = bhi(17,1)
+>       END IF
+> 
+>       !  Assign the 3d data.
+> 
+>       DO loop = 1 , nump_3d
+>          IF      ( allp_3d(loop)%small_header%name(1:8) .EQ. 'NCI     ' ) THEN
+>             qn     = allp_3d(loop)%array(is:ie,js:je,:)
+>             CALL invert2 ( qn     , bhi(16,1) , bhi(17,1) , kx )
+>             index_qn = loop
+>          END IF
+>       END DO
+> 
+>       DO loop = 1 , num_2d
+>          IF      ( all_2d(loop)%small_header%name(1:8) .EQ. 'NCISFC  ' ) THEN
+>             sfc_qn    = all_2d(loop)%array(is:ie,js:je)
+>             index_sfc_qn = loop
+>          END IF
+>       END DO
+> 
+>    END SUBROUTINE assign_number_concentration
+342c667
+<                         imx , jmx , itimes , interval , less_than_24h , num_fields , iprocess )
+---
+>                         imx , jmx , itimes , interval , less_than_24h , num_fields , iprocess , daily_mean_sst )
+350c675
+<       LOGICAL               :: less_than_24h
+---
+>       LOGICAL               :: less_than_24h , daily_mean_sst
+403c728,730
+<       IF ( ( less_than_24h ) .AND. &
+---
+>       IF ( .NOT. daily_mean_sst ) THEN
+>          loopmax = iprocess
+>       ELSE IF ( ( less_than_24h ) .AND. &
+506a834,1004
+>       INTEGER :: counter
+> 
+>       !  Read back the data from the lower boundary file and write the mean field back out 
+>       !  as a standard  v3 formatted file.  Since we have been writing to this unit, there is the
+>       !  small matter of a rewind.
+> 
+>       REWIND ( unit_lowerbc )
+>  
+>       !  Loop of the number of full days.  For example, if interval = 21600 s, and itimes = 9 
+>       !  (so, 0, 6, 12, 18, 24, 30, 36, 42, and 48h), then loop from 1 to 8.  If the user
+>       !  has SPECIFICALLY said "less than 24 h, please", then we acquiesce.
+> 
+>       IF ( .NOT. daily_mean_sst ) THEN
+>          loopmax = itimes
+>       ELSE IF ( ( less_than_24h ) .AND. &
+>            ( interval * itimes / 86400 .LT. 1 ) ) THEN
+>          loopmax = itimes
+>       ELSE IF ( interval * itimes / 86400 .GE. 1 ) THEN
+>          loopmax = ( interval * itimes / 86400 ) * ( 86400 / interval )
+>       ELSE
+>          PRINT '(A)','You should not be allowed to be here.'
+>          STOP 'wrong_number_of_times'
+>       END IF
+> 
+>       !  Make the big header for this file.
+> 
+>       WRITE ( unit_lowerbc + 1 ) bh_flag
+> 
+>       !  Just in case no one else cleared the big header, we should do it.  All
+>       !  of the header values for the lower boundary condition index can be set to -999.
+> 
+>       bhi (:,6) = -999
+>       bhr (:,6) = -999
+>       bhic(:,6) = '                                                                                '
+>       bhrc(:,6) = '                                                                                '
+> 
+>       !  Identify the data as the lower boundary condition for MM5.
+> 
+>       bhi( 1,1) = 6 ; bhic( 1,1) = 'Model lower boundary condition for MM5                                          '
+>  
+>       !  A few lines about data format and version numbers.  If we make a change in the
+>       !  IC INTERP output version numbers, those will now be reflected here.
+> 
+>       bhi( 2,6) = bhi(2,5) ; bhic( 2,6) = bhic(2,5)
+>       bhi( 3,6) = bhi(3,5) ; bhic( 3,6) = bhic(3,5)
+>       bhi( 4,6) = bhi(4,5) ; bhic( 4,6) = bhic(4,5)
+>       
+>       !  Starting date of the INTERP data, this was specified in the namelist.
+> 
+>       bhi ( 5,6) = start_year   
+>       bhic( 5,6) = 'Four-digit year of start time                                                   '
+>       bhi ( 6,6) = start_month
+>       bhic( 6,6) = 'Month of the year of the start time (1-12)                                      '
+>       bhi ( 7,6) = start_day
+>       bhic( 7,6) = 'Day of the month of the start time (1-31)                                       '
+>       bhi ( 8,6) = start_hour
+>       bhic( 8,6) = 'Hour of the day of the start time (0-23)                                        '
+>       bhi ( 9,6) = start_minute
+>       bhic( 9,6) = 'Minute of the start time (0-59)                                                 '
+>       bhi (10,6) = start_second
+>       bhic(10,6) = 'Second of the start time (0-59)                                                 '
+>       bhi (11,6) = start_frac
+>       bhic(11,6) = 'Ten thousandths of a second of the start time (0-9999)                          '
+> 
+>       !  How many levels to expect.
+> 
+>       bhi (12,6) = 1  
+>       bhic(12,6) = 'Number of levels in the lower boundary condition file                           '
+> 
+>       !  Time interval between output files.
+> 
+>       bhr ( 1,6) = interval
+>       bhrc( 1,6) = 'Time difference (seconds) during which the lower boundary condition is valid    '
+> 
+>       !  Output the big header.
+> 
+>       WRITE ( unit_lowerbc + 1 ) bhi , bhr , bhic , bhrc
+> 
+>       !  Loop over all of the time periods to process.
+> 
+>       time_loop : DO loop = 1 , loopmax
+> 
+>          !  For each time period, we need to process each of the lower boundary fields.
+> 
+>          counter = 0 
+>          field_loop : DO loop_fields = 1 , num_fields
+>          
+>             READ ( unit_lowerbc ) sfc_sh%num_dims , sfc_sh%start_dims , sfc_sh%end_dims , &
+>                                   sfc_sh%xtime , &
+>                                   sfc_sh%staggering , sfc_sh%ordering , sfc_sh%current_date , &
+>                                   sfc_sh%name , sfc_sh%units , sfc_sh%description
+> 
+>             READ ( unit_lowerbc ) dum2d
+> 
+>             !  Do we only do daily averaged values for the surface air temp and SST?
+>             !  If we were forced to use a skin temperature for the SST (back in REGRID),
+>             !  then a diurnally averaged skin temperature will be an OK estimate for SST.
+> 
+>             IF      ( (      daily_mean_sst ) .AND. ( sfc_sh%name(1:8) .EQ. 'SST AVG ' ) ) THEN
+>                WRITE ( unit_lowerbc + 1 ) sh_flag
+>                WRITE ( unit_lowerbc + 1 ) sfc_sh%num_dims , sfc_sh%start_dims , sfc_sh%end_dims , &
+>                                           sfc_sh%xtime , &
+>                                           sfc_sh%staggering , sfc_sh%ordering , sfc_sh%current_date , &
+>                                           'TSEASFC  ' , sfc_sh%units , sfc_sh%description
+>                WRITE ( unit_lowerbc + 1 ) tseasfc_sum
+> 
+>                counter = counter + 1
+>                PRINT '(A,I4,A,A,A,A)','Loop counter = ',counter, ', ', sfc_sh%name,', date = ',sfc_sh%current_date
+> 
+>             ELSE IF ( ( .NOT. daily_mean_sst ) .AND. ( sfc_sh%name(1:8) .EQ. 'SST AVG ' ) ) THEN
+> 
+>             ELSE
+> 
+>                !  We are permitted to have variable SST and such.
+> 
+>                IF      ( sfc_sh%name(1:8) .EQ. 'RES TEMP' ) THEN
+>                   WRITE ( unit_lowerbc + 1 ) sh_flag
+>                   WRITE ( unit_lowerbc + 1 ) sfc_sh%num_dims , sfc_sh%start_dims , sfc_sh%end_dims , &
+>                                              sfc_sh%xtime , &
+>                                              sfc_sh%staggering , sfc_sh%ordering , sfc_sh%current_date , &
+>                                              sfc_sh%name , sfc_sh%units , sfc_sh%description
+>                   WRITE ( unit_lowerbc + 1 ) sfct_sum
+>                ELSE
+>                   WRITE ( unit_lowerbc + 1 ) sh_flag
+>                   WRITE ( unit_lowerbc + 1 ) sfc_sh%num_dims , sfc_sh%start_dims , sfc_sh%end_dims , &
+>                                              sfc_sh%xtime , &
+>                                              sfc_sh%staggering , sfc_sh%ordering , sfc_sh%current_date , &
+>                                              sfc_sh%name , sfc_sh%units , sfc_sh%description
+>                   WRITE ( unit_lowerbc + 1 ) dum2d
+>                END IF
+> 
+>                counter = counter + 1
+>                PRINT '(A,I4,A,A,A,A)','Loop counter = ',counter, ', ', sfc_sh%name,', date = ',sfc_sh%current_date
+> 
+>             END IF
+> 
+>          END DO field_loop
+> 
+>          !  Finish this time period with an end of time flag.
+> 
+>          WRITE ( unit_lowerbc + 1 ) eot_flag
+> 
+>       END DO time_loop
+> 
+>    END SUBROUTINE sum_lbc
+>    
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE sum_lbc2 ( unit_lowerbc , itimes , interval , less_than_24h , &
+>                         start_year , start_month , start_day , start_hour , &
+>                         start_minute , start_second , start_frac , num_fields , &
+>                         imx , jmx , daily_mean_sst )
+> 
+>       IMPLICIT NONE
+> 
+>       !  Input data.
+> 
+>       INTEGER               :: unit_lowerbc , itimes , interval , &
+>                                start_year , start_month , start_day , start_hour , &
+>                                start_minute , start_second , start_frac , num_fields
+>       INTEGER               :: imx , jmx
+>       LOGICAL               :: less_than_24h
+>       LOGICAL               :: daily_mean_sst
+> 
+>       !  Local data.
+> 
+>       REAL , DIMENSION(imx,jmx) :: dum2d
+>       TYPE(sh)              :: sfc_sh
+>       INTEGER :: loop , loopmax , loop_fields
+>       CHARACTER (LEN=24) :: current_date
+518c1016,1018
+<       IF ( ( less_than_24h ) .AND. &
+---
+>       IF ( .NOT. daily_mean_sst ) THEN
+>          loopmax = itimes
+>       ELSE IF ( ( less_than_24h ) .AND. &
+605c1105,1106
+< print *,'time=',loop,'field num=',loop_fields,' ',sfc_sh%name
+---
+>             PRINT '(A,I4,A,I2,A,A,A,A)','Loop counter = ',loop,', field num = ',loop_fields,', ', &
+>                                         sfc_sh%name,', date = ',sfc_sh%current_date
+662c1163
+<    END SUBROUTINE sum_lbc
+---
+>    END SUBROUTINE sum_lbc2
+853,854c1354,1356
+<       OPEN ( UNIT   =  lbc_unit        , &
+<              STATUS = 'SCRATCH'        , &
+---
+>       OPEN ( FILE   = '.foo'           , & 
+>              UNIT   =  lbc_unit        , &
+>              STATUS = 'UNKNOWN'        , &
+878c1380,1381
+<                          pp_sig , q_sig , t_sig , u_sig , v_sig , w , w_top)
+---
+>                          pp_sig , q_sig , t_sig , u_sig , v_sig , w , w_top , &
+>                          cloud_and_rain , snow_and_ice , graupel , number_concentration )
+889a1393,1394
+>       LOGICAL , INTENT(IN) :: cloud_and_rain , snow_and_ice , graupel , number_concentration
+> 
+1128a1634,1747
+>     
+>       !  Cloud and rain water.
+>   
+>       IF ( cloud_and_rain ) THEN
+> 
+>          WRITE ( immout ) sh_flag
+>          num_dims        = 3
+>          start_dims      = (/ 1, 1, 1, 1 /)
+>          end_dims        = (/ imx, jmx, kxs, 1 /)
+>          xtime           = 0
+>          staggering      = 'C   '
+>          ordering        = 'YXW '
+>          current_date    = current_date19 // '.0000'
+>          name            = 'CLW      '
+>          units           = 'kg/kg                    '
+>          description     = 'Cloud Water                                   '
+>          WRITE ( immout ) num_dims , start_dims , end_dims , xtime , &
+>                           staggering , ordering , current_date , name , units , description
+>          WRITE ( immout ) allm_3d(1)%array
+> 
+>          WRITE ( immout ) sh_flag
+>          num_dims        = 3
+>          start_dims      = (/ 1, 1, 1, 1 /)
+>          end_dims        = (/ imx, jmx, kxs, 1 /)
+>          xtime           = 0
+>          staggering      = 'C   '
+>          ordering        = 'YXW '
+>          current_date    = current_date19 // '.0000'
+>          name            = 'RNW      '
+>          units           = 'kg/kg                    '
+>          description     = 'Rain Water                                    '
+>          WRITE ( immout ) num_dims , start_dims , end_dims , xtime , &
+>                           staggering , ordering , current_date , name , units , description
+>          WRITE ( immout ) allm_3d(2)%array
+>  
+>       END IF
+>     
+>       !  Snow and ice.
+>   
+>       IF ( cloud_and_rain .AND. snow_and_ice ) THEN
+> 
+>          WRITE ( immout ) sh_flag
+>          num_dims        = 3
+>          start_dims      = (/ 1, 1, 1, 1 /)
+>          end_dims        = (/ imx, jmx, kxs, 1 /)
+>          xtime           = 0
+>          staggering      = 'C   '
+>          ordering        = 'YXW '
+>          current_date    = current_date19 // '.0000'
+>          name            = 'SNOW     '
+>          units           = 'kg/kg                    '
+>          description     = 'Cloud Snow                                    '
+>          WRITE ( immout ) num_dims , start_dims , end_dims , xtime , &
+>                           staggering , ordering , current_date , name , units , description
+>          WRITE ( immout ) allm_3d(3)%array
+> 
+>          WRITE ( immout ) sh_flag
+>          num_dims        = 3
+>          start_dims      = (/ 1, 1, 1, 1 /)
+>          end_dims        = (/ imx, jmx, kxs, 1 /)
+>          xtime           = 0
+>          staggering      = 'C   '
+>          ordering        = 'YXW '
+>          current_date    = current_date19 // '.0000'
+>          name            = 'ICE      '
+>          units           = 'kg/kg                    '
+>          description     = 'Cloud Ice                                     '
+>          WRITE ( immout ) num_dims , start_dims , end_dims , xtime , &
+>                           staggering , ordering , current_date , name , units , description
+>          WRITE ( immout ) allm_3d(4)%array
+>  
+>       END IF
+>     
+>       !  Graupel
+>   
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel ) THEN
+> 
+>          WRITE ( immout ) sh_flag
+>          num_dims        = 3
+>          start_dims      = (/ 1, 1, 1, 1 /)
+>          end_dims        = (/ imx, jmx, kxs, 1 /)
+>          xtime           = 0
+>          staggering      = 'C   '
+>          ordering        = 'YXW '
+>          current_date    = current_date19 // '.0000'
+>          name            = 'GRAUPEL  '
+>          units           = 'kg/kg                    '
+>          description     = 'Graupel                                       '
+>          WRITE ( immout ) num_dims , start_dims , end_dims , xtime , &
+>                           staggering , ordering , current_date , name , units , description
+>          WRITE ( immout ) allm_3d(5)%array
+> 
+>       END IF
+>     
+>       !  Number concentration.
+>   
+>       IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel .AND. number_concentration ) THEN
+> 
+>          WRITE ( immout ) sh_flag
+>          num_dims        = 3
+>          start_dims      = (/ 1, 1, 1, 1 /)
+>          end_dims        = (/ imx, jmx, kxs, 1 /)
+>          xtime           = 0
+>          staggering      = 'C   '
+>          ordering        = 'YXW '
+>          current_date    = current_date19 // '.0000'
+>          name            = 'NCI      '
+>          units           = '#/m^3                    '
+>          description     = 'Number Concentration of Ice                   '
+>          WRITE ( immout ) num_dims , start_dims , end_dims , xtime , &
+>                           staggering , ordering , current_date , name , units , description
+>          WRITE ( immout ) allm_3d(6)%array
+> 
+>       END IF
+===================================================================
+src/module_diags.F
+diff -r3.2 -r3.3
+261c261,263
+<                      !  pressures of water vapor (ew) and dry air (p-ew).
+---
+>                      !  pressures of water vapor (ew) and dry air (p-ew).  The
+>                      !  constants assume that the pressure is in hPa, so we divide
+>                      !  the pressures by 100.
+264c266
+<                      q1 = q1 / (q1 + mw_air * (p(i,j)*sighup(k)+ptop - ew))
+---
+>                      q1 = q1 / (q1 + mw_air * (p(i,j)/100.*sighup(k)+ptop/100. - ew))
+===================================================================
+src/module_lateral_bdy.F
+diff -r3.1 -r3.3
+11,12c11,12
+<                      pp_sig, ppeb3d, ppnb3d, ppsb3d, ppwb3d,  &
+<                       q_sig,  qeb3d,  qnb3d,  qsb3d,  qwb3d,  &
+---
+>                      pp_sig, ppeb3d, ppnb3d, ppsb3d, ppwb3d, &
+>                       q_sig,  qeb3d,  qnb3d,  qsb3d,  qwb3d, &
+16c16,17
+<                       w_sig,  web3d,  wnb3d,  wsb3d,  wwb3d)
+---
+>                       w_sig,  web3d,  wnb3d,  wsb3d,  wwb3d, &
+>                       cloud_and_rain , snow_and_ice , graupel , number_concentration )
+17a19
+>       USE all_io
+23,24c25,29
+<       INTEGER               :: iunit , start_year , start_month , start_day , start_hour , &
+<                                start_minute , start_second , start_frac
+---
+>       INTEGER :: iunit , start_year , start_month , start_day , start_hour , &
+>                  start_minute , start_second , start_frac
+> 
+>       LOGICAL :: cloud_and_rain , snow_and_ice , graupel , number_concentration
+> 
+37,108c42,66
+<       INTEGER                     :: I
+<       INTEGER                     :: IBDY
+<       INTEGER                     :: IMX
+<       INTEGER                     :: INUM
+<       INTEGER                     :: INTERVAL
+<       INTEGER                     :: ITIMES
+<       INTEGER                     :: J
+<       INTEGER                     :: JMX
+<       INTEGER                     :: K
+<       INTEGER                     :: KXS
+<       INTEGER                     :: M1
+<       INTEGER                     :: M2
+<       INTEGER                     :: NODIURNL
+<       INTEGER                     :: NUMDAYS
+< 
+<       REAL                        :: DTS
+<       REAL                        :: ET2D          ( IMX,   1, NSPGD )
+<       REAL                        :: ET3D          ( IMX, KXS, NSPGD )
+<       REAL                        :: NT2D          ( JMX,   1, NSPGD )
+<       REAL                        :: NT3D          ( JMX, KXS, NSPGD )
+<       REAL                        :: ST2D          ( JMX,   1, NSPGD )
+<       REAL                        :: ST3D          ( JMX, KXS, NSPGD )
+<       REAL                        :: WT2D          ( IMX,   1, NSPGD )
+<       REAL                        :: WT3D          ( IMX, KXS, NSPGD )
+<       REAL                        :: PP_SIG        ( : , : , : )
+<       REAL                        :: PPEB3D        ( : , : , : )
+<       REAL                        :: PPNB3D        ( : , : , : )
+<       REAL                        :: PPSB3D        ( : , : , : )
+<       REAL                        :: PPWB3D        ( : , : , : )
+<       REAL                        :: Q_SIG         ( : , : , : )
+<       REAL                        :: QEB3D         ( : , : , : )
+<       REAL                        :: QNB3D         ( : , : , : )
+<       REAL                        :: QSB3D         ( : , : , : )
+<       REAL                        :: QWB3D         ( : , : , : )
+<       REAL                        :: T_SIG         ( : , : , : )
+<       REAL                        :: T1
+<       REAL                        :: T2
+<       REAL                        :: TBEGIN
+<       REAL                        :: TEB3D         ( : , : , : )
+<       REAL                        :: TIMEND
+<       REAL                        :: TMIN          ( IMX , JMX )
+<       REAL                        :: TNB3D         ( : , : , : )
+<       REAL                        :: TSB3D         ( : , : , : )
+<       REAL                        :: TWB3D         ( : , : , : )
+<       REAL                        :: U_SIG         ( : , : , : )
+<       REAL                        :: UEB3D         ( : , : , : )
+<       REAL                        :: UNB3D         ( : , : , : )
+<       REAL                        :: USB3D         ( : , : , : )
+<       REAL                        :: UWB3D         ( : , : , : )
+<       REAL                        :: V_SIG         ( : , : , : )
+<       REAL                        :: VEB3D         ( : , : , : )
+<       REAL                        :: VNB3D         ( : , : , : )
+<       REAL                        :: VSB3D         ( : , : , : )
+<       REAL                        :: VWB3D         ( : , : , : )
+<       REAL                        :: W_SIG         ( : , : , : )
+<       REAL                        :: W_TOP         ( : , : )
+<       REAL                        :: WEB           ( IMX, KXS+1, NSPGX )
+<       REAL                        :: WEB2D         ( : , : , : )
+<       REAL                        :: WEB3D         ( : , : , : )
+<       REAL                        :: WET           ( IMX, KXS+1, NSPGX )
+<       REAL                        :: WNB           ( JMX, KXS+1, NSPGX )
+<       REAL                        :: WNB2D         ( : , : , : )
+<       REAL                        :: WNB3D         ( : , : , : )
+<       REAL                        :: WNT           ( JMX, KXS+1, NSPGX )
+<       REAL                        :: WSB           ( JMX, KXS+1, NSPGX )
+<       REAL                        :: WSB2D         ( : , : , : )
+<       REAL                        :: WSB3D         ( : , : , : )
+<       REAL                        :: WST           ( JMX, KXS+1, NSPGX )
+<       REAL                        :: WWB           ( IMX, KXS+1, NSPGX )
+<       REAL                        :: WWB2D         ( : , : , : )
+<       REAL                        :: WWB3D         ( : , : , : )
+<       REAL                        :: WWT           ( IMX, KXS+1, NSPGX )
+---
+>       INTEGER :: i , ibdy , imx , inum , interval , itimes , j , jmx , k , kxs , m1 , &
+>                  m2 , nodiurnl , numdays
+> 
+>       REAL :: dts , t1 , t2 , tbegin , timend
+> 
+>       REAL , DIMENSION(imx,jmx) :: tmin
+> 
+>       REAL , DIMENSION(:,:) :: w_top 
+> 
+>       REAL , DIMENSION( imx,   1, nspgd ) :: et2d , wt2d  
+> 
+>       REAL , DIMENSION( imx, kxs, nspgd ) :: et3d , wt3d
+> 
+>       REAL , DIMENSION( jmx,   1, nspgd ) :: nt2d , st2d
+> 
+>       REAL , DIMENSION( jmx, kxs, nspgd ) :: nt3d , st3d
+> 
+>       REAL , DIMENSION( imx, kxs+1, nspgx ) :: web , wet , wwb , wwt
+> 
+>       REAL , DIMENSION( jmx, kxs+1, nspgx ) :: wnb , wnt , wsb , wst
+> 
+>       REAL , DIMENSION(:,:,:) :: pp_sig , ppeb3d , ppnb3d , ppsb3d , ppwb3d , q_sig , qeb3d , qnb3d , &
+>                                  qsb3d , qwb3d , t_sig , teb3d , tnb3d , tsb3d , twb3d , u_sig , ueb3d , &
+>                                  unb3d , usb3d , uwb3d , v_sig , veb3d , vnb3d , vsb3d , vwb3d , w_sig , &
+>                                  web2d , web3d , wnb2d , wnb3d , wsb2d , wsb3d , wwb2d , wwb3d
+112,113c70,73
+<          !  Create the 5 rows and columns along the boundary for each of the
+<          !  3d fields.
+---
+>          !  Create the 5 rows and columns along the boundary for each of the 3d fields.  This is what we are
+>          !  going to refer to a "frame".  It is in 4 pieces and contained in the arrays named either YXb3d or 
+>          !  allm_3d(n)%Xbdy (where Y is a variable name: u, v, etc; X is a compass direction: n, s, e, w).  We 
+>          !  have the "always" fields (u_sig, v_sig, etc.) and the "sometimes" fields (additional and optional moisture arrays).
+122a83,100
+>          IF ( cloud_and_rain ) THEN
+>             CALL bound (allm_3d(1)%array, allm_3d(1)%ebdy, allm_3d(1)%wbdy, allm_3d(1)%nbdy, allm_3d(1)%sbdy, imx, jmx, kxs, 1 )
+>             CALL bound (allm_3d(2)%array, allm_3d(2)%ebdy, allm_3d(2)%wbdy, allm_3d(2)%nbdy, allm_3d(2)%sbdy, imx, jmx, kxs, 1 )
+>          END IF
+> 
+>          IF ( cloud_and_rain .AND. snow_and_ice ) THEN
+>             CALL bound (allm_3d(3)%array, allm_3d(3)%ebdy, allm_3d(3)%wbdy, allm_3d(3)%nbdy, allm_3d(3)%sbdy, imx, jmx, kxs, 1 )
+>             CALL bound (allm_3d(4)%array, allm_3d(4)%ebdy, allm_3d(4)%wbdy, allm_3d(4)%nbdy, allm_3d(4)%sbdy, imx, jmx, kxs, 1 )
+>          END IF
+> 
+>          IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel ) THEN
+>             CALL bound (allm_3d(5)%array, allm_3d(5)%ebdy, allm_3d(5)%wbdy, allm_3d(5)%nbdy, allm_3d(5)%sbdy, imx, jmx, kxs, 1 )
+>          END IF
+> 
+>          IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel .AND. number_concentration ) THEN
+>             CALL bound (allm_3d(6)%array, allm_3d(6)%ebdy, allm_3d(6)%wbdy, allm_3d(6)%nbdy, allm_3d(6)%sbdy, imx, jmx, kxs, 1 )
+>          END IF
+> 
+140c118
+<          !  IC INTERP output version numbers, those will now be reflected here.
+---
+>          !  IC INTERPF output version numbers, those will now be reflected here.
+146c124
+<          !  Starting date of the INTERP data, this was specified in the namelist.
+---
+>          !  Starting date of the INTERPF data, this was specified in the namelist.
+169c147
+<          !  entire INTERP program run, not just a single interval.
+---
+>          !  entire INTERPF program run, not just a single interval.
+183,189c161,170
+<          !  FOR ITIMES > 1: FIRST, SEND THE FRAME MADE LAST TIME AND THE 
+<          !  CURRENT TIME'S ENTIRE FIELD TO SUBROUTINE BNDTEND.  THIS SUB-
+<          !  ROUTINE CALCULATES THE BNDRY TENDANCIES AND STORES THEM IN ET2D,
+<          !  WT2D, NT2D, ST2D.  SECOND, WRITE THE FRAME MADE LAST TIME AND
+<          !  THE BNDRY TENDENCIES TO DISK.  THIRD, CALL SUBROUTINE BOUND TO
+<          !  MAKE A NEW FRAME FROM THE CURRENT TIME'S FIELD.  THE NEW FRAME
+<          !  WILL OVERWRITE THE OLD FRAME'S MEMORY LOCATION.
+---
+>          !  For itimes > 1, do the following for each variable:
+> 
+>          !  1) Write the frame made last time to disk. This turns out to be 4 separate writes for each variable.
+> 
+>          !  2) Send the frame made last time and the current time's entire field to subroutine bndtend.  This 
+>          !  subroutine calculates the boundary tendencies and stores them in et2d, wt2d, nt2d, st2d.  Each of these
+>          !  4 arrays are then output.
+> 
+>          !  3) Call subroutine bound to make a new frame from the current time's field.  The new frame will overwrite 
+>          !  the old frame's location.
+249d229
+< !        WRITE (31) UEB3D, UWB3D, UNB3D, USB3D
+308d287
+< !        WRITE (31) ET3D, WT3D, NT3D, ST3D
+369d347
+< !        WRITE (31) VEB3D, VWB3D, VNB3D, VSB3D
+428d405
+< !        WRITE (31) ET3D, WT3D, NT3D, ST3D
+489d465
+< !        WRITE (31) TEB3D, TWB3D, TNB3D, TSB3D
+548d523
+< !        WRITE (31) ET3D, WT3D, NT3D, ST3D
+609d583
+< !        WRITE (31) QEB3D, QWB3D, QNB3D, QSB3D
+668d641
+< !        WRITE (31) ET3D, WT3D, NT3D, ST3D
+734d706
+< !        WRITE (31) WEB, WWB, WNB, WSB
+798d769
+< !        WRITE (31) WET, WWT, WNT, WST
+860d830
+< !        WRITE (31) PPEB3D, PPWB3D, PPNB3D, PPSB3D
+919d888
+< !        WRITE (31) ET3D, WT3D, NT3D, ST3D
+921a891,1626
+>          IF ( cloud_and_rain ) THEN
+> 
+>             !  Cloud Water
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QCEB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Cloud water                      east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(1)%ebdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QCWB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Cloud water                      west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(1)%wbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QCNB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Cloud water                     north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(1)%nbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QCSB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Mixing ratio                    south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(1)%sbdy
+>     
+>             CALL bndtend (allm_3d(1)%array, allm_3d(1)%ebdy, allm_3d(1)%wbdy, allm_3d(1)%nbdy, allm_3d(1)%sbdy, &
+>                           imx, jmx, kxs, 1, dts, et3d, wt3d, nt3d, st3d)
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QCEBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Cloud water                tend  east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) et3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QCWBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Cloud water                tend  west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) wt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QCNBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Cloud water                tend north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) nt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QCSBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Cloud water                tend south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) st3d
+> 
+>             CALL bound (allm_3d(1)%array, allm_3d(1)%ebdy, allm_3d(1)%wbdy, allm_3d(1)%nbdy, allm_3d(1)%sbdy, &
+>                           imx, jmx, kxs, 1)
+> 
+>             !  Rain Water
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QREB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Rain water                       east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(2)%ebdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QRWB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Rain water                       west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(2)%wbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QRNB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Rain water                      north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(2)%nbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QRSB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Mixing ratio                    south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(2)%sbdy
+>     
+>             CALL bndtend (allm_3d(2)%array, allm_3d(2)%ebdy, allm_3d(2)%wbdy, allm_3d(2)%nbdy, allm_3d(2)%sbdy, &
+>                           imx, jmx, kxs, 1, dts, et3d, wt3d, nt3d, st3d)
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QREBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Rain water                 tend  east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) et3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QRWBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Rain water                 tend  west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) wt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QRNBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Rain water                 tend north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) nt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QRSBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Rain water                 tend south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) st3d
+> 
+>             CALL bound (allm_3d(2)%array, allm_3d(2)%ebdy, allm_3d(2)%wbdy, allm_3d(2)%nbdy, allm_3d(2)%sbdy, &
+>                           imx, jmx, kxs, 1)
+> 
+>          END IF
+> 
+>          IF ( cloud_and_rain .AND. snow_and_ice ) THEN
+> 
+>             !  Snow
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QNIEB    '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Snow                             east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(3)%ebdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QNIWB    '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Snow                             west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(3)%wbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QNINB    '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Snow                            north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(3)%nbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QNISB    '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Mixing ratio                    south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(3)%sbdy
+>     
+>             CALL bndtend (allm_3d(3)%array, allm_3d(3)%ebdy, allm_3d(3)%wbdy, allm_3d(3)%nbdy, allm_3d(3)%sbdy, &
+>                           imx, jmx, kxs, 1, dts, et3d, wt3d, nt3d, st3d)
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QNIEBT   '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Snow                       tend  east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) et3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QNIWBT   '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Snow                       tend  west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) wt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QNINBT   '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Snow                       tend north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) nt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QNISBT   '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Snow                       tend south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) st3d
+> 
+>             CALL bound (allm_3d(3)%array, allm_3d(3)%ebdy, allm_3d(3)%wbdy, allm_3d(3)%nbdy, allm_3d(3)%sbdy, &
+>                           imx, jmx, kxs, 1)
+> 
+>             !  Cloud Ice
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QIEB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Cloud ice                        east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(4)%ebdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QIWB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Cloud ice                        west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(4)%wbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QINB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Cloud ice                       north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(4)%nbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QISB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Mixing ratio                    south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(4)%sbdy
+>     
+>             CALL bndtend (allm_3d(4)%array, allm_3d(4)%ebdy, allm_3d(4)%wbdy, allm_3d(4)%nbdy, allm_3d(4)%sbdy, &
+>                           imx, jmx, kxs, 1, dts, et3d, wt3d, nt3d, st3d)
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QIEBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Cloud ice                  tend  east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) et3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QIWBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Cloud ice                  tend  west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) wt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QINBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Cloud ice                  tend north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) nt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QISBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Cloud ice                  tend south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) st3d
+> 
+>             CALL bound (allm_3d(4)%array, allm_3d(4)%ebdy, allm_3d(4)%wbdy, allm_3d(4)%nbdy, allm_3d(4)%sbdy, &
+>                           imx, jmx, kxs, 1)
+> 
+>          END IF
+> 
+>          IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel ) THEN
+> 
+>             !  Graupel
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QGEB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Graupel                          east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(5)%ebdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QGWB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Graupel                          west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(5)%wbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QGNB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Graupel                         north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(5)%nbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QGSB     '
+>             units           = 'kPa kg/kg                '
+>             description     = 'Mixing ratio                    south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(5)%sbdy
+>     
+>             CALL bndtend (allm_3d(5)%array, allm_3d(5)%ebdy, allm_3d(5)%wbdy, allm_3d(5)%nbdy, allm_3d(5)%sbdy, &
+>                           imx, jmx, kxs, 1, dts, et3d, wt3d, nt3d, st3d)
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QGEBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Graupel                    tend  east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) et3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QGWBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Graupel                    tend  west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) wt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QGNBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Graupel                    tend north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) nt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QGSBT    '
+>             units           = 'kPa kg/kg/s              '
+>             description     = 'Graupel                    tend south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) st3d
+> 
+>             CALL bound (allm_3d(5)%array, allm_3d(5)%ebdy, allm_3d(5)%wbdy, allm_3d(5)%nbdy, allm_3d(5)%sbdy, &
+>                           imx, jmx, kxs, 1)
+> 
+>          END IF
+> 
+>          IF ( cloud_and_rain .AND. snow_and_ice .AND. graupel .AND. number_concentration ) THEN
+> 
+>             !  Number Concentration
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QNCEB    '
+>             units           = 'kPa #/m^3                '
+>             description     = 'Number concentration of ice      east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(6)%ebdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QNCWB    '
+>             units           = 'kPa #/m^3                '
+>             description     = 'Number concentration of ice      west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(6)%wbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QNCNB    '
+>             units           = 'kPa #/m^3                '
+>             description     = 'Number concentration of ice     north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(6)%nbdy
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QNCSB    '
+>             units           = 'kPa #/m^3                '
+>             description     = 'Number concentration of ice     south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) allm_3d(6)%sbdy
+>     
+>             CALL bndtend (allm_3d(6)%array, allm_3d(6)%ebdy, allm_3d(6)%wbdy, allm_3d(6)%nbdy, allm_3d(6)%sbdy, &
+>                           imx, jmx, kxs, 1, dts, et3d, wt3d, nt3d, st3d)
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QNCEBT   '
+>             units           = 'kPa #/m^3/s              '
+>             description     = 'Number concentration of icetend  east boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) et3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'YSB '
+>             name            = 'QNCWBT   '
+>             units           = 'kPa #/m^3/s              '
+>             description     = 'Number concentration of icetend  west boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) wt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QNCNBT   '
+>             units           = 'kPa #/m^3/s              '
+>             description     = 'Number concentration of icetend north boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) nt3d
+> 
+>             WRITE ( iunit ) sh_flag
+>             num_dims        = 3
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ jmx, kxs, nspgx, 1 /)
+>             xtime           = 0
+>             staggering      = 'C   '
+>             ordering        = 'XSB '
+>             name            = 'QNCSBT   '
+>             units           = 'kPa #/m^3/s              '
+>             description     = 'Number concentration of icetend south boundary'
+>             WRITE ( iunit ) num_dims , start_dims , end_dims , xtime , staggering , ordering , &
+>                             old_date//'.0000' , name , units , description
+>             WRITE ( iunit ) st3d
+> 
+>             CALL bound (allm_3d(6)%array, allm_3d(6)%ebdy, allm_3d(6)%wbdy, allm_3d(6)%nbdy, allm_3d(6)%sbdy, &
+>                           imx, jmx, kxs, 1)
+> 
+>          END IF
+> 
+937,956c1642,1651
+<       INTEGER                     :: I
+<       INTEGER                     :: ICRSDOT
+<       INTEGER                     :: IMX
+<       INTEGER                     :: J
+<       INTEGER                     :: JMX
+<       INTEGER                     :: K
+<       INTEGER                     :: KXS
+<       INTEGER                     :: N
+< 
+<       REAL                        :: DTS
+<       REAL                        :: EAST      ( IMX, KXS, NSPGD )
+<       REAL                        :: F         ( IMX, JMX, KXS   )
+<       REAL                        :: NORTH     ( JMX, KXS, NSPGD )
+<       REAL                        :: ONEOVDT
+<       REAL                        :: SOUTH     ( JMX, KXS, NSPGD )
+<       REAL                        :: TEAST     ( IMX, KXS, NSPGD )
+<       REAL                        :: TNORTH    ( JMX, KXS, NSPGD )
+<       REAL                        :: TSOUTH    ( JMX, KXS, NSPGD )
+<       REAL                        :: TWEST     ( IMX, KXS, NSPGD )
+<       REAL                        :: WEST      ( IMX, KXS, NSPGD )
+---
+>       INTEGER :: i , icrsdot , imx , j , jmx , k , kxs , n
+> 
+>       REAL :: dts , oneovdt
+> 
+>       REAL , DIMENSION( imx, kxs, nspgd ) :: east , teast , twest , west
+> 
+>       REAL , DIMENSION( jmx, kxs, nspgd ) :: north , south , tnorth , tsouth
+> 
+>       REAL , DIMENSION(imx, jmx, kxs ) :: f
+> 
+989,1002c1684,1690
+<       INTEGER                     :: I
+<       INTEGER                     :: ICRSDOT
+<       INTEGER                     :: IMX
+<       INTEGER                     :: J
+<       INTEGER                     :: JMX
+<       INTEGER                     :: K
+<       INTEGER                     :: KXS
+<       INTEGER                     :: N
+< 
+<       REAL                        :: EAST      ( IMX, KXS, NSPGD )
+<       REAL                        :: F         ( IMX, JMX, KXS   )
+<       REAL                        :: NORTH     ( JMX, KXS, NSPGD )
+<       REAL                        :: SOUTH     ( JMX, KXS, NSPGD )
+<       REAL                        :: WEST      ( IMX, KXS, NSPGD )
+---
+>       INTEGER :: i , icrsdot , imx , j , jmx , k , kxs , n
+> 
+>       REAL , DIMENSION( imx, kxs, nspgd ) :: east , west
+> 
+>       REAL , DIMENSION( jmx, kxs, nspgd ) :: north , south
+> 
+>       REAL , DIMENSION( imx, jmx, kxs ) :: f
+1034,1042c1722,1726
+<       INTEGER                     :: I
+<       INTEGER                     :: IMX
+<       INTEGER                     :: K
+<       INTEGER                     :: KXS
+<       INTEGER                     :: N
+< 
+<       REAL                        :: W2DIN         ( IMX,   1  , NSPGX )
+<       REAL                        :: W3DIN         ( IMX,   KXS, NSPGX )
+<       REAL                        :: W3DOUT        ( IMX, KXS+1, NSPGX )
+---
+>       INTEGER :: i , imx , k , kxs , n
+> 
+>       REAL , DIMENSION( imx,   1  , nspgx ) :: w2din
+>       REAL , DIMENSION( imx,   kxs, nspgx ) :: w3din
+>       REAL , DIMENSION( imx, kxs+1, nspgx ) :: w3dout
+1044c1728
+<       W3DOUT = 0.0
+---
+>       w3dout = 0.0
+===================================================================
+src/module_phys_consts.F
+diff -r3.1 -r3.2
+7d6
+<       REAL,          PARAMETER    :: EPSILON = 1.0E-15
+===================================================================
+src/module_util.F
+diff -r3.2 -r3.3
+117a118,120
+>       rh(iew,:) = rh(iew-1,:)
+>       rh(:,jns) = rh(:,jns-1)
+> 

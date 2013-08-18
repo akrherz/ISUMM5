@@ -1,0 +1,3 @@
+CSTART   mpp_sound_60.incl
+C_FLIC_RUNPAD(0)
+CEND   mpp_sound_60.incl

@@ -1,0 +1,25 @@
+C                                                                                SURFACE.1
+C SURFACE.INCL COMMON BLOCKS                                                     SURFACE.2
+C                                                                                SURFACE.3
+      COMMON/SURFACE1/UX,VX,THX,QX,THVX,ZA,ZQ,CPM,                               SURFACE.4
+     &                UFLXP,VFLXP,RHOX,PSURFA,PSURFB,KPBL,                       SURFACE.5
+     &                DTSTEP                                                     SURFACE.6
+      REAL UX(MIX,MKX),VX(MIX,MKX),                                              SURFACE.7
+     &     THX(MIX,MKX),                                                         SURFACE.8
+     &     QX(MIX,MKX),THVX(MIX,MKX),                                            SURFACE.9
+     &     ZA(MIX,MKX),ZQ(MIX,KXP1),CPM(MIX,MKX),                                SURFACE.10
+     &     UFLXP(MIX),VFLXP(MIX),RHOX(MIX),                                      SURFACE.11
+     &     PSURFA(MIX),PSURFB(MIX)                                               SURFACE.12
+      INTEGER KPBL(MIX)                                                          SURFACE.13
+      REAL DTSTEP                                                                SURFACE.14
+C                                                                                SURFACE.15
+      COMMON/SURFACE2/PLCRAINOLD                                                 SURFACE.16
+      REAL PLCRAINOLD(MIX,MJX)                                                   SURFACE.17
+C                                                                                SURFACE.18
+      COMMON/SURFACE3/SCR3   !DIMENSION OF SCR3 IS DEFINED IN DUSOLVE1.I         SURFACE.19
+C                                                                                SURFACE.20
+c$omp threadprivate (/surface1/)                                                 SURFACE.24
+c$omp threadprivate (/surface2/)                                                 SURFACE.25
+c$omp threadprivate (/surface3/)                                                 SURFACE.26
+C                                                                                SURFACE.27
+C END OF SURFACE.INCL COMMON BLOCKS                                              SURFACE.28

@@ -1,0 +1,23 @@
+C                                                                                NONHYDB.1
+      REAL PPEB,PPEBT,PPNB,PPNBT,PPSB,PPSBT,PPWB,PPWBT,WEB,WEBT,WNB,             NONHYDB.2
+     1     WNBT,WSB,WSBT,WWB,WWBT                                                NONHYDB.3
+      POINTER  (INHWE,WEB(MIXNH,KXP1NH,NSPGX)),                                  NONHYDB.4
+     1         (INHWW,WWB(MIXNH,KXP1NH,NSPGX)),                                  NONHYDB.5
+     4         (INHWET,WEBT(MIXNH,KXP1NH,NSPGX)),                                NONHYDB.6
+     5         (INHWWT,WWBT(MIXNH,KXP1NH,NSPGX)),                                NONHYDB.7
+     7         (INHPPE,PPEB(MIXNH,MKXNH,NSPGX)),                                 NONHYDB.8
+     8         (INHPPW,PPWB(MIXNH,MKXNH,NSPGX)),                                 NONHYDB.9
+     1         (INHPPET,PPEBT(MIXNH,MKXNH,NSPGX)),                               NONHYDB.10
+     2         (INHPPWT,PPWBT(MIXNH,MKXNH,NSPGX)),                               NONHYDB.11
+     2         (INHWN,WNB(MJXNH,KXP1NH,NSPGX)),                                  NONHYDB.12
+     3         (INHWS,WSB(MJXNH,KXP1NH,NSPGX)),                                  NONHYDB.13
+     5         (INHWNT,WNBT(MJXNH,KXP1NH,NSPGX)),                                NONHYDB.14
+     6         (INHWST,WSBT(MJXNH,KXP1NH,NSPGX)),                                NONHYDB.15
+     9         (INHPPN,PPNB(MJXNH,MKXNH,NSPGX)),                                 NONHYDB.16
+     1         (INHPPS,PPSB(MJXNH,MKXNH,NSPGX)),                                 NONHYDB.17
+     3         (INHPPST,PPSBT(MJXNH,MKXNH,NSPGX)),                               NONHYDB.18
+     4         (INHPPNT,PPNBT(MJXNH,MKXNH,NSPGX))                                NONHYDB.19
+C                                                                                NONHYDB.20
+      COMMON /NONHYDB/INHWE,INHWW,INHWET,INHWWT,INHPPE,INHPPW,                   NONHYDB.21
+     1  INHPPET,INHPPWT,INHWN,INHWS,INHWNT,INHWST,INHPPN,INHPPS,                 NONHYDB.22
+     2  INHPPST,INHPPNT                                                          NONHYDB.23

@@ -1,0 +1,219 @@
+# QSUB -r INTERPF                       # request name
+# QSUB -o interpf.out 
+# QSUB -q reg                           # job queue class
+# QSUB -eo                              # stdout and stderr together
+# QSUB -lM 8Mw                          # maximum memory
+# QSUB -lT 1000                         # time limit
+# QSUB                                  # no more qsub commands
+#
+ja
+set echo
+#
+#
+#               **************************************
+#               ******  interpf batch C shell   ******
+#               ******        V3 System         ******
+#               ******         for f90          ******
+#               **************************************
+#
+if ( $?ENVIRONMENT ) then
+   echo "environment variable defined as $ENVIRONMENT"
+else
+   setenv ENVIRONMENT INTERACTIVE
+   echo "environment variable defined as $ENVIRONMENT"
+endif
+#
+if ( $ENVIRONMENT == BATCH ) then
+   cd $TMPDIR
+endif
+#
+#       define MSS pathname
+#
+# this should be the user's case or experiment (for example TEST/EXP1/...).  
+# Note that there is no / in front of the pathname TEST.
+#
+   set ExpName = MM5V3/TEST        # MSS path name for input file
+   set RetPd   = 365               # MSS file retention period in days
+#
+#       locations for input datasets
+#
+   set ID      =   1                              # input domain ID
+   set InData  =   $ExpName/RAWINS_DOMAIN$ID
+#  set InData  = ( $ExpName/RAWINS_DOMAIN$ID_part1 \
+#                  $ExpName/RAWINS_DOMAIN$ID_part2 )
+#
+#       INTERPF MSS output pathname
+#
+   set OutInterp  =   $ExpName
+#
+#  Do you want to create an additional IEEE copy of the output?
+#     IEEE data are used on workstations.
+#
+   set OutIEEE = no
+#  set OutIEEE = yes
+#
+#  set up the remote host location where your source code may locate
+#
+   set Host = username@host.domain:/your_local_directory
+#
+#  Do you want to use your source code tar file?
+#
+   set UseMySource = no
+#  set UseMySource = yes
+#
+#    ------ GET INTERPF TAR FILE ---------------------------
+#
+if ( $UseMySource == yes ) then
+     rcp $Host/interpf.tar .
+     tar -xf interpf.tar
+else if ( ( $UseMySource == no ) && ( $ENVIRONMENT == BATCH ) ) then
+     msread interpf.tar.gz /MESOUSER/MM5V3/INTERPF.TAR.gz
+#    cp /fs/othrorgs/home0/mesouser/MM5V3/INTERPF.TAR.gz interpf.tar.gz
+     gunzip -d interpf.tar.gz
+     tar -xf interpf.tar
+endif
+rm interpf.tar
+cd INTERPF
+#
+if ( -e namelist.input ) rm namelist.input
+cat << End_Of_Record | sed -e 's/#.*//; s/  *$//' > ./namelist.input
+&record0
+ input_file     = './interpinA'/                      # objective analysis or
+                                                      # First-guess file name (do not change)
+#input_file     = './interpinA'                       # use these if you have two input files
+#                 './interpinB'/
+
+&record1
+ start_year     =  1993                               # The starting and
+ start_month    =    03                               # ending dates to
+ start_day      =    13                               # process
+ start_hour     =    00                               #
+ end_year       =  1993                               #
+ end_month      =    03                               #
+ end_day        =    14                               #
+ end_hour       =    00                               #
+ interval       = 43200                               # time difference (s)
+ less_than_24h  = .FALSE. /                           # if input is less than 24 h
+
+&record2
+ sigma_f_bu     = 1.00,0.99,0.98,0.96,0.93,0.89,      # full sigma, bottom-up,
+                  0.85,0.80,0.75,0.70,0.65,0.60,      # start with 1.0, end
+                  0.55,0.50,0.45,0.40,0.35,0.30,      # with 0.0
+                  0.25,0.20,0.15,0.10,0.05,0.00       #
+ ptop           = 10000
+ isfc           = 0 /                                 # # sigma levels to spread
+                                                      # surface information
+
+&record3
+ p0             = 1.e5                                # base state sea-level pres (Pa)
+ tlp            = 50.                                 # base state lapse rate d(T)/d(ln P)
+ ts0            = 275.                                # base state sea-level temp (K)
+ tiso           = 0./                                 # base state isothermal stratospheric temp (K)
+
+&record4
+ removediv      = .TRUE.                              # T/F remove integrated mean divergence
+ usesfc         = .TRUE.                              # T/F use surface data
+ wrth2o         = .TRUE. /                            # T/F specific humidity wrt H2O
+
+&record5
+ ifdatim        = -1 /                                # of IC time periods to output
+
+End_Of_Record
+#
+########################################################################
+####################                             #######################
+####################    END USER MODIFICATION    #######################
+####################                             #######################
+########################################################################
+#
+#    This is where the utility program comes from
+#
+set MesoUser = /fs/othrorgs/home0/mesouser/MM5V3/Util
+#
+#
+#    The make rules are contained in the file configure.make.CRAY
+#
+# --------- create interpf executable -------------------
+#
+set LETTERS = (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
+#
+   make 
+   set toast = $status
+   if ( $ENVIRONMENT != BATCH ) then
+      echo -n "compile complete, continue?    (yes)   "
+      set ans = "$<"
+      if (( $ans == "n" ) || ( $ans == "no" )) then
+         exit (1)
+      endif
+   else if (( $ENVIRONMENT == BATCH ) && ( $toast != 0 )) then
+      echo "error in the compile, stopping"
+      exit(1)
+   endif
+#
+# --------- get data sets from MS
+#
+echo "attempting to acquire ${#InData} front end analysis file"
+set NUMFIL = 1
+while ( $NUMFIL <= ${#InData} )
+   set Local  = interpin$LETTERS[${NUMFIL}]
+   set Remote = $InData[${NUMFIL}]
+   msread $Local $Remote 
+   @ NUMFIL ++
+end
+#
+# --------- run Interpf
+#
+date
+./interpf >&! interpf.print.out
+set toast = $status
+if (( $ENVIRONMENT == BATCH ) && ( $toast != 0 )) then
+   cat interpf.print.out
+   echo "error in interpf, stopping"
+   rm core
+   exit(1)
+endif
+#
+#       if interactive, probably do not want to zap and dispose
+#
+if ( $ENVIRONMENT != BATCH ) then
+   echo -n "test interpf run complete, continue?     (no)    "
+   set ans = "$<"
+   if (( $ans != "y" ) && ( $ans != "yes" )) then
+      rm inlif assign* fort.9* core
+      exit (1)
+   endif
+endif
+#
+if ( -e acct ) rm acct
+ja -s >! acct
+cat acct >> interpf.print.out
+if ( $ENVIRONMENT == BATCH ) cat interpf.print.out
+#
+#       output files
+#
+ls -ls
+#
+#       mm5 initial and boundary files
+#
+foreach file ( MMINPUT_DOMAIN* BDYOUT_DOMAIN* LOWBDY_DOMAIN* )
+   echo $file
+   mswrite -t $RetPd $file $OutInterp/$file
+   if ( $OutIEEE == yes ) then
+      if ( ! -e ieeev3.csh ) then
+         cp $MesoUser/ieeev3.csh .
+         chmod +x ieeev3.csh
+      endif
+      ieeev3.csh $file
+      mswrite -t $RetPd ${file}.ieee $OutInterp/${file}_IEEE
+      rcp ${file}.ieee $Host
+   endif
+end
+#
+# tar the namelist, executable, and output together
+# save the INTERPF tar file on MSS
+#
+tar -cf interpf.out.tar inlif interpf.print.out src/interpf
+mswrite -t $RetPd interpf.out.tar $OutInterp/interpf.out.tar
+#
+ls -ls
+ja -st

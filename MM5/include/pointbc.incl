@@ -1,0 +1,102 @@
+C                                                                                POINTBC.1
+C----------------------------------------------------------------------          POINTBC.2
+C                                                                                POINTBC.3
+                                                                                 POINTBC.4
+      REAL QCEB,QCEBT,QCWB,QCWBT,QEB,QEBT,QWB,QWBT,TEB,TEBT,TWB,TWBT,            POINTBC.5
+     1 UEB,UEBT,UWB,UWBT,VEB,VEBT,VWB,VWBT                                       POINTBC.6
+      POINTER (IAUE,UEB(MIX,MKX,NSPGD)), (IAUW,UWB(MIX,MKX,NSPGD)),              POINTBC.7
+     1    (IAUET,UEBT(MIX,MKX,NSPGD)), (IAUWT,UWBT(MIX,MKX,NSPGD)),              POINTBC.8
+     2        (IAVE,VEB(MIX,MKX,NSPGD)), (IAVW,VWB(MIX,MKX,NSPGD)),              POINTBC.9
+     3        (IAVET,VEBT(MIX,MKX,NSPGD)), (IAVWT,VWBT(MIX,MKX,NSPGD)),          POINTBC.10
+     4        (IATE,TEB(MIX,MKX,NSPGX)), (IATW,TWB(MIX,MKX,NSPGX)),              POINTBC.11
+     5        (IATET,TEBT(MIX,MKX,NSPGX)), (IATWT,TWBT(MIX,MKX,NSPGX)),          POINTBC.12
+     6        (IAQE,QEB(MIX,MKX,NSPGX)), (IAQW,QWB(MIX,MKX,NSPGX)),              POINTBC.13
+     7        (IAQET,QEBT(MIX,MKX,NSPGX)), (IAQWT,QWBT(MIX,MKX,NSPGX)),          POINTBC.14
+     8   (IAQCE,QCEB(MIXM,MKXM,NSPGX)),(IAQCW,QCWB(MIXM,MKXM,NSPGX)),            POINTBC.15
+     9(IAQCET,QCEBT(MIXM,MKXM,NSPGX)),(IAQCWT,QCWBT(MIXM,MKXM,NSPGX))            POINTBC.16
+      REAL QIEB,QIEBT,QIWB,QIWBT,QNIEB,QNIEBT,QNIWB,QNIWBT,QREB,QREBT,           POINTBC.17
+     1 QRWB,QRWBT                                                                POINTBC.18
+      POINTER (IAQRE,QREB(MIXM,MKXM,NSPGX)),                                     POINTBC.19
+     1(IAQRW,QRWB(MIXM,MKXM,NSPGX)),                                             POINTBC.20
+     6 (IAQRET,QREBT(MIXM,MKXM,NSPGX)),(IAQRWT,QRWBT(MIXM,MKXM,NSPGX)),          POINTBC.21
+     6    (IAQIE,QIEB(MIXIC,MKXIC,NSPGX)),                                       POINTBC.22
+     1    (IAQIW,QIWB(MIXIC,MKXIC,NSPGX)),                                       POINTBC.23
+     6 (IAQIET,QIEBT(MIXIC,MKXIC,NSPGX)),                                        POINTBC.24
+     1  (IAQIWT,QIWBT(MIXIC,MKXIC,NSPGX)),                                       POINTBC.25
+     8  (IAQNIE,QNIEB(MIXIC,MKXIC,NSPGX)),                                       POINTBC.26
+     1   (IAQNIW,QNIWB(MIXIC,MKXIC,NSPGX)),                                      POINTBC.27
+     6 (IAQNIET,QNIEBT(MIXIC,MKXIC,NSPGX)),                                      POINTBC.28
+     6 (IAQNIWT,QNIWBT(MIXIC,MKXIC,NSPGX))                                       POINTBC.29
+      REAL QGEB,QGEBT,QGWB,QGWBT,QNCEB,QNCEBT,QNCWB,QNCWBT                       POINTBC.30
+      POINTER (IAQGE,QGEB(MIXIG,MKXIG,NSPGX)),                                   POINTBC.31
+     1    (IAQGW,QGWB(MIXIG,MKXIG,NSPGX)),                                       POINTBC.32
+     1 (IAQGET,QGEBT(MIXIG,MKXIG,NSPGX)),                                        POINTBC.33
+     1  (IAQGWT,QGWBT(MIXIG,MKXIG,NSPGX)),                                       POINTBC.34
+     1  (IAQNCE,QNCEB(MIXIG,MKXIG,NSPGX)),                                       POINTBC.35
+     1   (IAQNCW,QNCWB(MIXIG,MKXIG,NSPGX)),                                      POINTBC.36
+     1 (IAQNCET,QNCEBT(MIXIG,MKXIG,NSPGX)),                                      POINTBC.37
+     1 (IAQNCWT,QNCWBT(MIXIG,MKXIG,NSPGX))                                       POINTBC.38
+      REAL QNB,QSB,TNB,TNBT,TSB,TSBT,UNB,UNBT,USB,USBT,VNB,VNBT,VSB,             POINTBC.39
+     1 VSBT                                                                      POINTBC.40
+      POINTER (IAUN,UNB(MJX,MKX,NSPGD)), (IAUS,USB(MJX,MKX,NSPGD)),              POINTBC.41
+     1        (IAUNT,UNBT(MJX,MKX,NSPGD)), (IAUST,USBT(MJX,MKX,NSPGD)),          POINTBC.42
+     2        (IAVN,VNB(MJX,MKX,NSPGD)), (IAVS,VSB(MJX,MKX,NSPGD)),              POINTBC.43
+     3        (IAVNT,VNBT(MJX,MKX,NSPGD)), (IAVST,VSBT(MJX,MKX,NSPGD)),          POINTBC.44
+     4        (IATN,TNB(MJX,MKX,NSPGX)), (IATS,TSB(MJX,MKX,NSPGX)),              POINTBC.45
+     5        (IATNT,TNBT(MJX,MKX,NSPGX)), (IATST,TSBT(MJX,MKX,NSPGX)),          POINTBC.46
+     6        (IAQN,QNB(MJX,MKX,NSPGX)), (IAQS,QSB(MJX,MKX,NSPGX))               POINTBC.47
+      REAL QCNB,QCNBT,QCSB,QCSBT,QINB,QINBT,QISB,QISBT,QNBT,QNINB,               POINTBC.48
+     1 QNINBT,QNISB,QNISBT,QRNB,QRNBT,QRSB,QRSBT,QSBT                            POINTBC.49
+      POINTER (IAQNT,QNBT(MJX,MKX,NSPGX)), (IAQST,QSBT(MJX,MKX,NSPGX)),          POINTBC.50
+     8    (IAQCN,QCNB(MJXM,MKXM,NSPGX)),(IAQCS,QCSB(MJXM,MKXM,NSPGX)),           POINTBC.51
+     9 (IAQCNT,QCNBT(MJXM,MKXM,NSPGX)),(IAQCST,QCSBT(MJXM,MKXM,NSPGX)),          POINTBC.52
+     9  (IAQRN,QRNB(MJXM,MKXM,NSPGX)),(IAQRS,QRSB(MJXM,MKXM,NSPGX)),             POINTBC.53
+     7 (IAQRNT,QRNBT(MJXM,MKXM,NSPGX)),(IAQRST,QRSBT(MJXM,MKXM,NSPGX)),          POINTBC.54
+     7    (IAQIN,QINB(MJXIC,MKXIC,NSPGX)),                                       POINTBC.55
+     1    (IAQIS,QISB(MJXIC,MKXIC,NSPGX)),                                       POINTBC.56
+     7  (IAQINT,QINBT(MJXIC,MKXIC,NSPGX)),                                       POINTBC.57
+     1  (IAQIST,QISBT(MJXIC,MKXIC,NSPGX)),                                       POINTBC.58
+     9  (IAQNIN,QNINB(MJXIC,MKXIC,NSPGX)),                                       POINTBC.59
+     1 (IAQNIS,QNISB(MJXIC,MKXIC,NSPGX)),                                        POINTBC.60
+     7 (IAQNINT,QNINBT(MJXIC,MKXIC,NSPGX)),                                      POINTBC.61
+     7 (IAQNIST,QNISBT(MJXIC,MKXIC,NSPGX))                                       POINTBC.62
+      REAL QGNB,QGNBT,QGSB,QGSBT                                                 POINTBC.63
+      POINTER (IAQGN,QGNB(MJXIG,MKXIG,NSPGX)),                                   POINTBC.64
+     1        (IAQGS,QGSB(MJXIG,MKXIG,NSPGX)),                                   POINTBC.65
+     2        (IAQGNT,QGNBT(MJXIG,MKXIG,NSPGX)),                                 POINTBC.66
+     3        (IAQGST,QGSBT(MJXIG,MKXIG,NSPGX))                                  POINTBC.67
+      REAL QNCNB,QNCNBT,QNCSB,QNCSBT                                             POINTBC.68
+      POINTER (IAQNCN,QNCNB(MJXIG,MKXIG,NSPGX)),                                 POINTBC.69
+     1        (IAQNCS,QNCSB(MJXIG,MKXIG,NSPGX)),                                 POINTBC.70
+     2        (IAQNCNT,QNCNBT(MJXIG,MKXIG,NSPGX)),                               POINTBC.71
+     3        (IAQNCST,QNCSBT(MJXIG,MKXIG,NSPGX))                                POINTBC.72
+      REAL PEB,PEBT,PNB,PNBT,PSBT,PSS,PWBT,PWW                                   POINTBC.73
+      POINTER (IAPE,PEB(MIX,NSPGX)), (IAPW,PWW(MIX,NSPGX)),                      POINTBC.74
+     2     (IAPET,PEBT(MIX,NSPGX)), (IAPWT,PWBT(MIX,NSPGX)),                     POINTBC.75
+     1        (IAPN,PNB(MJX,NSPGX)), (IAPS,PSS(MJX,NSPGX)),                      POINTBC.76
+     3     (IAPNT,PNBT(MJX,NSPGX)), (IAPST,PSBT(MJX,NSPGX))                      POINTBC.77
+      REAL UI1,UI2,UIL,UILX,UJ1,UJ2,UJL,UJLX,VI1,VI2,VIL,VILX,VJ1,VJ2,           POINTBC.78
+     1 VJL,VJLX                                                                  POINTBC.79
+      POINTER (IAUJ1, UJ1(MIX,MKX)), ( IAUJL,  UJL(MIX,MKX)),                    POINTBC.80
+     1        (IAUJ2, UJ2(MIX,MKX)), (IAUJLX, UJLX(MIX,MKX)),                    POINTBC.81
+     2        (IAVJ1, VJ1(MIX,MKX)), ( IAVJL,  VJL(MIX,MKX)),                    POINTBC.82
+     3        (IAVJ2, VJ2(MIX,MKX)), (IAVJLX, VJLX(MIX,MKX)),                    POINTBC.83
+     4        (IAUI1, UI1(MJX,MKX)), ( IAUIL,  UIL(MJX,MKX)),                    POINTBC.84
+     5        (IAUI2, UI2(MJX,MKX)), (IAUILX, UILX(MJX,MKX)),                    POINTBC.85
+     6        (IAVI1, VI1(MJX,MKX)), ( IAVIL,  VIL(MJX,MKX)),                    POINTBC.86
+     7        (IAVI2, VI2(MJX,MKX)), (IAVILX, VILX(MJX,MKX))                     POINTBC.87
+C                                                                                POINTBC.88
+      COMMON/ADDR3/ IAUE, IAUW, IAUET, IAUWT, IAVE, IAVW, IAVET, IAVWT,          POINTBC.89
+     1              IATE, IATW, IATET, IATWT, IAQE, IAQW, IAQET, IAQWT,          POINTBC.90
+     1             IAQCE,IAQCW,IAQCET,IAQCWT,IAQRE,IAQRW,IAQRET,IAQRWT,          POINTBC.91
+     1         IAQIE,IAQIW,IAQIET,IAQIWT,IAQNIE,IAQNIW,IAQNIET,IAQNIWT,          POINTBC.92
+     1 IAQGE,IAQGW,IAQGET,IAQGWT,IAQNCE,IAQNCW,IAQNCET,IAQNCWT,                  POINTBC.93
+     2              IAUN, IAUS, IAUNT, IAUST, IAVN, IAVS, IAVNT, IAVST,          POINTBC.94
+     3              IATN, IATS, IATNT, IATST, IAQN, IAQS, IAQNT, IAQST,          POINTBC.95
+     1             IAQCN,IAQCS,IAQCNT,IAQCST,IAQRN,IAQRS,IAQRNT,IAQRST,          POINTBC.96
+     1         IAQIN,IAQIS,IAQINT,IAQIST,IAQNIN,IAQNIS,IAQNINT,IAQNIST,          POINTBC.97
+     1 IAQGN,IAQGS,IAQGNT,IAQGST,IAQNCN,IAQNCS,IAQNCNT,IAQNCST,                  POINTBC.98
+     4              IAPE, IAPW, IAPET, IAPWT, IAPN, IAPS, IAPNT, IAPST,          POINTBC.99
+     5              IAUJ1,IAUJL,IAUJ2,IAUJLX, IAVJ1,IAVJL,IAVJ2,IAVJLX,          POINTBC.100
+     6              IAUI1,IAUIL,IAUI2,IAUILX, IAVI1,IAVIL,IAVI2,IAVILX           POINTBC.101
+C                                                                                POINTBC.102

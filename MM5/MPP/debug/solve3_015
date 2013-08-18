@@ -1,0 +1,27 @@
+c        CALL HADV(UTEN,UA,VA,U,MSFD,DX16,J,3,INEST)                              SOLVE3.636
+c        CALL HADV(VTEN,UA,VA,V,MSFD,DX16,J,3,INEST)                              SOLVE3.637
+c#  ifdef DEBUGGAL
+c#  include <solve3_015>
+c#  endif
+c        DO 470 K=1,KL                                                            SOLVE3.638
+c          DO 470 I=IBNES,IENES                                                   SOLVE3.639
+
+      if ( j.eq.JDEBUG.and.inest.eq.NESTDEBUG ) then
+      i = IDEBUG
+      k = KDEBUG
+            print *,'solve3_015: after hadv of uv',inest
+            print *,'ua    ', ua(i,j,k)
+            print *,'va    ', va(i,j,k)
+            print*,'ta     ',ta(i,j,k)
+            print*,'tc     ',tc(i,j,k)
+            print *,'u     ', u(JD00,i,k)
+            print *,'v     ', v(JD00,i,k)
+            print *,'u m1  ', u(JDM1,i,k)
+            print *,'v m1  ', v(JDM1,i,k)
+            print *,'u p1  ', u(JDP1,i,k)
+            print *,'v p1  ', v(JDP1,i,k)
+            print *,'uten  ', uten(i,k)
+            print *,'vten  ', vten(i,k)
+            print *,'msfd  ', msfd(i,j)
+            print *,'dx16  ', dx16
+      endif

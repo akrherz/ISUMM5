@@ -1,0 +1,9 @@
+      INTEGER NLU,NSEAS                                                          LANDUSE.1
+      PARAMETER (NLU=50, NSEAS=2)                                                LANDUSE.2
+      REAL ALBD,SCFX,SFEM,SFHC,SFZ0,SLMO,THERIN                                  LANDUSE.3
+      INTEGER ISICE,ISWATER,LUN,NSN,ISN                                          24SEP99.402
+      COMMON /LANDUSE/ALBD, SLMO, THERIN, SFEM, SFZ0, SFHC, SCFX,                LANDUSE.5
+     1     LUN, NSN, ISWATER, ISICE, ISN, MMINLU                                 24SEP99.403
+      DIMENSION ALBD(NLU,NSEAS),SLMO(NLU,NSEAS),THERIN(NLU,NSEAS),               LANDUSE.7
+     1     SFEM(NLU,NSEAS),SFZ0(NLU,NSEAS),SFHC(NLU,NSEAS),SCFX(NLU)             LANDUSE.8
+      CHARACTER*4 MMINLU                                                         LANDUSE.9

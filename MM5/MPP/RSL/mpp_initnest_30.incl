@@ -1,0 +1,456 @@
+CSTART   mpp_initnest_30.incl
+      PRINT*,'DEFINING DATA FOR NEST ', NUMNES
+      CALL ADDRX1C(IAXALL(1,NUMNES))
+      CALL DEFINE_COMMS(NUMNES)
+      CALL ADDRX1C(IAXALL(1,ICOARS))
+      PRINT*,'DONE DEFINING DATA FOR NEST ', NUMNES
+CBEGIN OF MPP INTERPOLATION
+define(PACK2D,
+      `do ii = -IOR,IOR
+        do jj = -IOR,IOR
+          vx(ii,jj) = $1 (NOFLIC(i+ii),NOFLIC(j+jj))
+        enddo
+      enddo
+      callsintF(vx,x,p,ax1i,ax2i,ax3i,ax4i,ax1j,ax2j,ax3j,ax4j)
+      callrsl_to_child_msg(RWORDSIZE,x)'
+      )
+define(PACK3D,
+      `dokk=1,$3
+      do ii = -IOR,IOR
+      do jj = -IOR,IOR
+          vxv(kk,ii,jj) = $1 (NOFLIC(i+ii),NOFLIC(j+jj),kk)/
+     +                    $2 (NOFLIC(i+ii),NOFLIC(j+jj))
+      enddo
+      enddo
+      enddo
+      callsintFv(vxv,xk,$3,mkx+1,p)
+      callrsl_to_child_msg(($3)*RWORDSIZE,xk)'
+      )
+define(UNPACK3D,
+      `callrsl_from_parent_msg(($3)*RWORDSIZE,xk)
+      dokk=1,$3
+      $1 a(NOFLIC(i),NOFLIC(j),kk) = xk(kk)
+     +   * $2 (NOFLIC(i),NOFLIC(j))
+      $1 b(NOFLIC(i),NOFLIC(j),kk) = $1 a(NOFLIC(i),NOFLIC(j),kk)
+      enddo'
+      )
+define(UNPACK3DXXX,
+      `dokk=1,$3
+      callrsl_from_parent_msg(RWORDSIZE,xk(1))
+      $1 a(NOFLIC(i),NOFLIC(j),kk) = xk(1)
+c    +   * $2 (NOFLIC(i),NOFLIC(j))
+      $1 b(NOFLIC(i),NOFLIC(j),kk) = $1 a(NOFLIC(i),NOFLIC(j),kk)
+      enddo'
+      )
+
+      CALL ADDRX1C(IAXALL(1,ICOARS))
+      CALL MP_INITDOMAIN(ICOARS)
+C R11
+C_FLIC_RUNPAD(2)
+      DO J = 1,JL-1
+        DO I = 1,IL-1
+          IF ( XLONG(I,J) .LT. 0. ) THEN
+            XLONGD_CD(I,J)  = XLONG(I,J) + 360.
+          ELSE
+            XLONGD_CD(I,J)  = XLONG(I,J)
+          ENDIF
+        ENDDO
+      ENDDO
+C R11
+
+      CALL BCAST_SIZE(1, MSIZE)
+      CALL RSL_TO_CHILD_INFO( DOMAINS(ICOARS), DOMAINS(NUMNES),
+     +                        MSIZE*RWORDSIZE,
+     +                        I,J,PIG,PJG,CM,CN,NIG,NJG,RETVAL )
+      DO WHILE (RETVAL.EQ.1)
+        P = (CM-1)*IRAX+CN
+#if 0
+        AX = XIG(P)
+        AX1I=AX*ONE12
+        AX2I=AX*AX*ONE24
+        AX3I=AX*AX*AX*ONE12
+        AX4I=AX*AX*AX*AX*ONE24
+        AX = XJG(P)
+        AX1J=AX*ONE12
+        AX2J=AX*AX*ONE24
+        AX3J=AX*AX*AX*ONE12
+        AX4J=AX*AX*AX*AX*ONE24
+#endif
+
+C 2-D VARS
+        PACK2D(HT)
+        PACK2D(PSA)
+        PACK2D(MSFX)
+        PACK2D(MSFD)
+        PACK2D(XLAT)
+        PACK2D(XLONG)
+C R11
+C MODIFIED VERSION FOR DATE LINE (CORRESPONDS TO HELP1 AROUND INITNEST.662)
+        PACK2D(XLONGD_CD)
+C A NON-INTERPOLATED VERSION OF THE FIELD
+        CALL RSL_TO_CHILD_MSG( RWORDSIZE, XLONG(NOFLIC(I),NOFLIC(J)))
+C R11
+        PACK2D(SNOWC)
+        PACK2D(F)
+        PACK2D(TGA)
+        PACK2D(TMN)
+C added 991220 for 3.3
+        PACK2D(TSS)
+C added 980121
+        PACK2D(RAINC)
+        PACK2D(RAINNC)
+C added 20000901
+        IF(IMOIAV(NESCOU).EQ.2)THEN
+          PACK2D(MAVAIL)
+        ENDIF
+C end 980121
+C FOR SATBRT, DO NOT INTERPOLATE
+        CALL RSL_TO_CHILD_MSG( RWORDSIZE, SATBRT(NOFLIC(I),NOFLIC(J)))
+        PACK2D(PS0)
+
+C
+C--- LAND-SURFACE MODEL VARIABLES
+        if ( isoil .eq. 2 .or. isoil .eq. 3 ) then
+          r_ivgtyp = IVGTYP(NOFLIC(I),NOFLIC(J)) + .1
+          CALL RSL_TO_CHILD_MSG( RWORDSIZE, r_ivgtyp )
+          r_isltyp = ISLTYP(NOFLIC(I),NOFLIC(J)) + .1
+          CALL RSL_TO_CHILD_MSG( RWORDSIZE, r_isltyp )
+          PACK2D(VEGFRC)
+          PACK2D(XVEGMN)
+C added XICE 20001024 for v3.4
+          PACK2D(XICE)
+          PACK2D(CMCA)
+          PACK2D(SNOA)
+          PACK2D(SNOWHA)
+          if (RDMAXALB) then
+            PACK2D(ALBMAX)
+          endif
+          if (RDBRDALB) then
+            PACK2D(ALBEDO)
+          endif
+C HSCR2 IS UNITY
+          PACK3D(STCA,HSCR2,MLX)
+          PACK3D(SMCA,HSCR2,MLX)
+          PACK3D(SWCA,HSCR2,MLX)
+C added VEGFMO 20011030 for v3.5
+          PACK3D(VEGFMO,HSCR2,NMO)
+          if (RDBRDALB) then
+            PACK3D(ALBMON,HSCR2,NMO)
+          endif
+        endif
+C
+
+
+C--- NOW DO 3-D CROSS FIELDS, DECOUPLE WITH PSA
+        PACK3D(TA,PSA,MKX)
+        IF(IDRY(ICOARS).EQ.0)THEN
+          PACK3D(QVA,PSA,MKX)
+          IF(IMOIST(ICOARS).EQ.2)THEN
+            PACK3D(QCA,PSA,MKX)
+            PACK3D(QRA,PSA,MKX)
+            IF(IICE.EQ.1)THEN
+              PACK3D(QIA,PSA,MKX)
+              PACK3D(QNIA,PSA,MKX)
+              IF(IICEG.EQ.1)THEN
+                PACK3D(QGA,PSA,MKX)
+                PACK3D(QNCA,PSA,MKX)
+              ENDIF
+            ENDIF
+          ENDIF
+        ENDIF
+        IF(INAV.EQ.1)THEN
+          PACK3D(TURKE,HSCR2,MKX)
+          PACK3D(PQWSB,HSCR2,MKX)
+          PACK3D(PTHLSB,HSCR2,MKX)
+          PACK3D(PTHLQWB,HSCR2,MKX)
+        ENDIF
+
+        IF(IBLTYP(ICOARS).EQ.6)THEN
+          PACK3D(TKEA,HSCR2,(MKX+1))
+          PACK3D(TKEB,HSCR2,(MKX+1))
+        ENDIF
+
+
+C added 980121
+        IF(ISOIL.EQ.1)THEN
+          PACK3D(TSLA,HSCR2,MLX)
+C added 20030720
+          IF(IEXSI.GE.1)THEN
+            PACK2D(SEAICE)
+          ENDIF
+        ENDIF
+
+
+C end 980121
+C HSCR2 IS UNITY
+        PACK3D(T0,HSCR2,MKX)
+        PACK3D(PPA,PSA,MKX)
+        PACK3D(WA,PSA,(MKX+1))
+C HSCR1 CONTAINS PSA_DOT
+        PACK3D(UA,HSCR1,MKX)
+        PACK3D(VA,HSCR1,MKX)
+        CALL RSL_TO_CHILD_INFO( DOMAINS(ICOARS), DOMAINS(NUMNES),
+     +                          MSIZE*RWORDSIZE,
+     +                          I,J,PIG,PJG,CM,CN,NIG,NJG,RETVAL )
+      ENDDO
+      CALL RSL_BCAST_MSGS
+      CALL ADDRX1C(IAXALL(1,NUMNES))
+      CALL MP_INITDOMAIN(NUMNES)
+#include <mpp_init_05.incl>
+      DO J = 1, MJX
+        DO I = 1, MIX
+          HSCR2(I,J) = 1.
+        ENDDO
+      ENDDO
+      CALL RSL_FROM_PARENT_INFO(I,J,NIG,NJG,CM,CN,PIG,PJG,RETVAL)
+      DO WHILE ( RETVAL .EQ. 1 )
+C--- FIRST 2-D VARIABLES
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, HT(NOFLIC(I),NOFLIC(J)))
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, PSA(NOFLIC(I),NOFLIC(J)))
+        PSB(NOFLIC(I),NOFLIC(J)) = PSA(NOFLIC(I),NOFLIC(J))
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, MSFX(NOFLIC(I),NOFLIC(J)))
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, MSFD(NOFLIC(I),NOFLIC(J)))
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, XLAT(NOFLIC(I),NOFLIC(J)))
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, XLONG(NOFLIC(I),NOFLIC(J)))
+C R11
+        CALL RSL_FROM_PARENT_MSG(
+     +      RWORDSIZE, XLONGD_ND(NOFLIC(I),NOFLIC(J))) ! R11
+        CALL RSL_FROM_PARENT_MSG(
+     +      RWORDSIZE, XLONGD_XX(NOFLIC(I),NOFLIC(J))) ! R11 (uninterpolated XLONG)
+C R11
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, SNOWC(NOFLIC(I),NOFLIC(J)))
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, F(NOFLIC(I),NOFLIC(J)))
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, TGA(NOFLIC(I),NOFLIC(J)))
+        TGB(NOFLIC(I),NOFLIC(J)) = TGA(NOFLIC(I),NOFLIC(J))
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, TMN(NOFLIC(I),NOFLIC(J)))
+C added 991220 for 3.3
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, TSS(NOFLIC(I),NOFLIC(J)))
+C added 980121
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, RAINC(NOFLIC(I),NOFLIC(J)))
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, RAINNC(NOFLIC(I),NOFLIC(J)))
+C added 20000901
+        IF(IMOIAV(NESCOU).EQ.2)THEN
+          CALL RSL_FROM_PARENT_MSG(
+     +           RWORDSIZE, MAVAIL(NOFLIC(I),NOFLIC(J)))
+        ENDIF
+C end 980121
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, SATBRT(NOFLIC(I),NOFLIC(J)))
+        CALL RSL_FROM_PARENT_MSG(RWORDSIZE, PS0(NOFLIC(I),NOFLIC(J)))
+
+C
+C--- LAND-SURFACE MODEL VARIABLES
+        if ( isoil .eq. 2 ) then
+          CALL RSL_FROM_PARENT_MSG(RWORDSIZE, r_ivgtyp )
+	  IVGTYP(NOFLIC(I),NOFLIC(J)) = r_ivgtyp
+          CALL RSL_FROM_PARENT_MSG(RWORDSIZE, r_isltyp )
+	  ISLTYP(NOFLIC(I),NOFLIC(J)) = r_isltyp
+	  CALL RSL_FROM_PARENT_MSG(RWORDSIZE,VEGFRC(NOFLIC(I),NOFLIC(J)))
+	  CALL RSL_FROM_PARENT_MSG(RWORDSIZE,XVEGMN(NOFLIC(I),NOFLIC(J)))
+C added XICE 20001024 for v3.4
+	  CALL RSL_FROM_PARENT_MSG(RWORDSIZE,XICE(NOFLIC(I),NOFLIC(J)))
+	  CALL RSL_FROM_PARENT_MSG(RWORDSIZE,CMCA(NOFLIC(I),NOFLIC(J)))
+	  CMCB(NOFLIC(I),NOFLIC(J)) = CMCA(NOFLIC(I),NOFLIC(J))
+	  CALL RSL_FROM_PARENT_MSG(RWORDSIZE,SNOA(NOFLIC(I),NOFLIC(J)))
+          IF (SNOA(I,J) .LT. 0.) SNOA(I,J)=0.
+	  SNOB(NOFLIC(I),NOFLIC(J)) = SNOA(NOFLIC(I),NOFLIC(J))
+	  CALL RSL_FROM_PARENT_MSG(RWORDSIZE,SNOWHA(NOFLIC(I),NOFLIC(J)))
+          IF (SNOWHA(I,J) .LT. 0.) SNOWHA(I,J)=0.
+	  SNOWHB(NOFLIC(I),NOFLIC(J)) = SNOWHA(NOFLIC(I),NOFLIC(J))
+          if (RDMAXALB) then
+	  CALL RSL_FROM_PARENT_MSG(RWORDSIZE,ALBMAX(NOFLIC(I),NOFLIC(J)))
+          endif
+          if (RDBRDALB) then
+	  CALL RSL_FROM_PARENT_MSG(RWORDSIZE,ALBEDO(NOFLIC(I),NOFLIC(J)))
+          endif
+	  DO L = 1, MLX
+	    CALL RSL_FROM_PARENT_MSG(RWORDSIZE,STCA(NOFLIC(I),NOFLIC(J),L))
+	    STCB(NOFLIC(I),NOFLIC(J),L) = STCA(NOFLIC(I),NOFLIC(J),L)
+	  ENDDO
+	  DO L = 1, MLX
+	    CALL RSL_FROM_PARENT_MSG(RWORDSIZE,SMCA(NOFLIC(I),NOFLIC(J),L))
+	    SMCB(NOFLIC(I),NOFLIC(J),L) = SMCA(NOFLIC(I),NOFLIC(J),L)
+	    CALL RSL_FROM_PARENT_MSG(RWORDSIZE,SWCA(NOFLIC(I),NOFLIC(J),L))
+	    SWCB(NOFLIC(I),NOFLIC(J),L) = SWCA(NOFLIC(I),NOFLIC(J),L)
+	  ENDDO
+C added VEGFMO 20011030 for v3.5
+	  DO L = 1, NMO
+	    CALL RSL_FROM_PARENT_MSG(RWORDSIZE,VEGFMO(NOFLIC(I),NOFLIC(J),L))
+	    VEGFMO(NOFLIC(I),NOFLIC(J),L) = VEGFMO(NOFLIC(I),NOFLIC(J),L)
+            if (RDBRDALB) then
+	    CALL RSL_FROM_PARENT_MSG(RWORDSIZE,ALBMON(NOFLIC(I),NOFLIC(J),L))
+	    ALBMON(NOFLIC(I),NOFLIC(J),L) = ALBMON(NOFLIC(I),NOFLIC(J),L)
+            endif
+          ENDDO
+        endif
+C
+
+        UNPACK3D(T,PSA,MKX)
+        IF(IDRY(NUMNES).EQ.0)THEN
+          UNPACK3D(QV,PSA,MKX)
+          IF(IMOIST(NUMNES).EQ.2)THEN
+            UNPACK3D(QC,PSA,MKX)
+            UNPACK3D(QR,PSA,MKX)
+            IF(IICE.EQ.1)THEN
+              UNPACK3D(QI,PSA,MKX)
+              UNPACK3D(QNI,PSA,MKX)
+              IF(IICEG.EQ.1)THEN
+                UNPACK3D(QG,PSA,MKX)
+                UNPACK3D(QNC,PSA,MKX)
+              ENDIF
+            ENDIF
+          ENDIF
+        ENDIF
+        IF(INAV.EQ.1)THEN
+          CALLRSL_FROM_PARENT_MSG((MKX)*RWORDSIZE,XK)
+          DO KK=1,MKX
+            TURKE(NOFLIC(I),NOFLIC(J),KK) = XK(KK)
+          ENDDO
+          CALLRSL_FROM_PARENT_MSG((MKX)*RWORDSIZE,XK)
+          DO KK=1,MKX
+            PQWSB(NOFLIC(I),NOFLIC(J),KK) = XK(KK)
+          ENDDO
+          CALLRSL_FROM_PARENT_MSG((MKX)*RWORDSIZE,XK)
+          DO KK=1,MKX
+            PTHLSB(NOFLIC(I),NOFLIC(J),KK) = XK(KK)
+          ENDDO
+          CALLRSL_FROM_PARENT_MSG((MKX)*RWORDSIZE,XK)
+          DO KK=1,MKX
+            PTHLQWB(NOFLIC(I),NOFLIC(J),KK) = XK(KK)
+          ENDDO
+        ENDIF
+
+        IF(IBLTYP(ICOARS).EQ.6)THEN
+          CALLRSL_FROM_PARENT_MSG((MKX+1)*RWORDSIZE,XK)
+          DO KK=1,MKX+1
+            TKEA(NOFLIC(I),NOFLIC(J),KK) = XK(KK)
+          ENDDO
+          CALLRSL_FROM_PARENT_MSG((MKX+1)*RWORDSIZE,XK)
+          DO KK=1,MKX+1
+            TKEB(NOFLIC(I),NOFLIC(J),KK) = XK(KK)
+          ENDDO
+        ENDIF
+
+C added 980121
+        IF(ISOIL.EQ.1)THEN
+          CALLRSL_FROM_PARENT_MSG((MLX)*RWORDSIZE,XK)
+          DO KK=1,MLX
+            TSLA(NOFLIC(I),NOFLIC(J),KK) = XK(KK)
+            TSLB(NOFLIC(I),NOFLIC(J),KK) = XK(KK)
+          ENDDO
+C added 20030718
+        IF(IEXSI.GE.1)THEN
+          CALL RSL_FROM_PARENT_MSG(RWORDSIZE, SEAICE(NOFLIC(I),NOFLIC(J)))
+        ENDIF
+        ENDIF
+C end 980121
+        CALLRSL_FROM_PARENT_MSG((MKX)*RWORDSIZE,XK)
+        DO KK=1,MKX
+           T0(NOFLIC(I),NOFLIC(J),KK) = XK(KK)
+        ENDDO
+
+        UNPACK3D(PP,PSA,MKX)
+        UNPACK3D(W,PSA,(MKX+1))
+C HSCR2 IS UNITY; UA AND VA WILL BE RECOUPLED LATER
+        UNPACK3D(U,HSCR2,MKX)
+        UNPACK3D(V,HSCR2,MKX)
+        CALL RSL_FROM_PARENT_INFO(I,J,NIG,NJG,CM,CN,PIG,PJG,RETVAL)
+      ENDDO
+#if (defined(vpp) || defined(vpp2))
+       CALL RSL_RESET_STAGING
+#endif
+      CALL RSL_EXCH_STENCIL( DOMAINS(NUMNES), STEN_INIT(NUMNES))
+C R11
+C_FLIC_RUNPAD(0)
+      DO J = 1, JL-1
+        DO I = 1, IL-1
+          IF (ABS(XLONGD_XX(I,J)).GT.90.) THEN
+            IF (XLONGD_ND(I,J).GT.180)THEN
+              XLONG(I,J) = XLONGD_ND(I,J)-360.
+            ELSE
+              XLONG(I,J) = XLONGD_ND(I,J)
+            ENDIF
+          ENDIF
+        ENDDO
+      ENDDO
+C_FLIC_RUNPAD(2)
+C R11
+      CALL DOTS(PSA,HSCR1,IYYN,JXXN,MIX,MJX)
+      DO J = 1, JL
+        DO I = 1, IL
+          F(I,J) = F(I+1,J+1)
+          MSFD(I,J) = MSFD(I+1,J+1)
+        ENDDO
+      ENDDO
+      DO K = 1, MKX
+        DO J = 1, JL
+          DO I = 1, IL
+            UA(I,J,K) = UA(I+1,J+1,K)
+            VA(I,J,K) = VA(I+1,J+1,K)
+          ENDDO
+        ENDDO
+      ENDDO
+      DO K = 1, MKX
+        DO J = 1, JL
+          DO I = 1, IL
+            UA(I,J,K) = UA(I,J,K) * HSCR1(I,J)
+            UB(I,J,K) = UA(I,J,K)
+          ENDDO
+          DO I = 1, IL
+            VA(I,J,K) = VA(I,J,K) * HSCR1(I,J)
+            VB(I,J,K) = VA(I,J,K)
+          ENDDO
+        ENDDO
+      ENDDO
+      CALL RSL_EXCH_STENCIL( DOMAINS(NUMNES), STEN_INIT(NUMNES))
+      CALL ADDRX1C(IAXALL(1,ICOARS))
+      CALL ADDRX1N(IAXALL(1,NUMNES))
+      CALL MP_INITDOMAIN(NUMNES)
+
+C ADDED IN RELEASE 9
+C Initialize to no-zero values to prevent div by zero errors for
+C computations that occur on halos
+      DO K = 1, MKX
+        DO J = 1, MJX
+          DO I = 1, MIX
+            PR0N(I,J,K) = 1.0/K
+            RHO0N(I,J,K) = 1.0/K
+          ENDDO
+        ENDDO
+      ENDDO
+
+      DO J=1,JXXN-1
+        DO K=1,KZZ
+          DO I=1,IYYN-1
+             PR0N(I,J,K)=A(K)*PS0N(I,J)+PTOP*1000.
+            RHO0N(I,J,K)=PR0N(I,J,K)/(R*T0N(I,J,K))
+          ENDDO
+        ENDDO
+      ENDDO
+      DO J=1,JXXN-1
+        DO I=1,IYYN-1
+         RPSAN(I,J)=1.0/PSBN(I,J)
+         RPSBN(I,J)=RPSAN(I,J)
+         RPSCN(I,J)=RPSAN(I,J)
+        ENDDO
+      ENDDO
+      CALL RSL_EXCH_STENCIL(DOMAINS(NUMNES), STEN_INIT(NUMNES))
+      CALL DOTS(PSBN,PDOTAN,IYYN,JXXN,MIX,MJX)
+      DO J=1,JXXN
+        DO I=1,IYYN
+          RPDOTAN(I,J)=1.0/PDOTAN(I,J)
+          RPDOTBN(I,J)=RPDOTAN(I,J)
+           PDOTBN(I,J)= PDOTAN(I,J)
+        ENDDO
+      ENDDO
+      CALL RSL_EXCH_STENCIL(DOMAINS(NUMNES), STEN_INIT(NUMNES))
+C 20000902
+      DO J=1,JXXN
+        DO I=1,IYYN
+          TA2N(I,J)=0.
+          QA2N(I,J)=0.
+          UA10N(I,J)=0.
+          VA10N(I,J)=0.
+        ENDDO
+      ENDDO
+CEND OF MPP INTERPOLATION
+CEND   mpp_initnest_30.incl

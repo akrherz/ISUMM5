@@ -1,0 +1,1303 @@
+===================================================================
+CHANGES
+diff -r3.2 -r3.8
+6c6
+< The current release is 3.3 (January 25, 2000)
+---
+> The current release is 3.4 (November 6, 2000)
+8a9,62
+> 
+> - Uncomment the STOP statement when INTERPF detects an out-of-order
+>   interpolation. (Change in tar file since 8/11/00.)
+> 
+>   Affected file:
+>   src/module_hydro_interp.F
+> 
+> - Correct ground temperature calculation problem if usesfc = .F..
+>   Now the recalculated lowest sigma level temperature is used to 
+>   approximate ground temperature. (Change in tar file since 3/8/00.)
+> 
+>   Affected file:
+>   src/interpf.F
+> 
+> 2. Changes and improvements:
+> 
+> - Simplify the way make is done. Now one needs only to type 'make'
+>   to compile on one's machine. (Change in tar file since 6/7/00.)
+> 
+>   Affected files:
+>   Makefile, configure.rules, macros_pregrid, macros_regridder (new)
+>   src/Makefile
+> 
+> - Starting from release-3-4, INTERPF will be able to generate a 
+>   time-dependent LOWBDY file for SST, snow cover, sea ice, if these
+>   fields exist in the input. INTERPF will create a time-averaged SST
+>   if the input field is SKINTEMP. When time-averaged SST is created,
+>   snow cover and sea ice will also not change with time either. Only 
+>   the first-time-period fields will appear in the LOWBDY file.
+> 
+>   Affected file:
+>   src/interpf.F, module_all_io.F 
+> 
+> - Making all time periods the default number of time periods to 
+>   be in MMINPUT_DOMAINx file. Previously the default number of 
+>   time period is 1. (Change in tar file since 6/7/00.)
+> 
+>   Affected file:
+>   src/interpf.F
+> 
+> - Add a check for user-defined full sigma levels, which must monotonically
+>   decrease from 1 to 0.
+> 
+>   Affected file:
+>   src/interpf.F
+> 
+> - Change the constant of acceleration due to gravity to be consistent
+>   throughout the MM5 modeling system (from 9.8 to 9.81).
+> 
+>   Affected file:
+>   src/module_phys_consts.F
+> 
+> 
+> ==============================================
+===================================================================
+Makefile
+diff -r3.1 -r3.9
+1,3c1
+< #	Top-level Makefile for interpf
+< 
+< .IGNORE:
+---
+> #	Top-level Makefile for INTERPF
+6a5,7
+> .IGNORE:
+> 
+> AR	=	ar ru
+9c10
+< MAKE	=	make -i
+---
+> MAKE	=	make -i -f Makefile
+10a12
+> RM_LIST	=	*.o *.M core *.kmo *.mod
+15,122c17,170
+< 	@echo " "
+< 	@echo "Type one of the following:"
+< 	@echo "make cray                 for running on SGI Cray J/C/T9"
+< 	@echo "make dec                  for running on Compaq Digital"
+< 	@echo "make hp                   for running on Hewlett Packard"
+< 	@echo "make ibm                  for running on IBM"
+< 	@echo "make sgi                  for running on Silicon Graphics"
+< 	@echo "make sun                  for running on Sun"
+< 	@echo "make clean                to remove all .o files, the core file and the executable"
+< 	@echo " "
+< 
+< cray:
+< 	( $(CD) src ; $(MAKE) target 				\
+< 	"RM		=	$(RM)"				\
+< 	"MACH		=	CRAY"				\
+< 	"CPP		=	cpp"				\
+< 	"CPPFLAGS	=	-I. -C -P"			\
+< 	"FC		=	f90"				\
+< 	"FCFLAGS	=	-f free"			\
+< 	"LDOPTIONS	=	-Ca"				)
+< 	( $(RM) interpf ; $(LN) src/interpf . )
+< 
+< decparallel:
+< 	( $(CD) src ; $(MAKE) target 				\
+< 	"RM		=	$(RM)"				\
+< 	"MACH		=	DEC"				\
+< 	"CPP		=	/usr/bin/cpp"			\
+< 	"CPPFLAGS	=	-I. -C -P"			\
+< 	"FC		=	f90"				\
+< 	"FCFLAGS	=	-automatic -c -convert big_endian -fast -fpe -free -O4 -omp"	\
+< 	"LDOPTIONS	=	-fast -O4 -omp" )
+< 	( $(RM) interpf ; $(LN) src/interpf . )
+< 
+< decperf:
+< 	( $(CD) src ; $(MAKE) target 				\
+< 	"RM		=	$(RM)"				\
+< 	"MACH		=	DEC"				\
+< 	"CPP		=	/usr/bin/cpp"			\
+< 	"CPPFLAGS	=	-I. -C -P"			\
+< 	"FC		=	f90"				\
+< 	"FCFLAGS	=	-automatic -c -convert big_endian -fast -fpe -free -g3 -pipeline -O4 -std -tune ev56 -u"	\
+< 	"LDOPTIONS	=	-fast -O4" )
+< 	( $(RM) interpf ; $(LN) src/interpf . )
+< 
+< dec:
+< 	( $(CD) src ; $(MAKE) target 				\
+< 	"RM		=	$(RM)"				\
+< 	"MACH		=	DEC"				\
+< 	"CPP		=	/usr/bin/cpp"			\
+< 	"CPPFLAGS	=	-I. -C -P"			\
+< 	"FC		=	f90"				\
+< 	"FCFLAGS	=	-automatic -c -convert big_endian -fast -fpe -free -pipeline -O4 -std -tune ev56 -u"	\
+< 	"LDOPTIONS	=	-fast -O4" )
+< 	( $(RM) interpf ; $(LN) src/interpf . )
+< 
+< hp:
+< 	( $(CD) src ; $(MAKE) target				\
+< 	"RM		=	$(RM)"				\
+< 	"MACH		=	HP"				\
+< 	"CPP		=	/opt/langtools/lbin/cpp"	\
+< 	"CPPFLAGS	=	-I. -C -P"			\
+< 	"FC		=	f90"				\
+< 	"FCFLAGS	=	-c +langlvl=90 +source=free"	\
+< 	"LDOPTIONS	=	" )
+< 	( $(RM) interpf ; $(LN) src/interpf . )
+< 
+< ibmparallel:
+< 	( $(CD) src ; $(MAKE) target				\
+< 	"RM		=	$(RM)"				\
+< 	"MACH		=	IBM"				\
+< 	"CPP		=	/usr/lib/cpp"			\
+< 	"CPPFLAGS	=	-I. -C -P"			\
+< 	"FC		=	xlf90"				\
+< 	"FCFLAGS	=	-qfree=f90 -qlanglvl=90pure -O3 -qarch=auto -qnosave -qmaxmem=-1 -qsmp=omp -qnosave -Q"	\
+< 	"LDOPTIONS	=	-O3 -lxlsmp" )
+< 	( $(RM) interpf ; $(LN) src/interpf . )
+< 
+< ibm:
+< 	( $(CD) src ; $(MAKE) target				\
+< 	"RM		=	$(RM)"				\
+< 	"MACH		=	IBM"				\
+< 	"CPP		=	/usr/lib/cpp"			\
+< 	"CPPFLAGS	=	-I. -C -P"			\
+< 	"FC		=	xlf90"				\
+< 	"FCFLAGS	=	-qfree=f90 -qlanglvl=90pure -O3 -qarch=auto -qnosave -qmaxmem=-1 -Q"	\
+< 	"LDOPTIONS	=	-O3 -lmass" )
+< 	( $(RM) interpf ; $(LN) src/interpf . )
+< 
+< sgi:
+< 	( $(CD) src ; $(MAKE) target 				\
+< 	"RM		=	$(RM)"				\
+< 	"MACH		=	SGI"				\
+< 	"CPP		=	/lib/cpp"			\
+< 	"CPPFLAGS	=	-I. -C -P"			\
+< 	"FC		=	f90"				\
+< 	"FCFLAGS	=	-freeform -n32 -O2"			\
+< 	"LDOPTIONS	=	-n32 -O2 -lfastm" )
+< 	( $(RM) interpf ; $(LN) src/interpf . )
+< 
+< sun:
+< 	( $(CD) src ; $(MAKE) target				\
+< 	"RM		=	$(RM)"				\
+< 	"MACH		=	SUN"				\
+< 	"CPP		=	/usr/ccs/lib/cpp"		\
+< 	"CPPFLAGS	=	-I. -C -P"			\
+< 	"FC		=	f90"				\
+< 	"FCFLAGS	=	-ansi -free"			\
+< 	"LDOPTIONS	=	" )
+---
+> 	uname -a > .tmpfile
+> 	@grep CRAY .tmpfile ; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for Cray"							; \
+> 		echo "AR		=	$(AR)"				>  macros_interpf	; \
+> 		echo "RM		=	$(RM)"				>> macros_interpf	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_interpf	; \
+> 		echo "CD		=	$(CD)"				>> macros_interpf	; \
+> 		echo "LN		=	$(LN)"				>> macros_interpf	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_interpf	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_interpf	; \
+> 		echo "TOUCH		=	touch"				>> macros_interpf	; \
+> 		echo "CPP		=	cpp"				>> macros_interpf	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DCRAY"		>> macros_interpf	; \
+> 		echo "FC		=	f90"				>> macros_interpf	; \
+> 		echo "FCFLAGS		=	-f free -x omp"			>> macros_interpf	; \
+> 		echo "LDFLAGS		=	-Ca"				>> macros_interpf	; \
+> 		echo "CCFLAGS		=	-DCRAY -I."			>> macros_interpf	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_interpf	; \
+> 		( $(CD) src ; $(MAKE) all )								; \
+> 	else grep OSF .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for Compaq"						; \
+> 		echo "AR		=	$(AR)"				>  macros_interpf	; \
+> 		echo "RM		=	$(RM)"				>> macros_interpf	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_interpf	; \
+> 		echo "CD		=	$(CD)"				>> macros_interpf	; \
+> 		echo "LN		=	$(LN)"				>> macros_interpf	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_interpf	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_interpf	; \
+> 		echo "TOUCH		=	touch"				>> macros_interpf	; \
+> 		echo "CPP		=	/usr/bin/cpp"			>> macros_interpf	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DDEC"		>> macros_interpf	; \
+> 		echo "FC		=	f90"				>> macros_interpf	; \
+> 		echo "FCFLAGS		=	-automatic -convert big_endian -fast -fpe -free -pipeline -O4 -std -tune ev56 -u" >> macros_interpf	; \
+> 		echo "LDFLAGS		=	-fast -O4"			>> macros_interpf	; \
+> 		echo "CCFLAGS		=	-DDEC -I."			>> macros_interpf	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_interpf	; \
+> 		( $(CD) src ; $(MAKE) all )							; \
+> 	else grep HP .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for HP"							; \
+> 		echo "AR		=	$(AR)"				>  macros_interpf	; \
+> 		echo "RM		=	$(RM)"				>> macros_interpf	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_interpf	; \
+> 		echo "CD		=	$(CD)"				>> macros_interpf	; \
+> 		echo "LN		=	$(LN)"				>> macros_interpf	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_interpf	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_interpf	; \
+> 		echo "TOUCH		=	touch"				>> macros_interpf	; \
+> 		echo "CPP		=	/opt/langtools/lbin/cpp"	>> macros_interpf	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DHP"			>> macros_interpf	; \
+> 		echo "FC		=	f90"				>> macros_interpf	; \
+> 		echo "FCFLAGS		=	+langlvl=90 +source=free"	>> macros_interpf	; \
+> 		echo "LDFLAGS		=	" 				>> macros_interpf	; \
+> 		echo "CCFLAGS		=	-DHP -I."			>> macros_interpf	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_interpf	; \
+> 		( $(CD) src ; $(MAKE) all )							; \
+> 	else grep AIX .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for IBM"							; \
+> 		echo "AR		=	$(AR)"				>  macros_interpf	; \
+> 		echo "RM		=	$(RM)"				>> macros_interpf	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_interpf	; \
+> 		echo "CD		=	$(CD)"				>> macros_interpf	; \
+> 		echo "LN		=	$(LN)"				>> macros_interpf	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_interpf	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_interpf	; \
+> 		echo "TOUCH		=	touch"				>> macros_interpf	; \
+> 		echo "CPP		=	/usr/lib/cpp"			>> macros_interpf	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DIBM"		>> macros_interpf	; \
+> 		echo "FC		=	xlf90"				>> macros_interpf	; \
+> 		echo "FCFLAGS		=	-qfree=f90 -qlanglvl=90pure -O3 -qarch=auto -qnosave -qmaxmem=-1 -q64 -qspillsize=20000 -Q"	>> macros_interpf	; \
+> 		echo "LDFLAGS		=	-O3 -q64" 			>> macros_interpf	; \
+> 		echo "CCFLAGS		=	-DIBM -I."			>> macros_interpf	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_interpf	; \
+> 		( $(CD) src ; $(MAKE) all )							; \
+> 	else grep IRIX .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for SGI"							; \
+> 		echo "AR		=	$(AR)"				>  macros_interpf	; \
+> 		echo "RM		=	$(RM)"				>> macros_interpf	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_interpf	; \
+> 		echo "CD		=	$(CD)"				>> macros_interpf	; \
+> 		echo "LN		=	$(LN)"				>> macros_interpf	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_interpf	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_interpf	; \
+> 		echo "TOUCH		=	touch"				>> macros_interpf	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_interpf	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DSGI"		>> macros_interpf	; \
+> 		echo "FC		=	f90"				>> macros_interpf	; \
+> 		echo "FCFLAGS		=	-freeform -n32 -O2 -I."		>> macros_interpf	; \
+> 		echo "LDFLAGS		=	-n32 -O2 -lfastm"		>> macros_interpf	; \
+> 		echo "CCFLAGS		=	-DSGI -I. -n32"			>> macros_interpf	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_interpf	; \
+> 		( $(CD) src ; $(MAKE) all )							; \
+> 	else grep SUN .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for SUN"							; \
+> 		echo "AR		=	$(AR)"				>  macros_interpf	; \
+> 		echo "RM		=	$(RM)"				>> macros_interpf	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_interpf	; \
+> 		echo "CD		=	$(CD)"				>> macros_interpf	; \
+> 		echo "LN		=	$(LN)"				>> macros_interpf	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_interpf	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_interpf	; \
+> 		echo "TOUCH		=	touch"				>> macros_interpf	; \
+> 		echo "CPP		=	/usr/ccs/lib/cpp"		>> macros_interpf	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DSUN"		>> macros_interpf	; \
+> 		echo "FC		=	f90"				>> macros_interpf	; \
+> 		echo "FCFLAGS		=	-ansi -free"			>> macros_interpf	; \
+> 		echo "LDFLAGS		=	" 				>> macros_interpf	; \
+> 		echo "CCFLAGS		=	-DSUN -I."			>> macros_interpf	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_interpf	; \
+> 		( $(CD) src ; $(MAKE) all	) 							; \
+> 	else grep Linux .tmpfile									; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for Linux"						; \
+> 		echo "AR		=	$(AR)"				>  macros_interpf	; \
+> 		echo "RM		=	$(RM)"				>> macros_interpf	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_interpf	; \
+> 		echo "CD		=	$(CD)"				>> macros_interpf	; \
+> 		echo "LN		=	$(LN)"				>> macros_interpf	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_interpf	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_interpf	; \
+> 		echo "TOUCH		=	touch"				>> macros_interpf	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_interpf	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DDEC -traditional"	>> macros_interpf	; \
+> 		echo "FC		=	pgf90"				>> macros_interpf	; \
+> 		echo "FCFLAGS		=	-Mfreeform -pc 32 -byteswapio"	>> macros_interpf	; \
+> 		echo "LDFLAGS		=	" 				>> macros_interpf	; \
+> 		echo "CCFLAGS		=	-DDEC -I."			>> macros_interpf	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_interpf	; \
+> 		( $(CD) src ; $(MAKE) all	) 							; \
+> 	else grep UXP .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for Fujitsu"						; \
+> 		echo "AR		=	$(AR)"				>  macros_interpf	; \
+> 		echo "RM		=	$(RM)"				>> macros_interpf	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_interpf	; \
+> 		echo "CD		=	$(CD)"				>> macros_interpf	; \
+> 		echo "LN		=	$(LN)"				>> macros_interpf	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_interpf	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_interpf	; \
+> 		echo "TOUCH		=	touch"				>> macros_interpf	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_interpf	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DVPP -DBIT32"	>> macros_interpf	; \
+> 		echo "FC		=	frt"				>> macros_interpf	; \
+> 		echo "FCFLAGS		=	-Free -X9 -Am -sc -Kfast -Kfreealloc -Karraystack3"	>> macros_interpf	; \
+> 		echo "LDFLAGS		=	-J" 				>> macros_interpf	; \
+> 		echo "CCFLAGS		=	-DVPP -DBIT32 -I."		>> macros_interpf	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_interpf	; \
+> 		( $(CD) src ; $(MAKE) all	) 							; \
+> 	else echo "Do not know how to compile for the `cat .tmpfile` machine." 				; \
+> 	fi ; \
+> 	fi ; \
+> 	fi ; \
+> 	fi ; \
+> 	fi ; \
+> 	fi ; \
+> 	fi ; \
+> 	fi
+126,131c174,175
+< 	( $(CD) src ; $(MAKE) clean "RM = $(RM)" )
+< 	$(RM) interpf
+< 	$(RM) core
+< 	$(RM) MMINPUT*
+< 	$(RM) BDYOUT*
+< 	$(RM) LOWBDY*
+---
+> 	( $(CD) src ; $(MAKE) clean "CD = $(CD)" "RM = $(RM)" "RM_LIST = $(RM_LIST)" )
+> 	$(RM) $(RM_LIST) .tmpfile
+===================================================================
+README
+diff -r3.1 -r3.4
+2,3c2,3
+< VERSION 3 INTERPF PROGRAM (release 3-2)
+< (Updated Sept 25, 1999)
+---
+> VERSION 3 INTERPF PROGRAM (release 3-4)
+> (Updated November 6, 2000)
+29a30,36
+> INTERPF is a Fortran 90 program, and requires Fortran 90 compiler.
+> 
+> INTERPF is supported for Cray, Alpha, HP, IBM, SGI, SUN, and Fujitsu with
+> their native compilers, and PC running Linux using Portland Group Fortran
+> 90 compiler. If your machine isn't one of the ones supported or the
+> compiler isn't the native one from the vendor, you need to edit the Makefile.
+> 
+31a39,43
+> ***************************************************************
+> Also see the online self-tutorial at
+> http://www.mmm.ucar.edu/mm5/mm5v3/tutorial/teachyourself.html
+> ***************************************************************
+> 
+34c46
+< - Type make in this directory to see what you should do next
+---
+> - Type 'make' in the INTERPF directory to compile;
+68a81,87
+> Note for release-3-4: Begin with this release, INTERPF is able to generate
+>       time-varying SST, snow cover and sea ice fields in LOWBDY file, if
+>       these fields exist in the input. If the input contains SKIPTEMP, then
+>       INTERPF will only compute a time-averaged SST, and snow cover and
+>       sea ice at first time period will be produced in LOWBDY.
+> 
+> 
+73c92
+< On machines that do not support comments (Cray and SGI, for example),
+---
+> On machines that do not support comments (Cray, SGI, HP and Linux, for example),
+79c98
+< Error shooting:
+---
+> Trouble shooting:
+88a108
+> CHANGES:   description of changes made since 3.0
+91a112,113
+> configure.rules:   rules for compilation
+> interpf.deck.cray: batch job deck for NCAR's Cray
+92a115
+> namelist.input.SOC: namelist input file for SOC case
+===================================================================
+interpf.deck.cray
+diff -r3.2 -r3.4
+95c95,96
+<  interval       = 43200 /                             # time difference (s)
+---
+>  interval       = 43200                               # time difference (s)
+>  less_than_24h  = .FALSE. /                           # if input is less than 24 h
+139c140
+<    make cray
+---
+>    make 
+===================================================================
+namelist.input
+diff -r3.3 -r3.7
+2,3c2
+<  input_file     = '/your_rawins_output_directory/RAWINS_DOMAIN1'/  ! objective analysis or
+<                                                                      ! First-guess file name
+---
+>  input_file     = '../LITTLE_R/LITTLE_R_DOMAIN1' /    
+6,14c5,14
+<  start_year     =  1993                               ! The starting and
+<  start_month    =    03                               ! ending dates to
+<  start_day      =    13                               ! process
+<  start_hour     =    00                               !
+<  end_year       =  1993                               !
+<  end_month      =    03                               !
+<  end_day        =    14                               ! 
+<  end_hour       =    00                               !
+<  interval       = 43200 /                             ! time difference (s)
+---
+>  start_year     =  1993                               
+>  start_month    =    03                               
+>  start_day      =    13                               
+>  start_hour     =    00                               
+>  end_year       =  1993                               
+>  end_month      =    03                               
+>  end_day        =    14                               
+>  end_hour       =    00                               
+>  interval       = 43200                               
+>  less_than_24h  = .FALSE. /                           
+17,20c17,20
+<  sigma_f_bu     = 1.00,0.99,0.98,0.96,0.93,0.89,      ! full sigma, bottom-up,
+<                   0.85,0.80,0.75,0.70,0.65,0.60,      ! start with 1.0, end
+<                   0.55,0.50,0.45,0.40,0.35,0.30,      ! with 0.0
+<                   0.25,0.20,0.15,0.10,0.05,0.00       !
+---
+>  sigma_f_bu     = 1.00,0.99,0.98,0.96,0.93,0.89,      
+>                   0.85,0.80,0.75,0.70,0.65,0.60,      
+>                   0.55,0.50,0.45,0.40,0.35,0.30,      
+>                   0.25,0.20,0.15,0.10,0.05,0.00       
+22,23c22,23
+<  isfc           = 0 /                                 ! # sigma levels to spread
+<                                                       ! surface information
+---
+>  isfc           = 0 /                                 
+>                                                       
+26,29c26,29
+<  p0             = 1.e5                                ! base state sea-level pres (Pa)
+<  tlp            = 50.                                 ! base state lapse rate d(T)/d(ln P)
+<  ts0            = 275.                                ! base state sea-level temp (K)
+<  tiso           = 0./                                 ! base state isothermal stratospheric temp (K)
+---
+>  p0             = 1.e5                                
+>  tlp            = 50.                                 
+>  ts0            = 275.                                
+>  tiso           = 0./                                 
+32,34c32,34
+<  removediv      = .TRUE.                              ! T/F remove integrated mean divergence
+<  usesfc         = .TRUE.                              ! T/F use surface data 
+<  wrth2o         = .TRUE. /                            ! T/F specific humidity wrt H2O
+---
+>  removediv      = .TRUE.                              
+>  usesfc         = .TRUE.                              
+>  wrth2o         = .TRUE. /                            
+37c37
+<  ifdatim        = 1 /                                 ! # of IC time periods to output
+---
+>  ifdatim        = -1 /                                
+===================================================================
+namelist.input.SOC
+diff -r3.3 -r3.5
+13c13,14
+<  interval       = 43200 /
+---
+>  interval       = 43200  
+>  less_than_24h  = .FALSE. /
+34c35
+<  ifdatim        = 3 /
+---
+>  ifdatim        = -1 /
+===================================================================
+Doc/README
+diff -r3.0 -r3.1
+1c1,4
+< The INTERP v3 program is a f90 source code that handles only the
+---
+> 
+> (Last updated: 02/11/00)
+> 
+> The INTERPF v3 program is a f90 source code that handles only the
+5c8
+< dynamically allocated memory, which implies that INTERP uses 
+---
+> dynamically allocated memory, which implies that INTERPF uses 
+7c10
+< INTERP program dynamically allocates the required memory, there
+---
+> INTERPF program dynamically allocates the required memory, there
+15,17c18,20
+< (just the reservoir temperature currently).  These files are
+< named MMINPUT_DOMAINx, BDYOUT_DOMAINx and LOWBDY_DOMAINx, where
+< "x" is the grid identifier bhi(13,1).  The INTERP code must be 
+---
+> (the reservoir temperature [a daily mean] and time-averaged SST).  
+> These files are named MMINPUT_DOMAINx, BDYOUT_DOMAINx and LOWBDY_DOMAINx, 
+> where "x" is the grid identifier bhi(13,1).  The INTERPF code must be 
+21c24
+< The files from the INTERP program are all in the v3 format,
+---
+> The files from the INTERPF program are all in the v3 format,
+27c30
+< There is no hydrostatic option in INTERP, consistent with removing 
+---
+> There is no hydrostatic option in INTERPF, consistent with removing 
+===================================================================
+src/Makefile
+diff -r3.0 -r3.6
+3,6c3,4
+< #       Suffix rules and commands
+< #######################
+< FIX01 =
+< #######################
+---
+> include ../configure.rules
+> include ../macros_interpf
+10c8
+< .SUFFIXES:              .F .f .i .o
+---
+> SRC		=	interpf.F
+12,14c10
+< .F.i:
+< 			$(RM) $@
+< 			$(CPP) $(CPPFLAGS) -D$(MACH) $(FIX01) $*.F > $@
+---
+> OBJS		=	$(SRC:.F=.o)
+16,34c12
+< .F.o:
+< 			$(RM) $@
+< 			$(CPP) $(CPPFLAGS) -D$(MACH) $(FIX01) $*.F > $*.f
+< 			$(FC) -c $(FCFLAGS) $*.f
+< 			$(RM) $*.f
+< 
+< .F.f:
+< 			$(RM) $@
+< 			$(CPP) $(CPPFLAGS) -D$(MACH) $(FIX01) $*.F > $@
+< 
+< .f.o:
+< 			$(RM) $@
+< 			$(FC) -c $(FCFLAGS) $(FIX01) $*.f
+< 
+< FSRC		=	interpf.F
+< 
+< FOBJS		=	$(FSRC:.F=.o)
+< 
+< FMOD		=	module_bdy.o module_date_pack.o module_diags.o module_file.o module_header_data.o \
+---
+> MODULES		=	module_bdy.o module_date_pack.o module_diags.o module_file.o module_header_data.o \
+38,41c16,18
+< cray dec hp ibm sgi sun default:
+< 			@echo "you need to be up a directory to make interpf"
+< 
+< target:			interpf
+---
+> all:			interpf \
+> 			$(OBJS) $(MODULES) \
+> 			../configure.rules ./Makefile ../Makefile
+43,44c20,22
+< interpf:		$(FOBJS) $(FMOD)
+< 			$(FC) -o $@ $(LDOPTIONS) $(FOBJS) $(FMOD)
+---
+> interpf:		../configure.rules ./Makefile ../Makefile \
+> 			$(OBJS) $(MODULES)
+> 			$(FC) -o $@ $(LDFLAGS) $(OBJS) $(MODULES)
+47c25,26
+< interpf.o:		module_bdy.o module_date_pack.o \
+---
+> interpf.o:		../configure.rules ./Makefile ../Makefile \
+> 			module_bdy.o module_date_pack.o \
+53c32
+< module_bdy.o:		Makefile ../Makefile 
+---
+> module_bdy.o:		../configure.rules ./Makefile ../Makefile 
+55c34
+< module_date_pack.o:	Makefile ../Makefile
+---
+> module_date_pack.o:	../configure.rules ./Makefile ../Makefile
+57c36
+< module_diags.o:		Makefile ../Makefile \
+---
+> module_diags.o:		../configure.rules ./Makefile ../Makefile \
+60c39
+< module_file.o:		Makefile ../Makefile 
+---
+> module_file.o:		../configure.rules ./Makefile ../Makefile 
+62c41
+< module_header_data.o:	Makefile ../Makefile
+---
+> module_header_data.o:	../configure.rules ./Makefile ../Makefile
+64c43
+< module_hydro_interp.o:	Makefile ../Makefile \
+---
+> module_hydro_interp.o:	../configure.rules ./Makefile ../Makefile \
+67c46
+< module_all_io.o:	Makefile ../Makefile \
+---
+> module_all_io.o:	../configure.rules ./Makefile ../Makefile \
+70c49
+< module_lateral_bdy.o:	Makefile ../Makefile \
+---
+> module_lateral_bdy.o:	../configure.rules ./Makefile ../Makefile \
+73c52
+< module_nh_interp.o:	Makefile ../Makefile \
+---
+> module_nh_interp.o:	../configure.rules ./Makefile ../Makefile \
+76c55
+< module_phys_consts.o:	Makefile ../Makefile 
+---
+> module_phys_consts.o:	../configure.rules ./Makefile ../Makefile 
+78c57
+< module_util.o:		Makefile ../Makefile
+---
+> module_util.o:		../configure.rules ./Makefile ../Makefile
+81c60
+< 			$(RM) $(FOBJS) $(FMOD) interpf core
+---
+> 			$(RM) $(FOBJS) $(MODULES) interpf core
+===================================================================
+src/interpf.F
+diff -r3.5 -r3.10
+21a22,23
+>    LOGICAL                     :: daily_mean_sst
+> 
+27d28
+<    INTEGER                     :: IFDATIM
+59a61
+>    INTEGER                     :: num_lowbdy_fields
+183a186,187
+>    INTEGER :: ifdatim
+> 
+187a192
+>    ifdatim = -1
+273a279,287
+>    check_sigma : DO k_loop = 2 , kxs
+>       IF ( sigma_f_bu(k_loop) .GE. sigma_f_bu(k_loop-1) ) THEN
+>          PRINT '(A)','Error in defining full sigma levels in namelist'
+>          PRINT '(A,I3,A,F6.4,A,I3,A,F6.4)','sigma_f_bu(',k_loop,')=',sigma_f_bu(k_loop), &
+>                 ' is greater than sigma_f_bu(',k_loop-1,')=',sigma_f_bu(k_loop-1)
+>          PRINT '(A)','Sigma levels must start with 1 and end with 0, and they must vary monotonically'
+>          STOP
+>       END IF
+>    END DO check_sigma
+426d439
+<    repeat = .FALSE.
+447c460
+<       CALL read_data ( input_press , input_file , input_count , kx )
+---
+>       CALL read_data ( input_press , input_file , input_count , kx , daily_mean_sst )
+453,483d465
+<       !  If we skipped past the previous time, we still have all of the space 
+<       !  allocated.  So if this is not a repeat, we need to allocate the 
+<       !  space for the pressure level input.
+< 
+<       IF ( .NOT. repeat ) THEN
+<          ALLOCATE ( Q           ( IMX , JMX , KX ) )
+<          ALLOCATE ( HEIGHT      ( IMX , JMX , KX ) )
+<          ALLOCATE ( P           ( KX ) )
+<          ALLOCATE ( RH          ( IMX , JMX , KX ) )
+<          ALLOCATE ( T           ( IMX , JMX , KX ) )
+<          ALLOCATE ( U           ( IMX , JMX , KX ) )
+<          ALLOCATE ( V           ( IMX , JMX , KX ) )
+<          ALLOCATE ( PCORIG      ( IMX , JMX , KX ) )
+<          ALLOCATE ( PPCLIN      ( IMX , JMX , KX + 1 ) )
+<          ALLOCATE ( PPCLOG      ( IMX , JMX , KX + 1 ) )
+<          ALLOCATE ( PPDLIN      ( IMX , JMX , KX + 1 ) )
+<          ALLOCATE ( PPDLOG      ( IMX , JMX , KX + 1 ) )
+<          ALLOCATE ( THETAP      ( IMX , JMX , KX ) )
+<          ALLOCATE ( PUP (KX) )
+<       END IF
+< 
+<       !  Put all of the input data into the mnemonically obvious choices from
+<       !  the large arrays of all of the 3d, 2d and 1d data.
+<      
+<       CALL assign_data ( t, u, v, height, rh, &
+<                          terrain, land_use, mapfaccr, mapfacdt, coriolis, &
+<                          latitcrs, longicrs, latitdot, longidot, snowcovr, &
+<                          psealvld, psealvlc, tseasfc, &
+<                          sfc_rh, sfc_t, sfc_u, sfc_v , &
+<                          p , kx )
+< 
+488c470,487
+<          repeat = .true.
+---
+>     
+>          !  We need to deallocate the following fields since they are pressure-level
+>          !  based, and we are allowed to change the number of pressure levels between
+>          !  time periods.
+>    
+>          DO loop = 1 , 20
+>             IF ( ASSOCIATED(all_3d(loop)%array) ) THEN
+>                DEALLOCATE ( all_3d(loop)%array )
+>             END IF
+>             IF ( ASSOCIATED(all_1d(loop)%array ) ) THEN
+>                DEALLOCATE ( all_1d(loop)%array )
+>             END IF
+>          END DO
+>          DO loop = 1 , 100
+>             IF ( ASSOCIATED ( all_2d(loop)%array ) ) THEN
+>                DEALLOCATE ( all_2d(loop)%array )
+>             END IF
+>          END DO
+495d493
+<          repeat = .FALSE.
+497a496,521
+>       !  We need to allocate the  space for the pressure level input.
+>       ALLOCATE ( Q           ( IMX , JMX , KX ) )
+>       ALLOCATE ( HEIGHT      ( IMX , JMX , KX ) )
+>       ALLOCATE ( P           ( KX ) )
+>       ALLOCATE ( RH          ( IMX , JMX , KX ) )
+>       ALLOCATE ( T           ( IMX , JMX , KX ) )
+>       ALLOCATE ( U           ( IMX , JMX , KX ) )
+>       ALLOCATE ( V           ( IMX , JMX , KX ) )
+>       ALLOCATE ( PCORIG      ( IMX , JMX , KX ) )
+>       ALLOCATE ( PPCLIN      ( IMX , JMX , KX + 1 ) )
+>       ALLOCATE ( PPCLOG      ( IMX , JMX , KX + 1 ) )
+>       ALLOCATE ( PPDLIN      ( IMX , JMX , KX + 1 ) )
+>       ALLOCATE ( PPDLOG      ( IMX , JMX , KX + 1 ) )
+>       ALLOCATE ( THETAP      ( IMX , JMX , KX ) )
+>       ALLOCATE ( PUP (KX) )
+> 
+>       !  Put all of the input data into the mnemonically obvious choices from
+>       !  the large arrays of all of the 3d, 2d and 1d data.
+>      
+>       CALL assign_data ( t, u, v, height, rh, &
+>                          terrain, land_use, mapfaccr, mapfacdt, coriolis, &
+>                          latitcrs, longicrs, latitdot, longidot, snowcovr, &
+>                          psealvld, psealvlc, tseasfc, &
+>                          sfc_rh, sfc_t, sfc_u, sfc_v , &
+>                          p , kx , daily_mean_sst )
+> 
+637c661,663
+<       !  ground temperature.
+---
+>       !  ground temperature.  If a request was made to NOT use the surface
+>       !  data (from the namelist.input file), we then must use a created
+>       !  surface temperature field.
+639c665,669
+<       ground_t = MERGE ( tseasfc , sfc_t , NINT(land_use) .EQ. bhi(23,1) )
+---
+>       IF ( usesfc ) THEN
+>          ground_t = MERGE ( tseasfc , sfc_t          , NINT(land_use) .EQ. bhi(23,1) )
+>       ELSE
+>          ground_t = MERGE ( tseasfc , t_sig(:,:,kxs) , NINT(land_use) .EQ. bhi(23,1) )
+>       END IF
+731c761
+<       IF ( itimes .LE. ifdatim ) THEN
+---
+>       IF ( ( itimes .LE. ifdatim ) .OR. ( ifdatim .EQ. -1 ) ) THEN
+747,749c777,789
+<       !  output to the final lower boundary condition file.
+< 
+<       CALL add_lbc ( tseasfc , sfc_t , tseasfc_sh , sfc_t_sh , ground_t_sh , output_lowerbc )
+---
+>       !  output to the final lower boundary condition file.  If the surface data
+>       !  is not to be used, we substitute the lowest level sigma temperature data
+>       !  for the surface temperature.
+> 
+>       IF ( usesfc ) THEN
+>          CALL add_lbc ( current_date , tseasfc , sfc_t          , tseasfc_sh ,         &
+>                         sfc_t_sh , ground_t_sh , output_lowerbc , imx , jmx , itimes , & 
+>                         interval , less_than_24h , num_lowbdy_fields , iprocess )
+>       ELSE
+>          CALL add_lbc ( current_date , tseasfc , t_sig(:,:,kxs) , tseasfc_sh ,         &
+>                         sfc_t_sh , ground_t_sh , output_lowerbc , imx , jmx , itimes , & 
+>                         interval , less_than_24h , num_lowbdy_fields , iprocess )
+>       END IF
+842c882,883
+<                   start_minute , start_second , start_frac )
+---
+>                   start_minute , start_second , start_frac , num_lowbdy_fields , &
+>                   imx , jmx , daily_mean_sst )
+===================================================================
+src/module_all_io.F
+diff -r3.6 -r3.14
+25a26
+>    INTEGER :: iprog_no_old
+28a30,31
+>    REAL , DIMENSION(:,:) , ALLOCATABLE :: tseasfc_sum , sfct_sum
+> 
+34c37
+<    SUBROUTINE read_data ( unit_fg , file_fg , count_fg , kx )
+---
+>    SUBROUTINE read_data ( unit_fg , file_fg , count_fg , kx , daily_mean_sst )
+46a50
+>       LOGICAL , INTENT(OUT) :: daily_mean_sst
+57a62
+>       daily_mean_sst = .TRUE.
+157a163,170
+>            
+>             !  Did we find a "real" SST yet?  If so, we need to set the SST mean flag
+>             !  to .FALSE. - which inplies that we can do physically reasonable variable
+>             !  SST computations.
+> 
+>             IF ( small_header%name(1:8) .EQ. 'TSEASFC ' ) THEN
+>                daily_mean_sst = .FALSE.
+>             END IF
+200c213
+<                             p , kx )
+---
+>                             p , kx , daily_mean_sst )
+216a230,231
+>       LOGICAL , INTENT(IN)    :: daily_mean_sst
+> 
+237a253
+>       iprog_no_old = bhi(1,1)
+300a317,319
+>          ELSE IF(( all_2d(loop)%small_header%name(1:8) .EQ. 'SKINTEMP' ) .AND. ( daily_mean_sst ) ) THEN
+>             all_2d(loop)%small_header%name(1:8) = 'TSEASFC '
+>             tseasfc  = all_2d(loop)%array(is:ie,js:je)
+322c341,342
+<    SUBROUTINE add_lbc ( tseasfc , sfc_t , tseasfc_sh , sfc_t_sh , ground_t_sh , unit_lowerbc )
+---
+>    SUBROUTINE add_lbc ( current_date19 , tseasfc , sfc_t , tseasfc_sh , sfc_t_sh , ground_t_sh , unit_lowerbc , &
+>                         imx , jmx , itimes , interval , less_than_24h , num_fields , iprocess )
+325a346
+>       CHARACTER (LEN=19)    :: current_date19
+328c349,421
+<       INTEGER               :: unit_lowerbc
+---
+>       INTEGER               :: unit_lowerbc , imx , jmx , itimes , interval
+>       LOGICAL               :: less_than_24h
+>       INTEGER               :: num_fields , iprocess
+> 
+>       !  Data for small header.
+> 
+>       INTEGER                :: num_dims
+>       INTEGER , DIMENSION(4) :: start_dims
+>       INTEGER , DIMENSION(4) :: end_dims
+>       REAL                   :: xtime
+>       CHARACTER (LEN= 4)     :: staggering
+>       CHARACTER (LEN= 4)     :: ordering
+>       CHARACTER (LEN=24)     :: current_date
+>       CHARACTER (LEN= 9)     :: name
+>       CHARACTER (LEN=25)     :: units
+>       CHARACTER (LEN=46)     :: description
+> 
+>       INTEGER :: loop , loopmax
+>       INTEGER :: is , js , ie , je
+>       REAL , DIMENSION(imx,jmx) :: dum2d
+> 
+>       !  If the data are expanded, we need to chop down the size on the assignment for
+>       !  the horizontal dimensions.
+> 
+>       IF ( ( iprog_no_old .EQ. 2 ) .AND. &
+>            ( bhi( 8,1) .EQ. 1 ) .AND. &
+>            ( bhi(15,1) .EQ. 0 ) ) THEN
+>          is = 1         + bhi(11,1)
+>          js = 1         + bhi(12,1)
+>          ie = bhi(16,1) + bhi(11,1)
+>          je = bhi(17,1) + bhi(12,1)
+>       ELSE
+>          is = 1
+>          js = 1
+>          ie = bhi(16,1)
+>          je = bhi(17,1)
+>       END IF
+> 
+>       !  Is this the first time inside this routine?  If so, ALLOCATE the space for the
+>       !  fields that will be used to accumulate the sums of the various times for the
+>       !  mean of the sea surface temperature (tseasfc_sum) and the mean of the surface
+>       !  air temperature (sfct_sum).
+> 
+>       IF ( itimes .EQ. 1 ) THEN
+>          ALLOCATE ( tseasfc_sum(imx,jmx) ) 
+>          ALLOCATE (    sfct_sum(imx,jmx) ) 
+>          tseasfc_sum = 0
+>             sfct_sum = 0
+>       END IF
+> 
+>       !  We are now safely assured of having space, so we stuff things into the mean
+>       !  field arrays.  We do have to be careful to only include "full" days of info so
+>       !  as to minimize our temperature bias.
+> 
+>       IF ( ( less_than_24h ) .AND. &
+>            ( interval * iprocess / 86400 .LT. 1 ) ) THEN
+>          loopmax = iprocess
+>       ELSE IF ( interval * iprocess / 86400 .GE. 1 ) THEN
+>          loopmax = ( interval * iprocess / 86400 ) * ( 86400 / interval )
+>       ELSE
+>          PRINT '(A)','You should not be allowed to be here.'
+>          STOP 'wrong_number_of_times'
+>       END IF
+> 
+>       IF      ( itimes .LT. loopmax ) THEN
+>          tseasfc_sum = tseasfc_sum + tseasfc
+>          sfct_sum    = sfct_sum    + sfc_t   
+>       ELSE IF ( itimes .EQ. loopmax ) THEN
+>          tseasfc_sum = tseasfc_sum + tseasfc
+>          sfct_sum    = sfct_sum    + sfc_t   
+>          tseasfc_sum = tseasfc_sum / REAL(loopmax)
+>          sfct_sum    = sfct_sum    / REAL(loopmax)
+>       END IF
+338c431
+<       tseasfc_sh%name            = 'TSEASFC  '
+---
+>       tseasfc_sh%name            = 'SST AVG  '
+340c433
+<       tseasfc_sh%description     = 'Temporal mean of sea surface temperature      '
+---
+>       tseasfc_sh%description     = 'Temporal mean of skin temperature             '
+359a453,479
+>       !  Since we do not want to do lots of name checking, the easiest thing to
+>       !  do is pass all of the 2d fields through.  We have to modify the size of
+>       !  the arrays (possibly) to account for the expanded / unexpanded input.
+> 
+>       num_fields = 2
+>       DO loop = 1 , num_2d
+>          IF ( ( all_2d(loop)%small_header%name(1:8) .EQ. 'TSEASFC ' ) .OR. &
+>               ( all_2d(loop)%small_header%name(1:8) .EQ. 'SNOWCOVR' ) .OR. &
+>               ( all_2d(loop)%small_header%name(1:8) .EQ. 'SEAICE  ' ) ) THEN
+>             num_fields = num_fields + 1
+>             num_dims        = 2
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, jmx, 1, 1 /)
+>             xtime           = all_2d(loop)%small_header%xtime
+>             staggering      = all_2d(loop)%small_header%staggering
+>             ordering        = all_2d(loop)%small_header%ordering
+>             current_date    = current_date19 // '.0000'
+>             name            = all_2d(loop)%small_header%name
+>             units           = all_2d(loop)%small_header%units
+>             description     = all_2d(loop)%small_header%description
+>             WRITE ( unit_lowerbc ) num_dims , start_dims , end_dims , xtime , &
+>                                    staggering , ordering , current_date , name , units , description
+>             dum2d = all_2d(loop)%array(is:ie,js:je)
+>             WRITE ( unit_lowerbc ) dum2d 
+>          END IF
+>       END DO
+> 
+367c487,488
+<                         start_minute , start_second , start_frac )
+---
+>                         start_minute , start_second , start_frac , num_fields , &
+>                         imx , jmx , daily_mean_sst )
+375c496,497
+<                                start_minute , start_second , start_frac
+---
+>                                start_minute , start_second , start_frac , num_fields
+>       INTEGER               :: imx , jmx
+376a499
+>       LOGICAL               :: daily_mean_sst
+380,387c503,509
+<       REAL , ALLOCATABLE , DIMENSION(:,:) :: tseasfc , sfc_t , sum_tseasfc , sum_sfc_t
+<       TYPE(sh)              :: tseasfc_sh , sfc_t_sh
+<       INTEGER :: imx , jmx , loop , loopmax
+<       CHARACTER (LEN=24) :: tseasfc_current_date , sfc_t_current_date
+<       
+<       !  Read back the data from the lower boundary file, add up the
+<       !  the arrays, get a mean, and write the mean field back out as a standard
+<       !  v3 formatted file.  Since we have been writing to this unit, there is the
+---
+>       REAL , DIMENSION(imx,jmx) :: dum2d
+>       TYPE(sh)              :: sfc_sh
+>       INTEGER :: loop , loopmax , loop_fields
+>       CHARACTER (LEN=24) :: current_date
+>       
+>       !  Read back the data from the lower boundary file and write the mean field back out 
+>       !  as a standard  v3 formatted file.  Since we have been writing to this unit, there is the
+406,408c528
+<       DO loop = 1 , loopmax
+< 
+<          !  The first field in the LOWBDY file is the sea surface temperature.
+---
+>       !  Make the big header for this file.
+410,482c530
+<          READ ( unit_lowerbc ) tseasfc_sh%num_dims , tseasfc_sh%start_dims , tseasfc_sh%end_dims , &
+<                                tseasfc_sh%xtime , &
+<                                tseasfc_sh%staggering , tseasfc_sh%ordering , tseasfc_sh%current_date , &
+<                                tseasfc_sh%name , tseasfc_sh%units , tseasfc_sh%description
+< 
+<          !  To read in the data, we need an input array.  Just ALLOCATE this the first time,
+<          !  the array is the same size.  There are a few small header values that we glom onto
+<          !  so that we have them when we do the single small header write below.
+< 
+<          IF ( loop .EQ. 1 ) THEN
+<             tseasfc_current_date = tseasfc_sh%current_date
+<             imx                  = tseasfc_sh%end_dims(1)
+<             jmx                  = tseasfc_sh%end_dims(2)
+<             ALLOCATE ( tseasfc(imx,jmx) )
+<             ALLOCATE ( sum_tseasfc(imx,jmx) )
+<             sum_tseasfc          = 0
+<          END IF
+< 
+<          READ ( unit_lowerbc ) tseasfc
+< 
+<          !  Fill in the outer row and column for sloppy array notation.
+< 
+<          tseasfc(imx,:)=tseasfc(imx-1,:)
+<          tseasfc(:,jmx)=tseasfc(:,jmx-1)
+<   
+<          sum_tseasfc = sum_tseasfc + tseasfc
+< 
+<          !  The second field in the LOWBDY file is the surface air temperature.
+< 
+<          READ ( unit_lowerbc ) sfc_t_sh%num_dims , sfc_t_sh%start_dims , sfc_t_sh%end_dims , &
+<                                sfc_t_sh%xtime , &
+<                                sfc_t_sh%staggering , sfc_t_sh%ordering , sfc_t_sh%current_date , &
+<                                sfc_t_sh%name , sfc_t_sh%units , sfc_t_sh%description
+< 
+<          !  To read in the data, we need an input array.  Just ALLOCATE this the first time,
+<          !  the array is the same size.  There are a few small header values that we glom onto
+<          !  so that we have them when we do the single small header write below.
+< 
+<          IF ( loop .EQ. 1 ) THEN
+<             sfc_t_current_date = sfc_t_sh%current_date
+<             imx                = sfc_t_sh%end_dims(1)
+<             jmx                = sfc_t_sh%end_dims(2)
+<             ALLOCATE ( sfc_t(imx,jmx) )
+<             ALLOCATE ( sum_sfc_t(imx,jmx) )
+<             sum_sfc_t          = 0
+<          END IF
+< 
+<          READ ( unit_lowerbc ) sfc_t
+< 
+<          !  Fill in the outer row and column for sloppy array notation.
+< 
+<          sfc_t(imx,:)=sfc_t(imx-1,:)
+<          sfc_t(:,jmx)=sfc_t(:,jmx-1)
+<   
+<          sum_sfc_t = sum_sfc_t + sfc_t
+< 
+<       END DO
+< 
+<       !  Big, cool average computation about to happen, we use the same number of time
+<       !  periods as above.  This gives the model an average of the surface air
+<       !  temperature and an average of the sea surface temperature.  Though the sea surface
+<       !  temperature is slowly varying compared to the surface air temperature, we 
+<       !  sometimes have to use a skin temperature.  This is an attempt to fix the diurnal
+<       !  variation of the skin temperature when used for the sst.
+< 
+<       tseasfc = sum_tseasfc / REAL (  loopmax )
+<       sfc_t   = sum_sfc_t   / REAL (  loopmax )
+< 
+<       !  We are ready to write out the file.  Make the big header for this file.  Again,
+<       !  switching back to WRITE mode, so do a REWIND.
+< 
+<       REWIND ( unit_lowerbc )
+<       WRITE ( unit_lowerbc ) bh_flag
+---
+>       WRITE ( unit_lowerbc + 1 ) bh_flag
+525,526c573
+<       !  Time interval between output files.  Notice that this is the length of the
+<       !  entire INTERP program run, not just a single interval.
+---
+>       !  Time interval between output files.
+528,529c575,580
+<       bhr ( 1,6) = interval * (itimes-1)
+<       bhrc( 1,6) = 'Time difference (seconds) through which the lower boundary condition is valid   '
+---
+>       IF ( daily_mean_sst ) THEN
+>          bhr ( 1,6) = interval * loopmax
+>       ELSE
+>          bhr ( 1,6) = interval
+>       END IF
+>       bhrc( 1,6) = 'Time difference (seconds) during which the lower boundary condition is valid    '
+533c584
+<       WRITE ( unit_lowerbc ) bhi , bhr , bhic , bhrc
+---
+>       WRITE ( unit_lowerbc + 1 ) bhi , bhr , bhic , bhrc
+535c586,587
+<       !  Now, the small header things: 1) flag, 2) header, and 3) data.
+---
+>       !  Loop over all of the time periods to process (full days, unless specifically requested
+>       !  to permit partial days in the mean fields).
+537c589,591
+<       WRITE ( unit_lowerbc ) sh_flag
+---
+>       IF ( daily_mean_sst ) THEN
+>          loopmax = 1
+>       END IF
+539,542c593
+<       WRITE ( unit_lowerbc ) tseasfc_sh%num_dims , tseasfc_sh%start_dims , tseasfc_sh%end_dims , &
+<                              tseasfc_sh%xtime , &
+<                              tseasfc_sh%staggering , tseasfc_sh%ordering , tseasfc_current_date , &
+<                              tseasfc_sh%name , tseasfc_sh%units , tseasfc_sh%description
+---
+>       time_loop : DO loop = 1 , loopmax
+544c595
+<       WRITE ( unit_lowerbc ) tseasfc
+---
+>          !  For each time period, we need to process each of the lower boundary fields.
+546c597,629
+<       WRITE ( unit_lowerbc ) sh_flag
+---
+>          field_loop : DO loop_fields = 1 , num_fields
+>          
+>             READ ( unit_lowerbc ) sfc_sh%num_dims , sfc_sh%start_dims , sfc_sh%end_dims , &
+>                                   sfc_sh%xtime , &
+>                                   sfc_sh%staggering , sfc_sh%ordering , sfc_sh%current_date , &
+>                                   sfc_sh%name , sfc_sh%units , sfc_sh%description
+> 
+>             READ ( unit_lowerbc ) dum2d
+> print *,'time=',loop,'field num=',loop_fields,' ',sfc_sh%name
+> 
+>             !  Do we only do daily averaged values for the surface air temp and SST?
+>             !  If we were forced to use a skin temperature for the SST (back in REGRID),
+>             !  then a diurnally averaged skin temperature will be an OK estimate for SST.
+> 
+>             IF ( daily_mean_sst ) THEN
+> 
+>                !  We want only daily averaged values for SST.
+> 
+>                IF      ( sfc_sh%name(1:8) .EQ. 'SST AVG ' ) THEN
+>                   WRITE ( unit_lowerbc + 1 ) sh_flag
+>                   WRITE ( unit_lowerbc + 1 ) sfc_sh%num_dims , sfc_sh%start_dims , sfc_sh%end_dims , &
+>                                              sfc_sh%xtime , &
+>                                              sfc_sh%staggering , sfc_sh%ordering , sfc_sh%current_date , &
+>                                              'TSEASFC  ' , sfc_sh%units , sfc_sh%description
+>                   WRITE ( unit_lowerbc + 1 ) tseasfc_sum
+>                ELSE IF ( sfc_sh%name(1:8) .EQ. 'RES TEMP' ) THEN
+>                   WRITE ( unit_lowerbc + 1 ) sh_flag
+>                   WRITE ( unit_lowerbc + 1 ) sfc_sh%num_dims , sfc_sh%start_dims , sfc_sh%end_dims , &
+>                                              sfc_sh%xtime , &
+>                                              sfc_sh%staggering , sfc_sh%ordering , sfc_sh%current_date , &
+>                                              sfc_sh%name , sfc_sh%units , sfc_sh%description
+>                   WRITE ( unit_lowerbc + 1 ) sfct_sum
+>                END IF
+548,551c631
+<       WRITE ( unit_lowerbc ) sfc_t_sh%num_dims , sfc_t_sh%start_dims , sfc_t_sh%end_dims , &
+<                              sfc_t_sh%xtime , &
+<                              sfc_t_sh%staggering , sfc_t_sh%ordering , sfc_t_current_date , &
+<                              sfc_t_sh%name , sfc_t_sh%units , sfc_t_sh%description
+---
+>             ELSE
+553c633
+<       WRITE ( unit_lowerbc ) sfc_t
+---
+>                !  We are permitted to have variable SST and such.
+555c635,652
+<       !  Finish the file with an end of time flag.
+---
+>                IF      ( sfc_sh%name(1:8) .EQ. 'SST AVG ' ) THEN
+>                   PRINT '(A)','Skipping daily averaged SST in LOWBDY file, since SST is available instead of skin temperature.'
+>                ELSE IF ( sfc_sh%name(1:8) .EQ. 'RES TEMP' ) THEN
+>                   WRITE ( unit_lowerbc + 1 ) sh_flag
+>                   WRITE ( unit_lowerbc + 1 ) sfc_sh%num_dims , sfc_sh%start_dims , sfc_sh%end_dims , &
+>                                              sfc_sh%xtime , &
+>                                              sfc_sh%staggering , sfc_sh%ordering , sfc_sh%current_date , &
+>                                              sfc_sh%name , sfc_sh%units , sfc_sh%description
+>                   WRITE ( unit_lowerbc + 1 ) sfct_sum
+>                ELSE
+>                   WRITE ( unit_lowerbc + 1 ) sh_flag
+>                   WRITE ( unit_lowerbc + 1 ) sfc_sh%num_dims , sfc_sh%start_dims , sfc_sh%end_dims , &
+>                                              sfc_sh%xtime , &
+>                                              sfc_sh%staggering , sfc_sh%ordering , sfc_sh%current_date , &
+>                                              sfc_sh%name , sfc_sh%units , sfc_sh%description
+>                   WRITE ( unit_lowerbc + 1 ) dum2d
+>                END IF
+>             END IF
+557c654
+<       WRITE ( unit_lowerbc ) eot_flag
+---
+>          END DO field_loop
+559c656
+<       !  DEALLOCATE the heap arrays.
+---
+>          !  Finish this time period with an end of time flag.
+561,564c658
+<       DEALLOCATE ( tseasfc )
+<       DEALLOCATE ( sum_tseasfc )
+<       DEALLOCATE ( sfc_t )
+<       DEALLOCATE ( sum_sfc_t )
+---
+>          WRITE ( unit_lowerbc + 1 ) eot_flag
+565a660
+>       END DO time_loop
+633c728
+<       NAMELIST /RECORD5/ ifdatim
+---
+>       NAMELIST /RECORD5/ ifdatim 
+666a762
+> #ifndef ( IBM ) 
+667a764
+> #endif
+755a853,858
+>       OPEN ( UNIT   =  lbc_unit        , &
+>              STATUS = 'SCRATCH'        , &
+>              FORM   = 'UNFORMATTED'    , &
+>              ACCESS = 'SEQUENTIAL'     )
+>              PRINT '(A)','Opened scratch LOWBDY file for output.'
+> 
+757c860
+<              UNIT   =  lbc_unit        , &
+---
+>              UNIT   =  lbc_unit + 1    , &
+871c974
+<          bhi( 3,5) = 1 ; bhic( 3,5) = 'INTERP Program Version Number                                                   '
+---
+>          bhi( 3,5) = 4 ; bhic( 3,5) = 'INTERP Program Version Number                                                   '
+1081,1095c1184,1200
+<          WRITE ( immout ) sh_flag
+<          num_dims        = 2
+<          start_dims      = (/ 1, 1, 1, 1 /)
+<          end_dims        = (/ imx, jmx, 1, 1 /)
+<          xtime           = all_2d(loop)%small_header%xtime
+<          staggering      = all_2d(loop)%small_header%staggering
+<          ordering        = all_2d(loop)%small_header%ordering
+<          current_date    = current_date19 // '.0000'
+<          name            = all_2d(loop)%small_header%name
+<          units           = all_2d(loop)%small_header%units
+<          description     = all_2d(loop)%small_header%description
+<          WRITE ( immout ) num_dims , start_dims , end_dims , xtime , &
+<                           staggering , ordering , current_date , name , units , description
+<          dum2d = all_2d(loop)%array(is:ie,js:je)
+<          WRITE ( immout ) dum2d 
+---
+>          IF ( all_2d(loop)%small_header%ordering(1:2) .EQ. 'YX' ) THEN
+>             WRITE ( immout ) sh_flag
+>             num_dims        = 2
+>             start_dims      = (/ 1, 1, 1, 1 /)
+>             end_dims        = (/ imx, jmx, 1, 1 /)
+>             xtime           = all_2d(loop)%small_header%xtime
+>             staggering      = all_2d(loop)%small_header%staggering
+>             ordering        = all_2d(loop)%small_header%ordering
+>             current_date    = current_date19 // '.0000'
+>             name            = all_2d(loop)%small_header%name
+>             units           = all_2d(loop)%small_header%units
+>             description     = all_2d(loop)%small_header%description
+>             WRITE ( immout ) num_dims , start_dims , end_dims , xtime , &
+>                              staggering , ordering , current_date , name , units , description
+>             dum2d = all_2d(loop)%array(is:ie,js:je)
+>             WRITE ( immout ) dum2d 
+>          END IF
+===================================================================
+src/module_date_pack.F
+diff -r3.1 -r3.2
+66c66
+<       INTEGER :: len, olen, nlen
+---
+>       INTEGER :: olen, nlen
+338c338
+<       INTEGER :: len, nlen, olen
+---
+>       INTEGER :: nlen, olen
+===================================================================
+src/module_hydro_interp.F
+diff -r3.1 -r3.2
+391c391
+< !                    STOP 'out_of_order_interpolation'
+---
+>                      STOP 'out_of_order_interpolation'
+===================================================================
+src/module_nh_interp.F
+diff -r3.1 -r3.2
+44c44
+< !$OMP PARALLEL DO DEFAULT ( SHARED ) PRIVATE ( i , j , k , ac , b , alnp )
+---
+> !$OMP PARALLEL DO DEFAULT ( SHARED ) PRIVATE ( i , j , k , ac , b , alnp , pres0 )
+===================================================================
+src/module_phys_consts.F
+diff -r3.0 -r3.1
+4c4
+<       REAL,          PARAMETER    :: G           =     9.8
+---
+>       REAL,          PARAMETER    :: G           =     9.81
+===================================================================
+src/module_util.F
+diff -r3.1 -r3.2
+177c177
+<       REAL                        :: OUT3D       ( imx,jmx,kx)
+---
+>       REAL                        :: OUT
+179,181c179,187
+<       DO K = 1, KX
+<          KK = KX - K + 1
+<          OUT3D(:,:,KK) = DUM3D(:,:,K)
+---
+>       DO K = 1, KX/2
+>          kk = kx - k + 1
+>          DO j = 1 , jmx
+>             DO i = 1 , imx
+>                out = dum3d(i,j,k)
+>                dum3d(i,j,k) = dum3d(i,j,kk)
+>                dum3d(i,j,kk) = out
+>             END DO
+>          END DO
+183,184d188
+< 
+<       dum3d = out3d

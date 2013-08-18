@@ -1,0 +1,48 @@
+C                                                                                POINT2DN.1
+C----------------------------------------------------------------------          POINT2DN.2
+C                                                                                POINT2DN.3
+C ADD POINTERS FOR 2D SEAICE VARIABLES                                           19DEC02.1320
+      REAL MSFXN,MSFDN,MAVAIN,MOLN                                               POINT2DN.4
+      REAL ALBN,EMISSN,FN,HOLN,HTN,PSAN,PSBN,RAINCN,RAINNN,SHCN,                 POINT2DN.5
+     1 THCN,TMNN,XLANDN,XLATN,XLONGN,ZNTN,ZOLN                                   POINT2DN.6
+      POINTER (INAPA,   PSAN(MIX,MJX)),(INAPB,  PSBN(MIX,MJX)),                  POINT2DN.7
+     1        (INARC, RAINCN(MIX,MJX)),(INARN,RAINNN(MIX,MJX)),                  POINT2DN.8
+     2        (INAF ,     FN(MIX,MJX)),(INAMX, MSFXN(MIX,MJX)),                  POINT2DN.9
+     3        (INAMD,  MSFDN(MIX,MJX)),(INAHT,   HTN(MIX,MJX)),                  POINT2DN.10
+     4        (INALT,  XLATN(MIX,MJX)),(INALO,XLONGN(MIX,MJX)),                  POINT2DN.11
+     5        (INALD, XLANDN(MIX,MJX)),(INAAL,  ALBN(MIX,MJX)),                  POINT2DN.12
+     6        (INATH,   THCN(MIX,MJX)),(INASH,  SHCN(MIX,MJX)),                  POINT2DN.13
+     7        (INAZN,   ZNTN(MIX,MJX)),(INATM,  TMNN(MIX,MJX)),                  POINT2DN.14
+     8        (INAMA,MAVAIN(MIX,MJX)),(INAEM, EMISSN(MIX,MJX)),                  POINT2DN.15
+     9        (INAZO,   ZOLN(MIX,MJX)),(INAHO,  HOLN(MIX,MJX))                   POINT2DN.16
+      REAL CAPGN,COSRTN,EFN,GLWN,GSWN,HFXN,PBLN,PRWN,PSAINN,QFXN,                POINT2DN.17
+     1 RAINPN,REGIMN,SATBRN,SINRTN,SNOWCN,TGAN,TGBN,TSSN,USTN,OLWN,OSWN          07NOV00.1145
+      POINTER (INAMO,   MOLN(MIX,MJX)),(INAPL,  PBLN(MIX,MJX)),                  POINT2DN.19
+     1        (INARE,REGIMN(MIX,MJX)),(INAHX,   HFXN(MIX,MJX)),                  POINT2DN.20
+     2        (INAQX,   QFXN(MIX,MJX)),(INAUT,  USTN(MIX,MJX)),                  POINT2DN.21
+     3        (INAPR,   PRWN(MIX,MJX)),(INATGA, TGAN(MIX,MJX)),                  POINT2DN.22
+     4       (INATGB,   TGBN(MIX,MJX)),(INASA,SATBRN(MIX,MJX)),                  POINT2DN.23
+     5       (INAPSI,PSAINN(MIX,MJX)),(INARP, RAINPN(MIX,MJX)),                  POINT2DN.24
+     6        (INAGS,   GSWN(MIX,MJX)),(INAGL,  GLWN(MIX,MJX)),                  POINT2DN.25
+     6        (INAOS,   OSWN(MIX,MJX)),(INAOL,  OLWN(MIX,MJX)),                  07NOV00.1146
+     7        (INACG,  CAPGN(MIX,MJX)),(INASC, SNOWCN(MIX,MJX)),                 POINT2DN.26
+     8        (INAEF,   EFN(MIX,MJX)), (INACR,COSRTN(MIX,MJX)),                  POINT2DN.27
+     9        (INASR,SINRTN(MIX,MJX)),(INATSS,  TSSN(MIX,MJX))                   24SEP99.409
+      REAL TA2N,QA2N,UA10N,VA10N,SNOWNCTN                                        05DEC01.649
+      POINTER (INATA2, TA2N(MIX,MJX)),(INAQA2,  QA2N(MIX,MJX)),                  07NOV00.1148
+     1        (INAUA10,UA10N(MIX,MJX)),(INAVA10,VA10N(MIX,MJX)),                 05DEC01.650
+     2        (INASNT,SNOWNCTN(MIX,MJX))                                         05DEC01.651
+      REAL SEAICN,TGSIN,HFXSIN,QFXSIN                                            19DEC02.1321
+      POINTER (INASI,SEAICN(MIX,MJX)),(INATGS, TGSIN(MIX,MJX)),                  19DEC02.1322
+     1       (INAHXS,HFXSIN(MIX,MJX)),(INAQXS,QFXSIN(MIX,MJX))                   19DEC02.1323
+C                                                                                POINT2DN.29
+      COMMON/ADDRN2/INAPA,INAPB,INARC,INARN,INAF,INAMX,INAMD,INAHT,              POINT2DN.30
+     1           INALT,INALO,INALD,INAAL,INATH,INASH,INAZN,INATM,                POINT2DN.31
+     2           INAMA,INAEM,INAZO,INAHO,INAMO,INAPL,INARE,INAHX,                POINT2DN.32
+     3           INAQX,INAUT,INAPR,INATGA,INATGB,INASA,INAPSI,INARP,             POINT2DN.33
+     4           INAGS,INAGL,INAOS,INAOL,INACG,INASC,INAEF,INACR,                07NOV00.1150
+     5           INASR,INATSS,INATA2,INAQA2,INAUA10,INAVA10,INASNT,              19DEC02.1324
+     6           INASI,INATGS,INAHXS,INAQXS                                      19DEC02.1325
+C                                                                                POINT2DN.35
+C----------------------------------------------------------------------          POINT2DN.36
+C                                                                                POINT2DN.37

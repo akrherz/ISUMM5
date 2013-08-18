@@ -1,0 +1,583 @@
+
+You will find descriptions of the changes to the REGRID version 3
+source code in this file. Each release will be a complete tar file
+such as this. 
+
+The current release is 3.7 (December 23, 2004)
+
+========================================================
+Bug fixes and changes since V3.7
+
+January 26, 2005
+	ERA40 SOIL Vtable correction of GRIB numbers
+	Thanks to John Cassano from the University of 
+	Colorado Bolder
+
+========================================================
+Bug fixes and changes in V3.7:
+
+Bug Fixes:
+
+pregrid:
+
+- Allow true latitude in GRIB file to be either positive or negative.
+ 
+  Affected files:
+  pregrid/grib.misc/rd_grib.F
+  pregrid/util/gribcode.F
+  pregrid/util/pregrid_version.F
+
+- ERA40 data SOILHGT field has different units to other datasets.
+  A fix has been added to convert this to the standard values used
+  by pregrid.
+    Thanks to Johann Zueger from ARC for pointing this out
+
+  Affected files:
+  pregrid/grib.misc/rd_grib.F
+  pregrid/grib.misc/rrpr.F
+
+- Prevent negative exponennts in ECMWF GRIB files to be set to 0, which 
+  could result in wrongly ingesting the data. This is not a problem
+  with other datasets.
+    Thanks to Jean-Louis Monge from Ecole Polytechnique
+
+  Affected file:
+  pregrid/util/gribcode.F
+
+- Change name SST in Vtable to SKINTEMP
+
+  Affected files:
+  pregrid/grib.misc/Vtable.NNRP
+  pregrid/ncep.grib/Vtable.SST
+
+regridder:
+
+- Keep all SQRT functions real to avoid problems with pgf5
+
+  Affected file:
+  regridder/src/module_tc_bogus.F
+
+- Fix for using TC bogus and Mercator projections
+    Thanks to Mohar Chattopadhyay from Met.Service New Zealand
+
+  Affected file:
+  regridder/src/module_tc_bogus.F
+
+- Allow polar-projection data to have origin location defined other than (1,1).
+
+  Affected files:
+  regridder/src/module_map_utils.F
+  regridder/src/module_tc_bogus.F
+  regridder/src/proc_ingest_first_guess.F
+
+- Check for large positive values for masked fields.
+
+  Affected file:
+  regridder/src/proc_ingest_first_guess.F
+
+- Prevent negative values of seaice.
+
+  Affected file:
+  regridder/src/proc_make_dot_point_data.F
+
+- Add a fix so that high frequency data do not deallocated terrain 
+  arrays too early.
+
+  Affected files:
+  regridder/src/proc_output.F
+  regridder/src/proc_zap_space_array.F
+
+- Change value of CP to 1004., to be consistent with rest of
+  the programs. 
+
+  Affected file:
+  regridder/src/module_constants.F
+
+- Change logical "L" formatting to "L7" to accomodate the
+  formatting requirements of SUN logical WRITE statements
+
+  Affected file:
+  regridder/src/proc_namelist.F
+
+Changes and improvements:
+
+- Add INTEL compiler flags. PGI will remain the default. To
+  compile with INTEL type "make intel"
+
+  Affected files:
+  Makefile
+  pregrid/util/Makefile
+
+- Add compiler options for Cray X1
+  Thanks to Peter Johnsen from Cray
+
+  Affected files:
+  Makefile
+  regridder/src/module_horiz_interp.F
+  regridder/src/proc_ingest_first_guess.F
+
+pregrid:
+
+- For ALADIN-LACE model, if upper-air RH is missing, see if we can 
+  compute RH from RHFRAC.
+    Thanks to Luksa Kraljevic from the Meteorological and 
+    Hydrological Service of Croatia
+
+  Affected file:
+  pregrid/grib.misc/rrpr.F
+
+- Add Vtables / scripts and data files to be used with ERA40 data.
+  If using this data for the first time, please refer to the 
+  README_ERA40 file for more information.
+
+  Affected files:
+  pregrid/README_ERA40 
+  pregrid/pregrid_era40_int.csh
+  pregrid/grib.misc/Vtable.ERA43D
+  pregrid/grib.misc/Vtable.ERA4SNOW
+  pregrid/grib.misc/Vtable.ERA4SOIL
+  pregrid/grib.misc/Vtable.ERA4SST 
+  pregrid/grib.misc/Vtable.ERA4SIVT
+  regridder/SIVT_FILE:1957-09-01_12
+
+- Set the min RH allowed to 1%
+
+  Affected files:
+  pregrid/grib.misc/rrpr.F
+  pregrid/ncep.grib/output.F
+  pregrid/on84/output.F
+
+- Include canopy moisture in Vtables for AGRMET data. Canopy moisture
+  is interpolated using mask interpolation scheme.
+
+  Affected files:
+  pregrid/grib.misc/Vtable.AGRMETSOIL
+  pregrid/grib.misc/Vtable.AGRMETSOIL2
+
+regridder:
+
+- Add a user defined min value for RH. The default value is
+  set to 5%, but a user has the option of decreasing it to as low
+  as 1%. 
+
+  Affected files:
+  regridder/src/module_diags.F
+  regridder/src/module_namelist_info.F
+  regridder/src/proc_make_big_header.F
+  regridder/src/proc_make_dot_point_data.F
+  regridder/src/proc_namelist.F
+  regridder/src/proc_output.F
+  regridder/.hidden/namelist.input_RH
+
+- Add CANOPY MOISTURE to the masked fields
+
+  Affected files:
+  regridder/src/proc_ingest_first_guess.F
+  regridder/src/proc_make_dot_point_data.F
+
+========================================================
+Bug fixes and changes in V3.6:
+
+Bug Fixes:
+
+pregrid:
+
+ - Fix the a problem with incoming GRIB data being a constant field. 
+   Should not have effect on most data. (Thanks to Brent Show from FSL.)
+
+   Affected files:
+   pregrid/util/gribcode.F
+
+ - Fix a problem with the plotting using Lambert-Conformal Maps. Potential
+   problem with newer version of the NCAR Graphics.
+
+   Affected files:
+   pregrid/util/Makefile, plotfmt.F
+
+ - Fix so that all NNRP dates can be accessed, including the dates under
+   the rerun lists.
+
+   Affected files:
+   pregrid/nnrp/get_nnrp.csh, get_nnrp.deck, get_nnrp.deck.ibm, get_nnrp.sh
+
+regridder:
+
+ - A fix to prevent TC Bogus accessing uninitialized array elements.
+
+   Affected files:
+   regridder/src/module_diags.F, module_tc_bogus.F
+
+ - Fix the RH computation so that it makes use of mixing ratio, 
+   not specific humidity. This affects results only in TC bogussing.
+
+   Affected files:
+   regridder/src/module_diags.F
+
+ - Correct the problem with bilinearly interpolation across input data 
+   boundaries (such as for AVN data across 0 degree longitude).
+
+   Affeced files:
+   regridder/src/module_horiz_interp.F
+
+ - Enforce ABS(lon1) and ABS(xlonc) to be less than 180 degree to 
+   fix RUC input problem.
+
+   Affected files:
+   regridder/src/proc_ingest_first_guess.F
+
+ - Fix vertical interpolations of temperature and height to change from 
+   linear in p to linear in ln(p).
+
+   Affected files:
+   regridder/src/proc_list_to_array.F
+
+ - Fix an error when no new levels are requested in the namelist.input.
+  
+   Affected files:
+   regridder/src/proc_namelist.F
+
+ - Add a CPU = 1 to the Cray job script so that the code will always be 
+   compiled with only one CPU to prevent failing compilation. 
+   Add the TC bogus namelist to the script.
+
+   Affected Files:
+   cray-regrid.deck
+
+Changes and improvements:
+
+pregrid:
+
+ - Add a check for missing U,V,T in vertical levels, and vertically interpolate 
+   to fill data in if possible.
+
+   Affected files:
+   pregrid/grib.misc/rrpr.F
+
+ - Add Vtables for use with NCEP AVN and AFWA AGRMET data streams.
+
+   Affected files:
+   pregrib/grib.misc/Vtable.AGRMETSNOW, Vtable.AGRMETSOIL, Vtable.AGRMETSOIL2,
+                     Vtable.AVN3D, Vtable.AVNSNOW, Vtable.AVNSOIL,
+                     Vtable.AVNSST, Vtable.NAVYSST
+
+ - Add the capability of generating intermediate file for seaice fraction.
+   This is run separately from pregrid job.
+
+   Affected files:
+   pregrid/Makefile
+   pregrid/nise/Makefile, README, namelist.input
+   pregrid/nise/src/Makefile, module_namelist_stuff.F, module_nsidc.F,
+                    module_output_data.F, module_support.F, seaicefr.F
+
+ - Able to handle Mercator projection data as input to pregrid.
+
+   Affected files:
+   pregrid/grib.misc/datint.F, output.F, rd_grib.F, rrpr.F
+   pregrid/util/gribcode.F, pregrid_version.F
+
+regridder:
+
+ - Add new variables that will be needed when making use of the 
+   new NOAH LSM in the MM5 code.
+
+   Affected files:
+   regridder/src/module_constants.F, proc_ingest_first_guess.F, 
+                 proc_make_dot_point_data.F
+
+ - Add the rmax and vmax_ratio options for TC bogussing to the general
+   namelist. Add all TC bogus namelist options to the hidden namelist
+   (more parameters to edit). See regridder/Doc/README.namelist for
+   detail.
+
+   Affected files:
+   regridder/namelist.input
+   regridder/Doc/README.namelist
+   regridder/src/module_namelist_info.F, module_tc_bogus.F,
+                 proc_namelist.F
+   regridder/.hidden/namelist.input
+
+ - Add WEASD, SNOWH, SEAICEFR to land-sea masked interpolations.
+
+   Affected files:
+   regridder/src/proc_ingest_first_guess.F
+
+ - Allow older namelist.input files (v3.4 - without TC) to be used  with newer 
+   (v3.5 +) code.
+  
+   Affected files:
+   regridder/src/proc_namelist.F
+
+ - Change to keep ALLOCATED space rather than deallocate/allocate every
+   time, expect when input field size change.
+
+   Affected files:
+   regridder/src/proc_ingest_first_guess.F
+
+ - Remove ADJUSTL to make both reading root and constant file names work on IBM
+   for its xlf8.1 compiler. No effect on results otherwise.
+
+   Affected files:
+   regridder/src/proc_ingest_first_guess.F
+
+ - When running batch regrid deck on NCAR's computer, tar file is accessed
+   from disk first and then MSS.
+
+   Affected file:
+   ibm-regrid.deck
+
+========================================================
+
+Release-3-5:
+
+1. Bug fixes:
+
+- Fixed an error when using bi-linear interpolation 
+  (or linear_interpolation = .F.) across data boundary 
+  (such as for AVN data across Greenich or 0 longitude). 
+  (Thanks to Todd Hutchinson of WSI.)
+
+  Affected file:
+  regridder/src/module_horiz_interp.F
+   
+
+2. Changes and improvements:
+
+- Batch deck for NCAR IBM users. (A user may choose to run REGRID
+  interactively too by running pregrid and regridder separately.)
+
+- All get data decks for IBM are available under each data directory
+  (e.g. pregrid/nnrp/get_nnrp.deck.ibm), or in ~mesouser/MM5V3/Util/ 
+  directory on IBM. The decks are get_x.deck.ibm, where x = nnrp for
+  NCEP/NCAR Reanalysis, era for ECMWF reanalysis, on84 for old NCEP
+  global analysis, ncep for new NCEP global analysis in GRIB format,
+  and toga for ECMWF TOGA data.
+
+- Allows file names to have date stamps out to minutes or seconds, if 
+  the user requests a time interval (in seconds) that is not evenly
+  divisible into hours or minutes.
+
+- Change *.exe to ./*.exe in scripts.
+
+- Pregrid: Added the snow-propagation function to ncep.grib code.
+
+- Pregrid: Slight change to the iterative algorithm which computes 
+  temperature from virtual temperature for the ON84 GDAS data set. 
+  Stop if they don't converge.
+
+- Regridder: New map routines from Brent Shaw of FSL/NOAA.
+
+
+3. New in V3.5:
+
+- Regridder: Tropical cyclone bogussing procedure. TC added through
+  namelist.input. 
+
+- Regridder: Able to pass all 2D and 3D fields, for example, from
+  INTERPB program which may include microphysical fields.
+
+- Regridder: Able to process intermediate files produced by INTERPB
+  (FILE_MMOUTP*) to turn one MM5 grid to another.
+ 
+
+========================================================
+
+Release-3-4:
+
+1. Bug fixes and updates: 
+
+- Update the shell script to run pregrid. (Change in tar file since 6/7/00.)
+  The script allows combination of input datasets.
+
+  Affected file:
+  pregrid/pregrid.csh
+
+- Correct a problem in regridder when a domain center is in one side of dateline,
+  and the domain's lower left corner point is on the other side. 
+
+  Affected file:
+  regridder/src/module_first_guess_map.F
+
+- Correct parameter 'staggering' for field WEASD in small header.
+  It is a cross-point field. (Change in tar file since 3/8/00.)
+
+  Affected file:
+  regridder/src/proc_make_small_header.F
+
+- correct lines with more than 132 columns. (Change in tar file since 2/14/00.)
+
+  Affected files:
+  regridder/src/module_first_guess_map.F, proc_ingest_first_guess.F
+
+- update make rules for HP. (Change in tar file since 2/14/00.)
+
+  Affected file:
+  Makefile
+
+- Able to generate LSM data over (unresolved) islands better. Many input
+  datasets (such as NNRP, which is 2.5x 2.5 degree resolution) cannot 
+  resolve small islands, e.g. Islands of Hawaii. Special interpolation 
+  must therefore be carried out to generate appropriate data for thess 
+  islands. Previously the soil temperature was corrected twice over 
+  these islands, once in regridder, and once in MM5. This has been 
+  corrected since 7/18/00.
+
+  Soil temperature is now adjusted in regridder, based on the difference 
+  between the MM5 terrain and terrain of the incoming data. Since 
+  the adjustment is done in regridder, SOIL HEIGHT is no longer needed 
+  in the subsequent program, MM5, therefore it is removed from REGRID output.
+
+
+2. Changes and improvements
+
+- Simplify the way make is done. Now one needs only to type 'make'
+  to compile on one's machine. (Change in tar file since 6/7/00.)
+
+  Affected files:
+  All Makefile
+  macros_pregrid, macros_regridder (new)
+
+- add a note of data availability period in the deck, and a check 
+  to exit the shell script if the dates requested are not available.
+  (Change in tar file since 4/1/00.)
+
+  Affected files:
+  pregrid/era/get_era.deck, get_era.csh
+
+- TOGA data option is added to Cray batch job deck. A user may use
+  get_toga.deck to get TOGA data similar to the usage of decks like
+  get_nnrp.deck, and get_on84.deck.
+
+  Affected files:
+  regrid.deck
+  pregrid/toga/get_toga.csh, get_toga.deck
+
+- Pregrid is now able to handle thinned grid (a form of GRIB data) in
+  a single tile. An example of such dataset is WAFS. When the domain
+  crosses tiles, one needs to merge the data before running regridder
+  by running a utility program, build_mosaic, in pregrid/util directory.
+  (Thanks in part to Oren Duer of the Hebrew University of Jerusalem, Israel.)
+
+  Affected file:
+  pregrid/grib.misc/rd_grib.F
+  pregrid/util/Makefile, build_mosaic.F
+
+- Distinguish real SST and skin temperature. The difference between the
+  definitions of the two temperature and how they are used in MM5 system 
+  are described in pregrid/Doc/html/sst_note.html.
+
+  In release-3-4, MM5 model will allow SST to be updated during a model
+  integration. This capability requires true SST. Hence we start to make
+  distinction in pre-processing programs between SST and skin temp. Skin
+  temperature may be used in MM5 as 'SST', but it cannot be used to update
+  SST in MM5. Therefore if you are inputing your own dataset to pregrid,
+  you must be aware what SST you are getting.
+
+  Based on our knowledge and judgement, we have changed the SST for the
+  following datasets to SKINTEMP in corresponding Vtables in pregrid: 
+  NNRP, AWIP, TOGA and ERA. 
+
+  Affected files:
+  pregrid/grib.misc/Vtable.AWIPSST, Vtable.ERASST, Vtable.NNRPSST, Vtable.TOGASST
+
+  The regridder program will take either SST or SKINTEMP as one of the 
+  required field.
+
+- Add capability to generate surface data if the input data do not contain them.
+  Previously when this happens, regridder simply fill the surface data arrays with
+  1000 mb data. Now regridder will use surrounding pressure level data to
+  interpolate to the surface. This will provide a much better first guess fields
+  for objective analysis programs (Rawins and Little_r).
+
+- Change the constant of acceleration due to gravity to be consistent
+  throughout the MM5 modeling system (from 9.8 to 9.81).
+
+  Affected file:
+  src/module_diags.F
+
+
+========================================
+
+Updated 2/11/00: (Release-3-3)
+
+pregrid:
+
+- Added capability to handle input data in Mercator projection.
+
+- A new storage.F routine in pregrid/ncep.grib directory. This
+  new routine works better on machines where the old routine
+  might encounter difficulty.
+
+- Adapt to Sun's compiler so that it can read the namelist file
+  on a Sun. 
+
+- Other minor changes.
+
+regridder:
+
+- Correct errors in interpolation using Lambert-Conformal projection
+  cross dateline, and in the southern hemisphere.
+
+- Allow input data with Mercator projection.
+
+- Clean up memory allocation/deallocation, constant initialization for
+  speculative machines.
+ 
+- Allow choice of linear or quadratic horizontal interpolation of 
+  fields.
+
+- Option to change the water to land use category for permanent ice if
+  the SST is colder than a given threshold. If the sea ice field exists,
+  this is set to 1 at that location.  Please see an example in 
+  Doc/README.namelist.
+
+- Masked interpolations have been modified.  The soil moisture will
+  not use values larger than 0.5.  The soil temperature uses a 
+  combination of the TEMPGRD (if it exists) and the latitude to
+  determine missing values (such as over small islands).
+
+- The SNOWCOVR field can be computed from the SNODEPTH field.
+
+- A constant file is provided in the namelist to allow users to
+  have a single time of a field that is not reported frequently
+  (such as snow cover or SST) used throughout the analysis.
+
+
+========================================================
+
+Updated 9/24/99:
+
+pregrid:
+
+- Allow simple interpolation of missing-level data in vertical.
+
+regridder:
+
+- Allows constant snow/sst fields
+
+  This will allow one-time level SST and/or snow cover available
+  for regridder to process for the rest of time levels. For 
+  details how to do so, please see Doc/README.namelist
+
+- Fixes rotated winds from Eta
+
+  This is an error correction for Eta model data. Wind direction
+  was in error and error would increase from the central longitude
+  of the original projection.
+
+- Allows combination of data sources
+
+  This allows the capability to use 3D analyses from one data source
+  (such as NCEP's ON84) and soil temperature/moisture data from 
+  another (such as NNRP). To do this, place the primary dataset 
+  first in the namelist after 'root'. For example, if one is trying
+  to combine ON84 and NNRP data, define root as:
+
+&record3
+ root                            = '../pregrid/ON84' , '../pregrid/FILE'
+
+- Missing soil temps (islands) based on TEMPGRD
+
+  Regridder now fills the soil temperature over small islands (which
+  the coarse input data from global analysis doesn't resolve) with the
+  annual mean deep soil temperature from Terrain.
+

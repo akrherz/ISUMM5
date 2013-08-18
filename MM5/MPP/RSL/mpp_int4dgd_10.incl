@@ -1,0 +1,11 @@
+C 
+C BEGIN mpp_int4dgd_10.incl
+C
+C          + *
+C          + +
+C
+C pso        x
+C
+      call rsl_exch_stencil( domains(in), sten_fdda_0(in) )
+C END mpp_int4dgd_10.incl
+C

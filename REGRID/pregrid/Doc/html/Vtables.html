@@ -1,0 +1,197 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; OSF1 V4.0 alpha) [Netscape]">
+<style type="text/css">
+      body {color: black;
+            font-family: "times"; 
+            font-weight: normal;
+            background: #CCCFFF}
+      div.code {color: #FF0000;
+              font-family: "courier";
+              font-size: small;
+              background: #FFFFFF; 
+              border: solid black; border-width: 1}
+    </style>
+</head>
+<body text="#000000" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<h1>
+Vtables</h1>
+The Vtables are the means by which the standard <i>pregrid</i> programs
+are told which fields to extract from the analysis files. Tables like these
+are expedient, because the archives tend to label fields by code numbers,
+and different archives frequently use different code numbers.&nbsp; The
+Vtables also allow users to request that additional fields be extracted
+from the archives, without having to modify the <i>pregrid</i> programs
+themselves. The Vtable files have a fairly strictly defined format:
+<ul>
+<li>
+Any lines before the first line beginning with "-" are ignored.</li>
+
+<li>
+All lines after the first line beginning with "-", and up to the next line
+beginning with "-", are interpreted.</li>
+
+<li>
+Any subsequent lines after the next line beginning with '-' are ignored,
+until the next line beginning with '-' is hit, and then the following lines
+are interpreted.&nbsp; This pattern continues until the end of the file.</li>
+
+<li>
+Any lines beginning with "#" are ignored.&nbsp; This allows for comments.</li>
+
+<ul>
+<li>
+A corollary to the above points is that multiple Vtables, each with its
+own header lines, can be combined via the UNIX "cat" command and the result
+is still a valid Vtable format.</li>
+</ul>
+</ul>
+
+<p><br>For each line to be interpreted, there are the following fields,
+separated by "|" (vertical bar, not an exclamation point):
+<ul>
+<li>
+A code number associated with the variable to extract</li>
+
+<li>
+A level code number associated with the type of level to extract. This
+generally refers to pressure levels, surface, or ground.</li>
+
+<li>
+A "Level 1" value, denoting which level to extract (* indicates all levels
+of the type of level described by the level code).</li>
+
+<li>
+A "Level 2" value, needed for those fields which represent averages or
+sums over more than one level.</li>
+
+<li>
+REGRID Name, up to nine characters, which is what the field will be called
+in the regridder output, and in subsequent programs of the MM5 system.</li>
+
+<li>
+REGRID Units, a string of up to 25 characters which describes the units
+of the field.&nbsp; This is a description of the units as used in the archives.&nbsp;
+Do not try to change the units of a field by changing the REGRID Units
+string.</li>
+
+<li>
+REGRID Description, up to 46 characters describing the field.</li>
+</ul>
+
+<p><br>Example:
+<div class="code">GRIB | Level| Level| Level| REGRID&nbsp;&nbsp; |&nbsp;
+REGRID&nbsp; | REGRID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>Code | Code |&nbsp;&nbsp; 1&nbsp; |&nbsp;&nbsp; 2&nbsp; | Name&nbsp;&nbsp;&nbsp;&nbsp;
+|&nbsp; Units&nbsp;&nbsp; | Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>-----+------+------+------+----------+----------+------------------------------+
+<br>&nbsp;11&nbsp; | 100&nbsp; |&nbsp;&nbsp; *&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| Temperature&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>&nbsp;33&nbsp; | 100&nbsp; |&nbsp;&nbsp; *&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| U&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | m s{-1}&nbsp; | U&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>&nbsp;34&nbsp; | 100&nbsp; |&nbsp;&nbsp; *&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| V&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | m s{-1}&nbsp; | V&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>&nbsp;52&nbsp; | 100&nbsp; |&nbsp;&nbsp; *&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| RH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | %&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| Relative Humidity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>&nbsp; 7&nbsp; | 100&nbsp; |&nbsp;&nbsp; *&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| HGT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | m&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| Height&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>&nbsp;11&nbsp; | 105&nbsp; |&nbsp;&nbsp; 2&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| Temperature at 2 m&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>&nbsp;33&nbsp; | 105&nbsp; |&nbsp; 10&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| U&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | m s{-1}&nbsp; | U at 10
+m&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>&nbsp;34&nbsp; | 105&nbsp; |&nbsp; 10&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| V&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | m s{-1}&nbsp; | V at 10
+m&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>&nbsp;52&nbsp; | 105&nbsp; |&nbsp;&nbsp; 2&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| RH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | %&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| Relative Humidity at 2 m&nbsp;&nbsp;&nbsp;&nbsp; |
+<br>&nbsp;2&nbsp;&nbsp; | 102&nbsp; |&nbsp;&nbsp; 0&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| PMSL&nbsp;&nbsp;&nbsp;&nbsp; | Pa&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| Sea-level Pressure&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>-----+------+------+------+----------+----------+------------------------------+</div>
+
+<p><br>There are a few subtleties built into the Vtable usage:
+<ul>
+<li>
+If the REGRID Description field is left blank,<i> pregrid</i> will read
+the named field from the archives, but will not write it to the final output
+(for input to <i>regridder</i>).</li>
+</ul>
+
+<ul>
+<li>
+Certain fields may be computed "on the fly", with fields that have already
+been read.</li>
+</ul>
+
+<ul>A certain situation often occurs with humidity variables.&nbsp; The
+MM5 preprocessors use relative humidity, yet the archives may specify specific
+humidity, mixing ratio, dewpoint, or other humidity variables.&nbsp; So
+the <i>pregrid</i> program has to compute relative humidity given the fields
+available to it.&nbsp; The Vtable must include an entry for relative humidity,
+or the <i>pregrid</i> program will not write out a relative humidity field.&nbsp;
+But this Vtable entry should not have a "GRIB code" field.&nbsp; The Vtable
+must also include an entry for the alternate humidity variable, or the
+pregrid program will not read that variable, and so will not be able to
+compute relative humidity.&nbsp; So this entry would not include a "REGRID
+Description" field.&nbsp; The Vtable might then include the lines:</ul>
+
+<div class="code">&nbsp;52&nbsp; | 100&nbsp; |&nbsp;&nbsp; *&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| SPECHUMD | kg kg{-1}|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>&nbsp;&nbsp;&nbsp;&nbsp; | 100&nbsp; |&nbsp;&nbsp; *&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| RH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | %&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| Relative Humidity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|</div>
+
+<br>&nbsp;
+<blockquote>Fields which may be computed with <i>pregrid</i> are:
+<ul>
+<li>
+Relative humidity, from specific humidity, pressure, and temperature.</li>
+
+<li>
+Relative humidity, from dewpoint, pressure, and temperature</li>
+
+<li>
+Relative humidity,</li>
+
+<li>
+Height (m), from geopotential (gpm)</li>
+</ul>
+</blockquote>
+
+<blockquote>This list may grow as users encounter various situations in
+which a computed field is necessary.</blockquote>
+
+<p><br>&nbsp; If you need to make your own Vtable, there are plenty of
+examples in the grib.misc directory.
+<br>
+<hr WIDTH="100%">
+<br><a href="Documentation_Home.html">Documentation HOME</a>
+<p>
+<!-- hhmts start -->
+Last modified: Tue Jun  6 13:54:27 MDT 2000
+<!-- hhmts end -->
+</p>
+</body>
+</html>

@@ -1,0 +1,9 @@
+CSTART   mpp_setupgd_10.incl
+      GLEN(1)=IL
+      GLEN(2)=JL
+      GLEN(3)=MKX
+      LLEN(1)=MIX
+      LLEN(2)=MJX
+      LLEN(3)=MKX
+
+CEND   mpp_setupgd_10.incl

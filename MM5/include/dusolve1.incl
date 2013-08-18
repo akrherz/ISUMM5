@@ -1,0 +1,6 @@
+      REAL DUM1,DUM2,SCR1,SCR2,SCR3,SCR4,SCR5,SCR6                               DUSOLVE1.1
+      DIMENSION SCR1(MIX,MKX),SCR2(MIX,MKX),SCR3(MIX,MKX),SCR4(MIX,MKX),         DUSOLVE1.2
+     1         SCR5(MIX,MKX),SCR6(MIX,MKX),DUM1(MIX),    DUM2(MIX)               DUSOLVE1.3
+      REAL XMUT,XMUU,XNUT,XNUU                                                   DUSOLVE1.4
+      COMMON /ASSEL/ XMUT(MIX,MJX,MAXNES),XNUT(MIX,MJX,MAXNES),                  DUSOLVE1.5
+     1               XMUU(MIX,MJX,MAXNES),XNUU(MIX,MJX,MAXNES)                   DUSOLVE1.6

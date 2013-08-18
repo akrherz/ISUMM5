@@ -1,0 +1,4 @@
+foreach f ( *.incl )
+  $1 -c1-72 $f > $f.tmp
+  /bin/mv $f.tmp $f
+end

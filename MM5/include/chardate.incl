@@ -1,0 +1,2 @@
+      CHARACTER *19 CDATE                                                        CHARDATE.1
+      COMMON /CHARDATE/ CDATE                                                    CHARDATE.2

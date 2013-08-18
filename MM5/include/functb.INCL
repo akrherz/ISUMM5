@@ -1,0 +1,78 @@
+c                                                                       
+c Statement functions used for look-up tables                           
+c                                                                       
+c L2BVTS3 : Lamda**BVTS3 (lamda refers to (1/(rho*q))**0.25)            
+c L2BVTS2 : Lamda**BVTS2                                                
+c L2BVT3  : Lamda**BVT3                                                 
+c L2BVT2  : Lamda**BVT2                                                 
+c L2BVT   : Lamda**BVT                                                  
+c L2BVTS  : Lamda**BVTS                                                 
+c PRC20P33: PRC**0.333                                                  
+c PRE20P5 : PRE**0.5                                                    
+c NCICE   : number concentration for ice                                
+c T21P81  : T**1.81                                                     
+c T21P50  : T**1.50                                                     
+c LAMDAW  : Lamda over water                                            
+c LAMDAI  : Lamda over ice                                              
+c SATVPI  : saturation vapor pressure over ice                          
+c SATVPW  : saturation vapor pressure over water                        
+c NOSF    : factor of slop intercept for snow                           
+C NOSF0P25: 1/(NOSF**0.25)                                              
+C HETFRZ  : heteorogenous freezing of cloud droplets                    
+C XMI20P5 : XMI**0.5                                                    
+                                                                        
+# define L2BVTS3(SCR)   PBVTS3(INT(scale*SCR)) \
++(scale*SCR-FLOAT(INT(scale*SCR)))*(PBVTS3(INT(scale*SCR)+1)-PBVTS3(INT(scale*SCR)))
+
+# define L2BVTS2(SCR) PBVTS2(INT(scale*SCR)) \
++(scale*SCR-FLOAT(INT(scale*SCR)))*(PBVTS2(INT(scale*SCR)+1)-PBVTS2(INT(scale*SCR)))
+
+# define L2BVT3(SCR)  PBVT3(INT(scale*SCR)) \
++(scale*SCR-FLOAT(INT(scale*SCR)))*(PBVT3(INT(scale*SCR)+1)-PBVT3(INT(scale*SCR)))
+                                                                        
+# define L2BVT2(SCR)  PBVT2(INT(scale*SCR)) \
++(scale*SCR-FLOAT(INT(scale*SCR)))*(PBVT2(INT(scale*SCR)+1)-PBVT2(INT(scale*SCR)))
+                                                                        
+# define L2BVT(SCR)   PBVT(INT(scale*SCR)) \
++(scale*SCR-FLOAT(INT(scale*SCR)))*(PBVT(INT(scale*SCR)+1)-PBVT(INT(scale*SCR)))  
+                                                                        
+# define L2BVTS(SCR)  PBVTS(INT(scale*SCR))\
++(scale*SCR-FLOAT(INT(scale*SCR)))*(PBVTS(INT(scale*SCR)+1)-PBVTS(INT(scale*SCR)))
+                                                                        
+# define PRC20P33(SCR)RPRC(INT(1.E2*SCR))+(1.E2*SCR-FLOAT(INT(1.E2*SCR))) \
+*(RPRC(INT(1.E2*SCR)+1)-RPRC(INT(1.E2*SCR)))
+                       
+# define PRE20P5(SCR) RPRE(INT(1.E6*SCR))+(1.E6*SCR-FLOAT(INT(1.E6*SCR))) \
+*(RPRE(INT(1.E6*SCR)+1)-RPRE(INT(1.E6*SCR)))
+                       
+# define NCICE(SCR)   XNCTBL(INT(100.0*SCR)) \
++(100.0*SCR-FLOAT(INT(100.0*SCR)))*(XNCTBL(INT(100.0*SCR)+1)-XNCTBL(INT(100.0*SCR)))
+                                                                        
+# define T21P81(SCR)  HDT181(INT(10.0*SCR)) \
++(10.0*SCR-FLOAT(INT(10.0*SCR)))*(HDT181(INT(10.0*SCR)+1)-HDT181(INT(10.0*SCR)))
+
+# define T21P50(SCR)  HDT150(INT(10.0*SCR)) \
++(10.0*SCR-FLOAT(INT(10.0*SCR)))*(HDT150(INT(10.0*SCR)+1)-HDT150(INT(10.0*SCR)))
+
+# define LAMDAW(SCR)  (RLAMDA(INT(SCR))+(SCR-FLOAT(INT(SCR))) \
+*(RLAMDA(INT(SCR)+1)-RLAMDA(INT(SCR))))*PPICAL
+                       
+# define LAMDAI(SCR)  (RLAMDA(INT(SCR))+(SCR-FLOAT(INT(SCR))) \
+*(RLAMDA(INT(SCR)+1)-RLAMDA(INT(SCR))))*PPISCL
+                       
+# define SATVPI(SCR)  HDIES(INT(100.0*SCR)) \
++(100.0*SCR-FLOAT(INT(100.0*SCR)))*(HDIES(INT(100.0*SCR)+1)-HDIES(INT(100.0*SCR)))
+                                                                        
+# define SATVPW(SCR)  HDWES(INT(100.0*SCR)) \
++(100.0*SCR-FLOAT(INT(100.0*SCR)))*(HDWES(INT(100.0*SCR)+1)-HDWES(INT(100.0*SCR)))
+
+# define NOSFAC(SCR)  NOS(INT(SCR))+(SCR-FLOAT(INT(SCR)))*(NOS(INT(SCR)+1)-NOS(INT(SCR)))
+
+# define NOSF0P25(SCR) =NOS25(INT(1.E5*SCR)) \
++(1.0E5*SCR-FLOAT(INT(1.0E5*SCR)))*(NOS25(INT(1.0E5*SCR)+1)-NOS25(INT(1.0E5*SCR)))
+
+# define XMI20P5(SCR) RXMI(INT(1.0E12*SCR)) \
++(1.0E12*SCR-FLOAT(INT(1.0E12*SCR)))*(RXMI(INT(1.0E12*SCR)+1)-RXMI(INT(1.0E12*SCR)))
+
+# define HETFRZ(SCR)  HETF(INT(10.0*SCR))+(10.0*SCR-FLOAT(INT(10.0*SCR))) \
+*(HETF(INT(10.0*SCR)+1)-HETF(INT(10.0*SCR)))        

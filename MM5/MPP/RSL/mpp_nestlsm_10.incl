@@ -1,0 +1,238 @@
+C ./MPP/RSL/mpp_nestlsm_10.incl
+
+      ICOARS=NUMNC(NUMNES)
+      CALL MP_INITDOMAIN(ICOARS)
+
+      GLEN(3)=1
+      LLEN(3)=1
+
+C Fill xice_g
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,
+     +               xice,DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy, MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           xice_g(i,j) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill lmask_g
+      CALL RSL_WRITE(idummy,IO2D_IJ_INTERNAL,
+     +               lmask,DOMAINS(ICOARS),RSL_INTEGER,glen,llen)
+      CALL RSL_MON_BCAST (idummy, MIX_G*MJX_G*RWORDSIZE)
+
+      do i = 1, il-1
+         do j = 1, jl-1
+           lmask_g(i,j) = idummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill imask_g
+      CALL RSL_WRITE(idummy,IO2D_IJ_INTERNAL,
+     +               imask,DOMAINS(ICOARS),RSL_INTEGER,glen,llen)
+      CALL RSL_MON_BCAST (idummy, MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           imask_g(i,j) = idummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill cmca_g
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,
+     +               cmca,DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           cmca_g(i,j) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill cmcb_g
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,
+     +               cmcb,DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           cmcb_g(i,j) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill snoa_g
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,
+     +               snoa,DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           snoa_g(i,j) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill snob_g
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,
+     +               snob,DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           snob_g(i,j) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill snowha_g
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,
+     +               snowha,DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           snowha_g(i,j) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill snowhb_g
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,
+     +               snowhb,DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           snowhb_g(i,j) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill albedo_g
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,
+     +               albedo,DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           albedo_g(i,j) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill albmax_g
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,
+     +               albmax,DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           albmax_g(i,j) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill monthly background albedo albmon_g
+      do l=1,12
+
+      do i = 1, il-1
+         do j = 1, jl-1
+           dummy_l(i,j) = albmon(i,j,l)
+         enddo
+      enddo
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,dummy_l,
+     +               DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           albmon_g(i,j,l) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+      enddo
+
+C Fill global soil temperature and soil moisture arrays.
+      do l=1,mlx
+
+C Fill stca_g
+
+      do i = 1, il-1
+         do j = 1, jl-1
+           dummy_l(i,j) = stca(i,j,l)
+         enddo
+      enddo
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,dummy_l,
+     +               DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           stca_g(i,j,l) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill stcb_g
+      do i = 1, il-1
+         do j = 1, jl-1
+           dummy_l(i,j) = stcb(i,j,l)
+         enddo
+      enddo
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,dummy_l,
+     +               DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           stcb_g(i,j,l) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill smca_g
+      do i = 1, il-1
+         do j = 1, jl-1
+           dummy_l(i,j) = smca(i,j,l)
+         enddo
+      enddo
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,dummy_l,
+     +               DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           smca_g(i,j,l) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill smcb_g
+      do i = 1, il-1
+         do j = 1, jl-1
+           dummy_l(i,j) = smcb(i,j,l)
+         enddo
+      enddo
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,dummy_l,                       
+     +               DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           smcb_g(i,j,l) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill swca_g
+      do i = 1, il-1
+         do j = 1, jl-1
+           dummy_l(i,j) = swca(i,j,l)
+         enddo
+      enddo
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,dummy_l,
+     +               DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           swca_g(i,j,l) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+C Fill swcb_g
+      do i = 1, il-1
+         do j = 1, jl-1
+           dummy_l(i,j) = swcb(i,j,l)
+         enddo
+      enddo
+      CALL RSL_WRITE(dummy,IO2D_IJ_INTERNAL,dummy_l,                       
+     +               DOMAINS(ICOARS),RSL_REAL,glen,llen)
+      CALL RSL_MON_BCAST (dummy,MIX_G*MJX_G*RWORDSIZE)
+      do i = 1, il-1
+         do j = 1, jl-1
+           swcb_g(i,j,l) = dummy((I)+((J)-1)*IL)
+         enddo
+      enddo
+
+
+      enddo
+
+      CALL MP_INITDOMAIN(NUMNES)
+
+C end of ./MPP/RSL/mpp_nestlsm_10.incl

@@ -1,0 +1,1895 @@
+Index: Makefile
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Makefile,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+97c97
+< 	(cd MPP/RSL/RSL ; if [ "$(RUNTIME_SYSTEM)" = "alpha" ]  ; then $(MAKE) CC=$(MCC) $(MPP_TARGET) ; else $(MAKE) $(MPP_TARGET) ; fi )
+---
+> 	(cd MPP/RSL/RSL ; if [ "$(RUNTIME_SYSTEM)" = "alpha" ]  ; then $(MAKE) CC=$(MCC) $(MPP_TARGET) ; else if [ "$(RUNTIME_SYSTEM)" = "linux" ] ; then $(MAKE) LINUX_MPIHOME=$(LINUX_MPIHOME) $(MPP_TARGET) ; else $(MAKE) $(MPP_TARGET) ; fi ; fi  )
+Index: configure.user
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/configure.user,v
+retrieving revision 3.0
+retrieving revision 3.12
+diff -r3.0 -r3.12
+13a14
+> #   3f2. IBM, OpenMP (AIX)
+46c47,48
+< #          - -x omp is needed for f90 compiler version 3.1.0.0 and above
+---
+> #          - -x omp is needed for f90 compiler version 3.0.2.6 and above.
+> #          Check man page.
+92c94
+< ### OSU LSM option mp directives
+---
+> ### OSU LSM (ISOIL=2) option mp directives
+96c98
+< #FCFLAGS = -I$(LIBINCLUDE) $(ABI) $(IO) $(PREC) $(MP) $(OPT)
+---
+> #FCFLAGS = -I$(LIBINCLUDE) -D$(RUNTIME_SYSTEM) $(ABI) $(IO) $(PREC) $(MP) $(OPT)
+122c124
+< ###Burk-Thompson (IBLTYP=2) option mp directives
+---
+> ###Burk-Thompson (IBLTYP=3) option mp directives
+195a198,214
+> #    3f2. IBM (AIX)
+> #       - Depending on problem size and machine memory size, the settings
+> #         of maxstack and maxdata may need to be modified.
+> #       - If the newer thread-safe mass library is available, add
+> #         the -lmass_r option to LOCAL_LIBRARIES.
+> #-----------------------------------------------------------------------------
+> #RUNTIME_SYSTEM = "IBM"
+> #FC = xlf_r
+> #FCFLAGS = -I$(LIBINCLUDE) -O3 -qarch=auto -qmaxmem=-1 -qsmp=noauto -qnosave -qstrict
+> #CPP = /usr/lib/cpp
+> #CFLAGS =
+> #CPPFLAGS = -I$(LIBINCLUDE) -C -P -Drs6000
+> #LDOPTIONS = -qmaxmem=-1 -O3 -qarch=auto -bmaxstack:512000000 -bmaxdata:5120000
+> #LOCAL_LIBRARIES = -lxlsmp -lmass_r
+> #LOCAL_LIBRARIES = -lxlsmp
+> #MAKE = make -i
+> #-----------------------------------------------------------------------------
+304a324,328
+> #
+> # For general information and updated "helpdesk" information see
+> #    http://www.mmm.ucar.edu/mm5/mpp
+> #    http://www.mmm.ucar.edu/mm5/mpp/helpdesk
+> #
+367a392,395
+> #       - If the newer thread-safe mass library is available, add
+> #         the -lmass_r option to LOCAL_LIBRARIES.
+> #       - When MPP builds, it will use a copy of the file in MPP/RSL/Makefile.RSL.sp2
+> #         which invokes the -qstrict option for the exmois routines.
+376,378c404,406
+< #MFC = time mpxlf
+< #MCC = mpcc
+< #MLD = mpxlf
+---
+> #MFC = time mpxlf_r
+> #MCC = mpcc_r
+> #MLD = mpxlf_r
+381c409
+< ##LOCAL_LIBRARIES = -lmass
+---
+> ##LOCAL_LIBRARIES = -lmass_r
+424d451
+< #ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
+451d477
+< #ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
+478d503
+< #ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
+520d544
+< #ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
+547d570
+< #ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
+551,554c574,600
+< #                    You may need to edit value for LOCAL_LIBRARIES for MPICH
+< #                    on your machine.
+< #                    Set RUNTIME_SYSTEM to linux, (Section 2, above)
+< #         type 'make mpp'
+---
+> #
+> # The following information has been added to this file with MM5v3.2:
+> #
+> # This expects mpif77 and mpicc to be installed on your system in
+> # $(LINUX_MPIHOME)/bin .  These should be configured to use the Portland Group
+> # pgf77 (v3 or higher) and gcc, respectively.  For information on how to
+> # download, install, and configure mpich on your system, see:
+> # 
+> #   http://www.mcs.anl.gov/mpi/mpich
+> # 
+> # Information on Portland Group compiler: 
+> #
+> #   http://www.pgroup.com
+> #
+> # If using a different Fortran compiler, modify FCFLAGS and LDOPTIONS as
+> # needed.  The compiler should be capable of doing little- to big-endian
+> # conversion and it should understand integer (Cray-style) pointers.  It
+> # is recommended that the same fortran compiler be used to compile
+> # mpich.  Edit the LINUX_MPIHOME macro, below, to point to the top level mpich
+> # directory.  See also: 
+> #
+> #   http://www.mmm.ucar.edu/mm5/mpp/linuxhelp.html (by Steve Webb, NCAR/RAP)
+> #
+> # Note for pgf77 on RedHat Linux6: patches available from Portland Group at:
+> #
+> #   http://www.pgroup.com/downloads/rh6patches.html
+> #
+558,560c604,608
+< #MFC = pgf77
+< #MCC = gcc
+< #MLD = pgf77
+---
+> ## edit the following definition for your system
+> #LINUX_MPIHOME = /usr/local/mpich
+> #MFC = $(LINUX_MPIHOME)/bin/mpif77
+> #MCC = $(LINUX_MPIHOME)/bin/mpicc
+> #MLD = $(LINUX_MPIHOME)/bin/mpif77
+563c611
+< #LOCAL_LIBRARIES = -L/usr/local/mpi/lib/LINUX/ch_p4 -lfmpi -lmpi
+---
+> #LOCAL_LIBRARIES = -L$(LINUX_MPIHOME)/build/LINUX/ch_p4/lib -lfmpich -lmpich
+578d625
+< #ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
+Index: configure.user.linux
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/configure.user.linux,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+29a30,37
+> #        You may also need to unlimit stacksize by typing
+> #            limit stacksize unlimited
+> #        or
+> #            setenv MPSTKZ 8M
+> #        (or bigger.)
+> #
+> #        If your compiler supports both SGI and OpenMP parallel directives,
+> #           you need -Mnosgimp in your FCFLAGS. Otherwise remove it.
+36c44,45
+< #FCFLAGS = -I$(LIBINCLUDE) -O2 -Mcray=pointer -tp p6 -pc 32 -Mnoframe -byteswapio -mp
+---
+> #FCFLAGS = -I$(LIBINCLUDE) -O2 -Mcray=pointer -tp p6 -pc 32 -Mnoframe -byteswapio -mp \
+> #-Mnosgimp
+Index: Run/LANDUSE.TBL
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Run/LANDUSE.TBL,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+81c81
+< 23,     70.,   .95,   .95,    5.,    5.,   .62, 12.0e5,'Bare Ground Tundra'
+---
+> 23,     70.,   .95,   .95,    5.,    5.,    0., 12.0e5,'Bare Ground Tundra'
+Index: Templates/lparam
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/lparam,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+32d31
+<  IFOGMD = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ;fog module in the G-S PBL; No Fog = 0, Fog = 1
+Index: Templates/mm5.deck.cray
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.cray,v
+retrieving revision 3.1
+retrieving revision 3.3
+diff -r3.1 -r3.3
+107,108c107,108
+<   set In4DSfc  = ( $InName/RW4DDA_DOMAIN1 \
+<                    $InName/RW4DDA_DOMAIN2  )
+---
+>   set In4DSfc  = ( $InName/SFCFDDA_DOMAIN1 \
+>                    $InName/SFCFDDA_DOMAIN2  )
+417c417
+<        msread RW4DDA_DOMAIN$NUMFIL $i
+---
+>        msread SFCFDDA_DOMAIN$NUMFIL $i
+419c419
+<           assign -a RW4DDA_DOMAIN$NUMFIL -Ff77 $Option u:7$NUMFIL
+---
+>           assign -a SFCFDDA_DOMAIN$NUMFIL -Ff77 $Option u:7$NUMFIL
+Index: Templates/mm5.deck.cray-ia-bsh
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.cray-ia-bsh,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+15a16,18
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+Index: Templates/mm5.deck.dec
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.dec,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+15a16,18
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+Index: Templates/mm5.deck.decmpp
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.decmpp,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+15a16,18
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+Index: Templates/mm5.deck.hp
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.hp,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+15a16,18
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+Index: Templates/mm5.deck.hp-batch
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.hp-batch,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+105,106c105,106
+<   set In4DSfc  = ( $InName/RW4DDA_DOMAIN1 \
+<                    $InName/RW4DDA_DOMAIN2 )
+---
+>   set In4DSfc  = ( $InName/SFCFDDA_DOMAIN1 \
+>                    $InName/SFCFDDA_DOMAIN2 )
+423c423
+<        msread RW4DDA_DOMAIN$NUMFIL $i
+---
+>        msread SFCFDDA_DOMAIN$NUMFIL $i
+Index: Templates/mm5.deck.hp-mpp
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.hp-mpp,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+15a16,18
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+Index: Templates/mm5.deck.ibm
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.ibm,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+15a16,18
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+Index: Templates/mm5.deck.linuxPGF77
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.linuxPGF77,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+15a16,18
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+Index: Templates/mm5.deck.o2k
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.o2k,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+34a35,37
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+Index: Templates/mm5.deck.sgi
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.sgi,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+15a16,18
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+28a32,36
+> # Select appropriate FDDAsw if doing gridded analysis FDDA
+> #
+> #FDDAsw=yes                # gridded FDDA input switch
+> FDDAsw=no
+> #
+75a84,95
+> #       copy gridded FDDA files 
+> #
+> if [ $FDDAsw = yes ]; then
+>    echo "Copy grid fdda file"
+>    for i in MMINPUT_DOMAIN[1-9]
+>    do
+>      Num=`echo $i | grep [1-9]$ | sed 's/.*\(.\)/\1/'`
+>      cp $i MMINPUT2_DOMAIN$Num
+>      echo "cp $i MMINPUT2_DOMAIN$Num"
+>    done
+> fi
+> #
+Index: Templates/mm5.deck.sp2
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.sp2,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+15a16,18
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+80,84c83,84
+< ln ./mm5.mpp ./mm5.exe
+< echo $LOADL_PROCESSOR_LIST
+< date
+< echo "timex mm5.exe >! mm5.print.out "
+< timex mm5.exe > mm5.print.out 2>&1
+---
+> echo This version of mm5.deck stops after creating namelist file mmlif.
+> echo Please run code manually.
+Index: Templates/mm5.deck.sun
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.sun,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+15a16,18
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+Index: Templates/mm5.deck.vpp
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/mm5.deck.vpp,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+15a16,18
+> #  If it is gridded FDDA run with surface analysis nudging:
+> #      SFCFDDA_DOMAIN1[2,3,...]
+> #
+Index: Templates/oparam
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/Templates/oparam,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+16c16
+<     TAPFRQ = 60.,       ; how frequently to output model results (in minutes)
+---
+>     TAPFRQ = 180.,      ; how frequently to output model results (in minutes)
+Index: domain/boundary/bdyin.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/boundary/bdyin.F,v
+retrieving revision 3.0
+retrieving revision 3.3
+diff -r3.0 -r3.3
+37c37
+<       REAL SCR(MIX*MJX*NSPGD)                                                    BDYIN.37
+---
+>       REAL SCR(MIX*MJX*MKX*NSPGD)                                                24SEP99.1
+39,40c39
+< #define EQUATE(FIN,GI,GJ,GK,FOUT,LI,LJ,LK) MP_EQUATE(FIN,LI,LJ,LK,FOUT)          BDYIN.39
+<       REAL SCR(MAX(MIX,MIX_G)*MAX(MIX,MJX_G)*MAX(NSPGD,NSPGX))                   BDYIN.40
+---
+>       REAL SCR(MAX(MIX,MIX_G)*MAX(MIX,MJX_G)*MAX(NSPGD,NSPGX)*MKX)               24SEP99.2
+Index: domain/boundary/nudge.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/boundary/nudge.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+93a94,96
+> #ifdef MPP1                                                                      24SEP99.3
+>          IF ( FLIC_G2L_N(JWEST,MJX) .GT. 1 ) THEN                                24SEP99.4
+> #endif                                                                           24SEP99.5
+102a106,108
+> #ifdef MPP1                                                                      24SEP99.6
+>          END IF                                                                  24SEP99.7
+> #endif                                                                           24SEP99.8
+105a112,114
+> #ifdef MPP1                                                                      24SEP99.9
+>          IF ( FLIC_G2L_N(JEAST,MJX) .LT. MJX ) THEN                              24SEP99.10
+> #endif                                                                           24SEP99.11
+114a124,126
+> #ifdef MPP1                                                                      24SEP99.12
+>          END IF                                                                  24SEP99.13
+> #endif                                                                           24SEP99.14
+134a147,149
+> #ifdef MPP1                                                                      24SEP99.15
+>          IF ( FLIC_G2L_M(ISOUTH,MIX) .GT. 1 ) THEN                               24SEP99.16
+> #endif                                                                           24SEP99.17
+143a159,161
+> #ifdef MPP1                                                                      24SEP99.18
+>          END IF                                                                  24SEP99.19
+> #endif                                                                           24SEP99.20
+146a165,167
+> #ifdef MPP1                                                                      24SEP99.21
+>          IF ( FLIC_G2L_M(INORTH,MIX) .LT. MIX ) THEN                             24SEP99.22
+> #endif                                                                           24SEP99.23
+155a177,179
+> #ifdef MPP1                                                                      24SEP99.24
+>          END IF                                                                  24SEP99.25
+> #endif                                                                           24SEP99.26
+Index: domain/initial/Makefile
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/initial/Makefile,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+68c68
+< param.o: ../../include/parakcu.incl
+---
+> param.o: ../../include/parakcu.incl ../../include/landinp.incl
+Index: domain/initial/init.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/initial/init.F,v
+retrieving revision 3.0
+retrieving revision 3.3
+diff -r3.0 -r3.3
+569c569
+< C     FOR LSM SNOWC IS SET ACCORDING TO WEASD IN INPUT (SNOA > 0.1E-3)           INIT.569
+---
+> C     FOR LSM SNOWC IS SET ACCORDING TO WEASD IN INPUT (SNOA > 0.1 MM)           24SEP99.27
+740a741
+>                IF(TSLA(I,J,L).EQ.0.0)THEN                                        24SEP99.28
+744a746
+>                ENDIF                                                             24SEP99.29
+Index: domain/initial/param.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/initial/param.F,v
+retrieving revision 3.0
+retrieving revision 3.6
+diff -r3.0 -r3.6
+33a34
+> #     include <landinp.incl>                                                     24SEP99.30
+54c55
+<       INTEGER NN2,N,NN,NNL,IN,NV                                                 PARAM.54
+---
+>       INTEGER NN2,NN3,N,NN,NNL,IN,NV                                             24SEP99.31
+105c106
+<      &        IEVAP,IFOGMD,                                                      PARAM.105
+---
+>      &        IEVAP,IFOGMD,ISTLYR,ISMLYR,                                        24SEP99.32
+269,273d269
+< C     HYDPRE : WHETHER YOU WANT TO CONSIDER THE WATER-LOADING EFFECTS            PARAM.269
+< C              IN THE HYDROSTATIC EQUATION WHEN IMOIST=2.                        PARAM.270
+< C              = 0. ; NO                                                         PARAM.271
+< C              = 1. ; YES                                                        PARAM.272
+< C                                                                                PARAM.273
+486,487c482,485
+<       OPEN(11, FILE='MMINPUT_DOMAIN1',FORM='UNFORMATTED',                        PARAM.486
+<      &     STATUS='OLD')                                                         PARAM.487
+---
+>       IF (DM_IONODE()) THEN                                                      24SEP99.33
+>         OPEN(11, FILE='MMINPUT_DOMAIN1',FORM='UNFORMATTED',                      24SEP99.34
+>      &       STATUS='OLD')                                                       24SEP99.35
+>       ENDIF                                                                      24SEP99.36
+586a585,586
+>       PRINT459,PTOP*10.                                                          24SEP99.37
+> 459   FORMAT(1X,'PTOP = ',F10.3,' MB')                                           24SEP99.38
+600c600,602
+<       OPEN(19, FILE='LANDUSE.TBL',FORM='FORMATTED',STATUS='OLD')                 PARAM.600
+---
+>       IF (DM_IONODE()) THEN                                                      24SEP99.39
+>         OPEN(19, FILE='LANDUSE.TBL',FORM='FORMATTED',STATUS='OLD')               24SEP99.40
+>       ENDIF                                                                      24SEP99.41
+603d604
+<       PRINT *, 'INPUT LANDUSE = ',MMINLU                                         PARAM.603
+607d607
+<       LUMATCH=0                                                                  PARAM.607
+611,641c611,645
+<  1999 CONTINUE                                                                   PARAM.611
+<       READ (19,2000,END=2001)LUTYPE                                              PARAM.612
+<       READ (19,*)LUCATS,LUSEAS                                                   PARAM.613
+<  2000 FORMAT (A4)                                                                PARAM.614
+<       IF(LUTYPE.EQ.MMINLU)THEN                                                   PARAM.615
+<         LUN=LUCATS                                                               PARAM.616
+<         NSN=LUSEAS                                                               PARAM.617
+<           PRINT *, 'LANDUSE TYPE = ',LUTYPE,' FOUND',                            PARAM.618
+<      -           LUCATS,' CATEGORIES',LUSEAS,' SEASONS',                         PARAM.619
+<      -           ' WATER CATEGORY = ',ISWATER,                                   PARAM.620
+<      -           ' SNOW CATEGORY = ',ISICE                                       PARAM.621
+<         LUMATCH=1                                                                PARAM.622
+<       ENDIF                                                                      PARAM.623
+<       DO LS=1,LUSEAS                                                             PARAM.624
+<         READ (19,*)                                                              PARAM.625
+<         DO LC=1,LUCATS                                                           PARAM.626
+<           IF(LUTYPE.EQ.MMINLU)THEN                                               PARAM.627
+<             READ (19,*)LI,ALBD(LC,LS),SLMO(LC,LS),SFEM(LC,LS),                   PARAM.628
+<      +                 SFZ0(LC,LS),THERIN(LC,LS),SCFX(LC),SFHC(LC,LS)            PARAM.629
+<             IF(LC.NE.LI)STOP 'MISSING LANDUSE: UNIT 19'                          PARAM.630
+<           ELSE                                                                   PARAM.631
+<             READ (19,*)                                                          PARAM.632
+<           ENDIF                                                                  PARAM.633
+<         ENDDO                                                                    PARAM.634
+<       ENDDO                                                                      PARAM.635
+<       GOTO 1999                                                                  PARAM.636
+<  2001 CONTINUE                                                                   PARAM.637
+<       IF(LUMATCH.EQ.0)THEN                                                       PARAM.638
+<         PRINT *,'LANDUSE IN INPUT FILE DOES NOT MATCH LUTABLE'                   PARAM.639
+<         STOP 'INCONSISTENT OR MISSING LUTABLE FILE'                              PARAM.640
+<       ENDIF                                                                      PARAM.641
+---
+>       PRINT *, 'INPUT LANDUSE = ',MMINLU                                         24SEP99.42
+>       IF (DM_IONODE()) THEN                                                      24SEP99.43
+>         LUMATCH=0                                                                24SEP99.44
+>  1999   CONTINUE                                                                 24SEP99.45
+>         READ (19,2000,END=2001)LUTYPE                                            24SEP99.46
+>         READ (19,*)LUCATS,LUSEAS                                                 24SEP99.47
+>  2000   FORMAT (A4)                                                              24SEP99.48
+>         IF(LUTYPE.EQ.MMINLU)THEN                                                 24SEP99.49
+>           LUN=LUCATS                                                             24SEP99.50
+>           NSN=LUSEAS                                                             24SEP99.51
+>             PRINT *, 'LANDUSE TYPE = ',LUTYPE,' FOUND',                          24SEP99.52
+>      -             LUCATS,' CATEGORIES',LUSEAS,' SEASONS',                       24SEP99.53
+>      -             ' WATER CATEGORY = ',ISWATER,                                 24SEP99.54
+>      -             ' SNOW CATEGORY = ',ISICE                                     24SEP99.55
+>           LUMATCH=1                                                              24SEP99.56
+>         ENDIF                                                                    24SEP99.57
+>         DO LS=1,LUSEAS                                                           24SEP99.58
+>           READ (19,*)                                                            24SEP99.59
+>           DO LC=1,LUCATS                                                         24SEP99.60
+>             IF(LUTYPE.EQ.MMINLU)THEN                                             24SEP99.61
+>               READ (19,*)LI,ALBD(LC,LS),SLMO(LC,LS),SFEM(LC,LS),                 24SEP99.62
+>      +                   SFZ0(LC,LS),THERIN(LC,LS),SCFX(LC),SFHC(LC,LS)          24SEP99.63
+>               IF(LC.NE.LI)STOP 'MISSING LANDUSE: UNIT 19'                        24SEP99.64
+>             ELSE                                                                 24SEP99.65
+>               READ (19,*)                                                        24SEP99.66
+>             ENDIF                                                                24SEP99.67
+>           ENDDO                                                                  24SEP99.68
+>         ENDDO                                                                    24SEP99.69
+>         GOTO 1999                                                                24SEP99.70
+>  2001   CONTINUE                                                                 24SEP99.71
+>         IF(LUMATCH.EQ.0)THEN                                                     24SEP99.72
+>           PRINT *,'LANDUSE IN INPUT FILE DOES NOT MATCH LUTABLE'                 24SEP99.73
+>           STOP 'INCONSISTENT OR MISSING LUTABLE FILE'                            24SEP99.74
+>         ENDIF                                                                    24SEP99.75
+>       ENDIF                                                                      24SEP99.76
+735a740,748
+>       DO NN3=1,MLX                                                               24SEP99.77
+>         ISTLYR(NN3)=0                                                            24SEP99.78
+>         ISMLYR(NN3)=0                                                            24SEP99.79
+>       ENDDO                                                                      24SEP99.80
+>       ISTLYR(1)=10                                                               24SEP99.81
+>       ISTLYR(2)=200                                                              24SEP99.82
+>       ISTLYR(3)=400                                                              24SEP99.83
+>       ISMLYR(1)=10                                                               24SEP99.84
+>       ISMLYR(2)=200                                                              24SEP99.85
+1972a1986,1989
+>         DO NN3=1,MLX                                                             24SEP99.86
+>           IF(ISTLYR(NN3).GT.0)NSTL=NN3                                           24SEP99.87
+>           IF(ISMLYR(NN3).GT.0)NSML=NN3                                           24SEP99.88
+>         ENDDO                                                                    24SEP99.89
+Index: domain/io/Makefile
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/io/Makefile,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+135a136
+> rdinit.o: ../../include/soil.incl
+Index: domain/io/conmas.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/io/conmas.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+69c69
+<    30 FORMAT(11X,'AT TIME = ',F8.5,' H, TOTAL  AIR  = ',E12.5,' KG, ERR'         CONMAS.69
+---
+>    30 FORMAT(11X,'AT TIME = ',F10.3,' H, TOTAL AIR  = ',E12.5,' KG, ERR'         24SEP99.90
+Index: domain/io/outtap.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/io/outtap.F,v
+retrieving revision 3.1
+retrieving revision 3.9
+diff -r3.1 -r3.9
+47d46
+< #define EQUATE(FIN,LI,LJ,LK,FOUT,GI,GJ,GK) MP_EQUATE(FIN,LI,LJ,LK,FOUT)          OUTTAP.47
+96,98c95,96
+<             IF (NINT(BUFFRQ/TAPFRQ).NE.0 .AND.                                   OUTTAP.96
+<      *        MOD(NINT(XTIME/TAPFRQ),NINT(BUFFRQ/TAPFRQ+0.01)).EQ.1              OUTTAP.97
+<      *        ) THEN                                                             OUTTAP.98
+---
+>             IF (MOD(NINT(XTIME/TAPFRQ),NINT(BUFFRQ/TAPFRQ+0.01)).EQ.1            24SEP99.91
+>      *        .OR. (BUFFRQ.EQ.TAPFRQ .AND. XTIME.GT.0.)) THEN                    24SEP99.92
+240c238
+<       JBHI (3,11)=1                                                              OUTTAP.240
+---
+>       JBHI (3,11)=2                                                              24SEP99.93
+259c257
+<      *               //  'ERIOD. MO (MONTH)                       '              OUTTAP.259
+---
+>      *               //  '                                        '              24SEP99.94
+327c325
+<       JBHRC(1,12)='TIMAX:  SIMULATION END TIME (MINUTES)   '                     OUTTAP.327
+---
+>       JBHRC(1,12)='TIMAX:   SIMULATION END TIME (MINUTES)  '                     24SEP99.95
+364,365c362,363
+<       JBHRC(5,12)( 1:80)='BUFFRQ: TIME FREQUENCY USED TO SPLIT OUT'              OUTTAP.364
+<      *               //  'PUT FILES (MINUTES). IGNORED IF < TAPFRQ'              OUTTAP.365
+---
+>       JBHRC(5,12)( 1:80)='BUFFRQ:  TIME FREQ USED TO SPLIT OUTPUT '              24SEP99.96
+>      *               //  'FILES (MINUTES). IGNORED IF < TAPFRQ    '              24SEP99.97
+373,374c371,372
+<       JBHIC(1,13)='IFRAD: 0=NO RADIATIVE COOLING; 1=SIMPLE '                     OUTTAP.373
+<      *     //     'RADIATION; 2=CLOUD RADIATION; 3=CCM2    '                     OUTTAP.374
+---
+>       JBHIC(1,13)='IFRAD:   0=NO RADIATIVE COOLING; 1=SIMPL'                     24SEP99.98
+>      *     //     'E RADIATION; 2=CLOUD RADIATION; 3=CCM2  '                     24SEP99.99
+379,380c377,378
+<       JBHIC(2,13)='ICUPA: 1-7/NO/ANTHES-KUO/GRELL/ARAKAWA- '                     OUTTAP.379
+<      *     //     'SCHUBERT/F-C/KAIN-FRITSCH/BETTS-MILLER  '                     OUTTAP.380
+---
+>       JBHIC(2,13)='ICUPA:   1-7/NO/ANTHES-KUO/GRELL/ARAKAWA'                     24SEP99.100
+>      *     //     '-SCHUBERT/F-C/KAIN-FRITSCH/BETTS-MILLER '                     24SEP99.101
+385,386c383,384
+<       JBHIC(4,13)='IBLTYP: 0=FRICTIONLESS; 1=BULK PBL; 2=BL'                     OUTTAP.385
+<      *     //     'ACKADAR PBL;3=B-T;4=ETA M-Y;5=MRF;6=G-S '                     OUTTAP.386
+---
+>       JBHIC(4,13)='IBLTYP:  0=FRICTIONLESS; 1=BULK PBL; 2=B'                     24SEP99.102
+>      *     //     'LACKADAR PBL;3=B-T;4=ETA M-Y;5=MRF;6=G-S'                     24SEP99.103
+388,389c386,387
+<       JBHIC(5,13)='ISOIL:  =0,  BLACKADAR SLAB MODEL, =1, M'                     OUTTAP.388
+<      *     //     'ULTI-LAYER, =2, LAND-SURFACE SCHEME     '                     OUTTAP.389
+---
+>       JBHIC(5,13)='ISOIL:   0=BLACKADAR SLAB MODEL, 1=MULTI'                     24SEP99.104
+>      *     //     '-LAYER, 2=LAND-SURFACE SCHEME           '                     24SEP99.105
+391,392c389,390
+<       JBHIC(6,13)='ISHALLO:  1=SHALLOW CONVECTION SCHEME US'                     OUTTAP.391
+<      *     //     'ED; 0=SHALLOW CONVECTION SCHEME NOT USED'                     OUTTAP.392
+---
+>       JBHIC(6,13)='ISHALLO: 1=SHALLOW CONVECTION SCHEME USE'                     24SEP99.106
+>      *     //     'D; 0=SHALLOW CONVECTION SCHEME NOT USED '                     24SEP99.107
+403,404c401,402
+<       JBHIC(10,13)='ITHADV: =0, STANDARD, = 1, USING POTENTI'                    OUTTAP.403
+<      *     //      'AL TEMPERATURE IN TEMP ADVECTION        '                    OUTTAP.404
+---
+>       JBHIC(10,13)='ITHADV:  =0, STANDARD, = 1, USING POTENT'                    24SEP99.108
+>      *     //      'IAL TEMPERATURE IN TEMP ADVECTION       '                    24SEP99.109
+412,413c410,411
+<       JBHIC(13,13)='IFUPR:  1 = UPPER RADIATIVE BOUNDARY CON'                    OUTTAP.412
+<      *     //      'DITION USED;  0 = U.R.B.C. NOT USED     '                    OUTTAP.413
+---
+>       JBHIC(13,13)='IFUPR:   1= UPPER RADIATIVE BOUNDARY CON'                    24SEP99.110
+>      *     //      'DITION USED;  0= U.R.B.C. NOT USED      '                    24SEP99.111
+415,416c413,414
+<       JBHIC(14,13)='IFDRY:  1=FAKE DRY RUN;  2=NOT A FAKE DR'                    OUTTAP.415
+<      *      //     'Y RUN                                   '                    OUTTAP.416
+---
+>       JBHIC(14,13)='IFDRY:   1=FAKE DRY RUN;  2=NOT A FAKE D'                    24SEP99.112
+>      *      //     'RY RUN                                  '                    24SEP99.113
+418,419c416,417
+<       JBHIC(15,13)='IBOUDY: 0=FIXED 1=RELAX 2=TIME DEPDT 3=T'                    OUTTAP.418
+<      *      //     'IME/IO DEPDT 4=SPONGE                   '                    OUTTAP.419
+---
+>       JBHIC(15,13)='IBOUDY:  SPECIFIED 0=FIXED, 2=TIME DEPEN'                    24SEP99.114
+>      *      //     'DENT, 3=RELAXATION ZONE/IO DEPENDENT    '                    24SEP99.115
+451,452c449,450
+<       JBHIC(26,13)='IBMOIST:  1=BOUNDARY AND INITIAL WATER/I'                    OUTTAP.451
+<      *      //     'CE SPECIFIED; 0=NOT SPECIFIED           '                    OUTTAP.452
+---
+>       JBHIC(26,13)='IBMOIST: 1=BOUNDARY AND INITIAL WATER/IC'                    24SEP99.116
+>      *      //     'E SPECIFIED; 0=NOT SPECIFIED            '                    24SEP99.117
+466c464
+<       JBHIC(2,14)='IFEED: 0=ONE-WAY FDBCK; 1=MM4 FDBCK; 2=N'                     OUTTAP.466
+---
+>       JBHIC(2,14)='IFEED:   0=NO FB; 1=9-PT FB; 1-PT FD/2=N'                     24SEP99.118
+469c467
+<       JBHIC(3,14)='MAXMV:  MAXIMUM NUMBER OF MOVES ALLOWED '                     OUTTAP.469
+---
+>       JBHIC(3,14)='MAXMV:   MAXIMUM NUMBER OF MOVES ALLOWED'                     24SEP99.119
+475,476c473,474
+<       JBHIC(4,14)='IMOVE:  1=THIS DOMAIN MOVES;  0=THIS DOM'                     OUTTAP.475
+<      *   //       'AIN DOES NOT MOVE                       '                     OUTTAP.476
+---
+>       JBHIC(4,14)='IMOVE:   1=THIS DOMAIN MOVES;  0=THIS DO'                     24SEP99.120
+>      *   //       'MAIN DOES NOT MOVE                      '                     24SEP99.121
+502,503c500,501
+<       JBHRC(1,15)='ZZLND:  ROUGHNESS LENGTH (M) OVER LAND ('                     OUTTAP.502
+<      *     //     'WHEN ISFPAR=1)                          '                     OUTTAP.503
+---
+>       JBHRC(1,15)='ZZLND:   ROUGHNESS LENGTH (M) OVER LAND '                     24SEP99.122
+>      *     //     '(WHEN ISFPAR=1)                         '                     24SEP99.123
+505,506c503,504
+<       JBHRC(2,15)='ZZWTR:  ROUGHNESS LENGTH (M) OVER WATER '                     OUTTAP.505
+<      *     //     '(WHEN ISFPAR=1)                         '                     OUTTAP.506
+---
+>       JBHRC(2,15)='ZZWTR:   ROUGHNESS LENGTH (M) OVER WATER'                     24SEP99.124
+>      *     //     ' (WHEN ISFPAR=1)                        '                     24SEP99.125
+514,515c512,513
+<       JBHRC(5,15)='XMAVA:  MOISTURE AVAILABLITY OVER LAND A'                     OUTTAP.514
+<      *     //     'S A FRACTION OF 1 (WHEN ISFPAR=1)       '                     OUTTAP.515
+---
+>       JBHRC(5,15)='XMAVA:   MOISTURE AVAILABLITY OVER LAND '                     24SEP99.126
+>      *     //     'AS A FRACTION OF 1 (WHEN ISFPAR=1)      '                     24SEP99.127
+517c515
+<       JBHRC(6,15)='CONF:  CONDENSATION THRESHOLD           '                     OUTTAP.517
+---
+>       JBHRC(6,15)='CONF:    CONDENSATION THRESHOLD         '                     24SEP99.128
+615,616c613,614
+<       JBHI(15,16)=ISMOIS(NESCOU)                                                 OUTTAP.615
+<       JBHIC(15,16)='ISMOIS:  1=OBS NUDGING OF THE MIXING RAT'                    OUTTAP.616
+---
+>       JBHI(17,16)=ISMOIS(NESCOU)                                                 24SEP99.129
+>       JBHIC(17,16)='ISMOIS:  1=OBS NUDGING OF THE MIXING RAT'                    24SEP99.130
+618,619c616,617
+<       JBHR(16,16)=GIQ(NESCOU)                                                    OUTTAP.618
+<       JBHRC(16,16)='GIQ:  NUDGING COEFFICIENT FOR OBS NUDGIN'                    OUTTAP.619
+---
+>       JBHR(15,16)=GIQ(NESCOU)                                                    24SEP99.131
+>       JBHRC(15,16)='GIQ:  NUDGING COEFFICIENT FOR OBS NUDGIN'                    24SEP99.132
+621,622c619,620
+<       JBHR(17,16)=RINXY                                                          OUTTAP.621
+<       JBHRC(17,16)='RINXY:  OBS NUDGING RADIUS OF INFLUENCE '                    OUTTAP.622
+---
+>       JBHR(16,16)=RINXY                                                          24SEP99.133
+>       JBHRC(16,16)='RINXY:  OBS NUDGING RADIUS OF INFLUENCE '                    24SEP99.134
+624,625c622,623
+<       JBHR(18,16)=RINSIG                                                         OUTTAP.624
+<       JBHRC(18,16)='RINSIG:  OBS NUDGING RADIUS OF INFLUENCE'                    OUTTAP.625
+---
+>       JBHR(17,16)=RINSIG                                                         24SEP99.135
+>       JBHRC(17,16)='RINSIG:  OBS NUDGING RADIUS OF INFLUENCE'                    24SEP99.136
+627,628c625,626
+<       JBHR(19,16)=TWINDO                                                         OUTTAP.627
+<       JBHRC(19,16)='TWINDO:  OBS NUDGING HALF PERIOD (MINUTE'                    OUTTAP.628
+---
+>       JBHR(18,16)=TWINDO                                                         24SEP99.137
+>       JBHRC(18,16)='TWINDO:  OBS NUDGING HALF PERIOD (MINUTE'                    24SEP99.138
+630,631c628,629
+<       JBHI(16,16)=IONF                                                           OUTTAP.630
+<       JBHIC(16,16)='IONF:  FREQUENCY (COARSE-GRID TIMESTEPS)'                    OUTTAP.631
+---
+>       JBHI(18,16)=IONF                                                           24SEP99.139
+>       JBHIC(18,16)='IONF:  FREQUENCY (COARSE-GRID TIMESTEPS)'                    24SEP99.140
+633,634c631,632
+<       JBHI(17,16)=IDYNIN                                                         OUTTAP.633
+<       JBHIC(17,16)='IDYNIN: =1, USING RAMPING FUNCTION AT EN'                    OUTTAP.634
+---
+>       JBHI(19,16)=IDYNIN                                                         24SEP99.141
+>       JBHIC(19,16)='IDYNIN: =1, USING RAMPING FUNCTION AT EN'                    24SEP99.142
+636,637c634,635
+<       JBHR(20,16)=DTRAMP                                                         OUTTAP.636
+<       JBHRC(20,16)='DTRAMP: IF IDYNIN=1, RAMPING TIME IN MIN'                    OUTTAP.637
+---
+>       JBHR(19,16)=DTRAMP                                                         24SEP99.143
+>       JBHRC(19,16)='DTRAMP: IF IDYNIN=1, RAMPING TIME IN MIN'                    24SEP99.144
+772c770
+<          CALL EQUATE(TURKE,MIX,MJX,MKX,HDOTH,IL,JL,KL)                           OUTTAP.772
+---
+>          CALL EQUATO(TURKE,MIX,MJX,MKX,HDOTH,IL,JL,KL)                           24SEP99.145
+782c780
+<          CALL EQUATE(TKEA,MIX,MJX,MKX+1,HDOTH,IL,JL,KL+1)                        OUTTAP.782
+---
+>          CALL EQUATO(TKEA,MIX,MJX,MKX+1,HDOTH,IL,JL,KL+1)                        24SEP99.146
+795c793
+<          CALL EQUATE(RTTEN,MIX,MJX,MKX,HDOTH,IL,JL,KL)                           OUTTAP.795
+---
+>          CALL EQUATO(RTTEN,MIX,MJX,MKX,HDOTH,IL,JL,KL)                           24SEP99.147
+841c839
+<       CALL EQUATE(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 OUTTAP.841
+---
+>       CALL EQUATO(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 24SEP99.148
+852c850
+<       CALL EQUATE(TGA,MIX,MJX,1,HDOTH,IL,JL,1)                                   OUTTAP.852
+---
+>       CALL EQUATO(TGA,MIX,MJX,1,HDOTH,IL,JL,1)                                   24SEP99.149
+865c863
+<       CALL EQUATE(RAINC,MIX,MJX,1,HDOTH,IL,JL,1)                                 OUTTAP.865
+---
+>       CALL EQUATO(RAINC,MIX,MJX,1,HDOTH,IL,JL,1)                                 24SEP99.150
+873c871
+<       CALL EQUATE(RAINNC,MIX,MJX,1,HDOTH,IL,JL,1)                                OUTTAP.873
+---
+>       CALL EQUATO(RAINNC,MIX,MJX,1,HDOTH,IL,JL,1)                                24SEP99.151
+886c884
+<          CALL EQUATE(VISB(NESCOU,1,1),MIX,MJX,1,HDOTH,IL,JL,1)                   OUTTAP.886
+---
+>          CALL EQUATO(VISB(NESCOU,1,1),MIX,MJX,1,HDOTH,IL,JL,1)                   24SEP99.152
+893c891
+<          CALL EQUATE(FOGDEP(NESCOU,1,1),MIX,MJX,1,HDOTH,IL,JL,1)                 OUTTAP.893
+---
+>          CALL EQUATO(FOGDEP(NESCOU,1,1),MIX,MJX,1,HDOTH,IL,JL,1)                 24SEP99.153
+918c916
+<       CALL EQUATE(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 OUTTAP.918
+---
+>       CALL EQUATO(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 24SEP99.154
+930c928
+<       CALL EQUATE(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 OUTTAP.930
+---
+>       CALL EQUATO(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 24SEP99.155
+943c941
+<       CALL EQUATE(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 OUTTAP.943
+---
+>       CALL EQUATO(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 24SEP99.156
+950c948
+<       CALL EQUATE(F,MIX,MJX,1,HDOTH,IL,JL,1)                                     OUTTAP.950
+---
+>       CALL EQUATO(F,MIX,MJX,1,HDOTH,IL,JL,1)                                     24SEP99.157
+957c955
+<       CALL EQUATE(TMN,MIX,MJX,1,HDOTH,IL,JL,1)                                   OUTTAP.957
+---
+>       CALL EQUATO(TMN,MIX,MJX,1,HDOTH,IL,JL,1)                                   24SEP99.158
+964c962
+<       CALL EQUATE(XLAT,MIX,MJX,1,HDOTH,IL,JL,1)                                  OUTTAP.964
+---
+>       CALL EQUATO(XLAT,MIX,MJX,1,HDOTH,IL,JL,1)                                  24SEP99.159
+971c969
+<       CALL EQUATE(XLONG,MIX,MJX,1,HDOTH,IL,JL,1)                                 OUTTAP.971
+---
+>       CALL EQUATO(XLONG,MIX,MJX,1,HDOTH,IL,JL,1)                                 24SEP99.160
+978c976
+<       CALL EQUATE(SATBRT,MIX,MJX,1,HDOTH,IL,JL,1)                                OUTTAP.978
+---
+>       CALL EQUATO(SATBRT,MIX,MJX,1,HDOTH,IL,JL,1)                                24SEP99.161
+985c983
+<       CALL EQUATE(SNOWC,MIX,MJX,1,HDOTH,IL,JL,1)                                 OUTTAP.985
+---
+>       CALL EQUATO(SNOWC,MIX,MJX,1,HDOTH,IL,JL,1)                                 24SEP99.162
+990a989,995
+> C                                                                                24SEP99.163
+>       CALL EQUATO(TSS,MIX,MJX,1,HDOTH,IL,JL,1)                                   24SEP99.164
+>       CALL WRITE_FIELDREC( iutl,D2,nescou,HDOTH,XTIME,                           24SEP99.165
+>      +                     'TSEASFC ',CURRENT_DATE,                              24SEP99.166
+>      +                     'C','YX','K',                                         24SEP99.167
+>      +                     'SEA SURFACE TEMPERATURE',                            24SEP99.168
+>      +                     IX,JX,1,MIX,MJX,1 )                                   24SEP99.169
+1004c1009
+<       CALL EQUATE(PBL,MIX,MJX,1,HDOTH,IL,JL,1)                                   OUTTAP.1004
+---
+>       CALL EQUATO(PBL,MIX,MJX,1,HDOTH,IL,JL,1)                                   24SEP99.170
+1011c1016
+<       CALL EQUATE(REGIME,MIX,MJX,1,HDOTH,IL,JL,1)                                OUTTAP.1011
+---
+>       CALL EQUATO(REGIME,MIX,MJX,1,HDOTH,IL,JL,1)                                24SEP99.171
+1018c1023
+<       CALL EQUATE(HFX,MIX,MJX,1,HDOTH,IL,JL,1)                                   OUTTAP.1018
+---
+>       CALL EQUATO(HFX,MIX,MJX,1,HDOTH,IL,JL,1)                                   24SEP99.172
+1030c1035
+<       CALL EQUATE(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 OUTTAP.1030
+---
+>       CALL EQUATO(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 24SEP99.173
+1037c1042
+<       CALL EQUATE(UST,MIX,MJX,1,HDOTH,IL,JL,1)                                   OUTTAP.1037
+---
+>       CALL EQUATO(UST,MIX,MJX,1,HDOTH,IL,JL,1)                                   24SEP99.174
+1049c1054
+<       CALL EQUATE(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 OUTTAP.1049
+---
+>       CALL EQUATO(HSCRL,MIX,MJX,1,HDOTH,IL,JL,1)                                 24SEP99.175
+1056c1061
+<       CALL EQUATE(GLW,MIX,MJX,1,HDOTH,IL,JL,1)                                   OUTTAP.1056
+---
+>       CALL EQUATO(GLW,MIX,MJX,1,HDOTH,IL,JL,1)                                   24SEP99.176
+1065c1070,1075
+<            CALL EQUATE(TSLA(1,1,L),MIX,MJX,1,HDOTH,IL,JL,1)                      OUTTAP.1065
+---
+> #ifndef MPP1                                                                     24SEP99.177
+>            CALL EQUATO(TSLA(1,1,L),MIX,MJX,1,HDOTH,IL,JL,1)                      24SEP99.178
+> #else                                                                            24SEP99.179
+>            CALL EQUATO(TSLA(NOFLIC(1),NOFLIC(1),L),                              24SEP99.180
+>      +                 MIX,MJX,1,HDOTH,IL,JL,1)                                  24SEP99.181
+> #endif                                                                           24SEP99.182
+1080c1090,1095
+<            CALL EQUATE(STCA(1,1,L),MIX,MJX,1,HDOTH,IL,JL,1)                      OUTTAP.1080
+---
+> #ifndef MPP1                                                                     24SEP99.183
+>            CALL EQUATO(STCA(1,1,L),MIX,MJX,1,HDOTH,IL,JL,1)                      24SEP99.184
+> #else                                                                            24SEP99.185
+>            CALL EQUATO(STCA(NOFLIC(1),NOFLIC(1),L),                              24SEP99.186
+>      +                 MIX,MJX,1,HDOTH,IL,JL,1)                                  24SEP99.187
+> #endif                                                                           24SEP99.188
+1092c1107,1112
+<            CALL EQUATE(SMCA(1,1,L),MIX,MJX,1,HDOTH,IL,JL,1)                      OUTTAP.1092
+---
+> #ifndef MPP1                                                                     24SEP99.189
+>            CALL EQUATO(SMCA(1,1,L),MIX,MJX,1,HDOTH,IL,JL,1)                      24SEP99.190
+> #else                                                                            24SEP99.191
+>            CALL EQUATO(SMCA(NOFLIC(1),NOFLIC(1),L),                              24SEP99.192
+>      +                 MIX,MJX,1,HDOTH,IL,JL,1)                                  24SEP99.193
+> #endif                                                                           24SEP99.194
+1106c1126
+<         CALL EQUATE(CMCA,MIX,MJX,1,HDOTH,IL,JL,1)                                OUTTAP.1106
+---
+>         CALL EQUATO(CMCA,MIX,MJX,1,HDOTH,IL,JL,1)                                24SEP99.195
+1113c1133
+<         CALL EQUATE(SNOA,MIX,MJX,1,HDOTH,IL,JL,1)                                OUTTAP.1113
+---
+>         CALL EQUATO(SNOA,MIX,MJX,1,HDOTH,IL,JL,1)                                24SEP99.196
+1118a1139,1145
+> C                                                                                24SEP99.197
+>         CALL EQUATO(XICE,MIX,MJX,1,HDOTH,IL,JL,1)                                24SEP99.198
+>         CALL WRITE_FIELDREC( iutl,D2,nescou,HDOTH,XTIME,                         24SEP99.199
+>      +                       'SEAICE  ',CURRENT_DATE,                            24SEP99.200
+>      +                       'C','YX','(DIMENSIONLESS)',                         24SEP99.201
+>      +                       'SEA ICE FLAG',                                     24SEP99.202
+>      +                       IX,JX,1,MIX,MJX,1 )                                 24SEP99.203
+1120c1147
+<         CALL EQUATE(SSROFF,MIX,MJX,1,HDOTH,IL,JL,1)                              OUTTAP.1120
+---
+>         CALL EQUATO(SSROFF,MIX,MJX,1,HDOTH,IL,JL,1)                              24SEP99.204
+1127c1154
+<         CALL EQUATE(BGROFF,MIX,MJX,1,HDOTH,IL,JL,1)                              OUTTAP.1127
+---
+>         CALL EQUATO(BGROFF,MIX,MJX,1,HDOTH,IL,JL,1)                              24SEP99.205
+1138c1165
+<         CALL EQUATE(ALBD,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                          OUTTAP.1138
+---
+>         CALL EQUATO(ALBD,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                          24SEP99.206
+1145c1172
+<         CALL EQUATE(SLMO,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                          OUTTAP.1145
+---
+>         CALL EQUATO(SLMO,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                          24SEP99.207
+1152c1179
+<         CALL EQUATE(SFEM,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                          OUTTAP.1152
+---
+>         CALL EQUATO(SFEM,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                          24SEP99.208
+1159c1186
+<         CALL EQUATE(SFZ0,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                          OUTTAP.1159
+---
+>         CALL EQUATO(SFZ0,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                          24SEP99.209
+1166c1193
+<         CALL EQUATE(THERIN,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                        OUTTAP.1166
+---
+>         CALL EQUATO(THERIN,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                        24SEP99.210
+1173c1200
+<         CALL EQUATE(SFHC,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                          OUTTAP.1173
+---
+>         CALL EQUATO(SFHC,NLU,NSEAS,1,HDOTH,LUN,NSEAS,1)                          24SEP99.211
+1180c1207
+<         CALL EQUATE(SCFX,NLU,1,1,HDOTH,LUN,1,1)                                  OUTTAP.1180
+---
+>         CALL EQUATO(SCFX,NLU,1,1,HDOTH,LUN,1,1)                                  24SEP99.212
+1189c1216
+<       CALL EQUATE(A,MKX,1,1,HDOTH,KL,1,1)                                        OUTTAP.1189
+---
+>       CALL EQUATO(A,MKX,1,1,HDOTH,KL,1,1)                                        24SEP99.213
+1208,1209c1235,1236
+<          IF (NINT(BUFFRQ/TAPFRQ).NE.0 .AND.                                      OUTTAP.1208
+<      *      MOD(NINT(XTIME/TAPFRQ),NINT(BUFFRQ/TAPFRQ+0.01)).EQ.0) THEN          OUTTAP.1209
+---
+>          IF (MOD(NINT(XTIME/TAPFRQ),NINT(BUFFRQ/TAPFRQ+0.01)).EQ.0               24SEP99.214
+>      *       .OR. (BUFFRQ.EQ.TAPFRQ .AND. XTIME.GT.0.)) THEN                     24SEP99.215
+Index: domain/io/rdinit.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/io/rdinit.F,v
+retrieving revision 3.0
+retrieving revision 3.10
+diff -r3.0 -r3.10
+5d4
+< C         FOR THE MODEL, DATA IS EITHER HYDROSTATIC OR NON-HYDROSTATIC           RDINIT.5
+23a23,24
+> #     include <soil.incl>                                                        24SEP99.216
+> #     include <landinp.incl>                                                     24SEP99.217
+25,27d25
+< #ifdef MPP1                                                                      RDINIT.25
+< #define EQUATE(FIN,GI,GJ,GK,FOUT,LI,LJ,LK) MP_EQUATE(FIN,LI,LJ,LK,FOUT)          RDINIT.26
+< #endif                                                                           RDINIT.27
+53a52,57
+>       REAL SOILM,SOILT                                                           24SEP99.218
+>       DIMENSION SOILT(MIXL,MJXL,MLX),SOILM(MIXL,MJXL,MLX)                        24SEP99.219
+>       REAL SOILHGT                                                               24SEP99.220
+>       DIMENSION SOILHGT(MIXL,MJXL)                                               24SEP99.221
+>       REAL SMLEV,STLEV                                                           24SEP99.222
+>       DIMENSION STLEV(MLX),SMLEV(MLX)                                            24SEP99.223
+55c59
+<      -        FNDSOILT,FNDSOILM                                                  RDINIT.55
+---
+>      -        FNDSOILT(MLX),FNDSOILM(MLX),FNDLSMT,FNDLSMM                        24SEP99.224
+60d63
+< #     include <landinp.incl>                                                     RDINIT.60
+93,94c96,103
+<         FNDSOILT=.FALSE.                                                         RDINIT.93
+<         FNDSOILM=.FALSE.                                                         RDINIT.94
+---
+>         DO NL=1,NSTL                                                             24SEP99.225
+>           FNDSOILT(NL)=.FALSE.                                                   24SEP99.226
+>         ENDDO                                                                    24SEP99.227
+>         DO NL=1,NSML                                                             24SEP99.228
+>           FNDSOILM(NL)=.FALSE.                                                   24SEP99.229
+>         ENDDO                                                                    24SEP99.230
+>         FNDLSMT=.FALSE.                                                          24SEP99.231
+>         FNDLSMM=.FALSE.                                                          24SEP99.232
+267a277,278
+>         ELSE IF(NAME8.EQ.'TSEASFC ')THEN                                         24SEP99.233
+>           CALL EQUATE(HDOTH,IX,JX,1,TSS,MIX,MJX,1)                               24SEP99.234
+283c294
+<         ELSE IF(NAME8.EQ.'WEASD   '                                              RDINIT.283
+---
+>         ELSE IF((NAME8.EQ.'WEASD   ' .OR. NAME8.EQ.'SNODPTH ')                   24SEP99.235
+290c301,302
+<              IF(SNOA(I,J).GT.0.1E-3)THEN                                         RDINIT.290
+---
+> C   SET SNOWC TO 1 FOR SNOA > 1.0 MM                                             24SEP99.236
+>              IF(SNOA(I,J).GT.1.0)THEN                                            24SEP99.237
+296a309,312
+>         ELSE IF(NAME8.EQ.'CANOPYM '                                              24SEP99.238
+>      -          .AND.MIXL.GT.1)THEN                                              24SEP99.239
+>           CALL EQUATE(HDOTH,IX,JX,1,CMCA,MIXL,MJXL,1)                            24SEP99.240
+>           CALL EQUATE(HDOTH,IX,JX,1,CMCB,MIXL,MJXL,1)                            24SEP99.241
+339c355
+<             FNDSOILT=.TRUE.                                                      RDINIT.339
+---
+>             FNDSOILT(ILEV)=.TRUE.                                                24SEP99.242
+352c368
+<             FNDSOILM=.TRUE.                                                      RDINIT.352
+---
+>             FNDSOILM(ILEV)=.TRUE.                                                24SEP99.243
+356a373,400
+>         ELSE IF(NAME6.EQ.'SOIL T'                                                24SEP99.244
+>      -          .AND.MIXL.GT.1)THEN                                              24SEP99.245
+>           READ(NAME(7:8),'(I2)')ILEV                                             24SEP99.246
+>           FNDLSMT=.TRUE.                                                         24SEP99.247
+>           IF(ILEV.GT.MLX)THEN                                                    24SEP99.248
+>             PRINT *,'ISOIL=2 CANNOT TAKE INPUT FROM ISOIL=1 RUN'                 24SEP99.249
+>             STOP                                                                 24SEP99.250
+>           ENDIF                                                                  24SEP99.251
+>           CALL EQUATE(HDOTH,IX,JX,1,STCA(1,1,ILEV),MIXL,MJXL,1)                  24SEP99.252
+>           CALL EQUATE(STCA(1,1,ILEV),MIXL,MJXL,1,STCB(1,1,ILEV),                 24SEP99.253
+>      -                MIXL,MJXL,1)                                               24SEP99.254
+>         ELSE IF(NAME6.EQ.'SOIL T'                                                24SEP99.255
+>      -          .AND.MIXS.GT.1)THEN                                              24SEP99.256
+>           READ(NAME(7:8),'(I2)')ILEV                                             24SEP99.257
+>           CALL EQUATE(HDOTH,IX,JX,1,TSLA(1,1,ILEV),MIXS,MJXS,1)                  24SEP99.258
+>           CALL EQUATE(TSLA(1,1,ILEV),MIXS,MJXS,1,TSLB(1,1,ILEV),                 24SEP99.259
+>      -                MIXS,MJXS,1)                                               24SEP99.260
+>         ELSE IF(NAME6.EQ.'SOIL M'                                                24SEP99.261
+>      -          .AND.MIXL.GT.1)THEN                                              24SEP99.262
+>           READ(NAME(7:8),'(I2)')ILEV                                             24SEP99.263
+>           FNDLSMM=.TRUE.                                                         24SEP99.264
+>           CALL EQUATE(HDOTH,IX,JX,1,SMCA(1,1,ILEV),MIXL,MJXL,1)                  24SEP99.265
+>           CALL EQUATE(SMCA(1,1,ILEV),MIXL,MJXL,1,SMCB(1,1,ILEV),                 24SEP99.266
+>      -                MIXL,MJXL,1)                                               24SEP99.267
+>         ELSE IF(NAME6.EQ.'SOIL M'                                                24SEP99.268
+>      -          .AND.MIXS.GT.1)THEN                                              24SEP99.269
+>           PRINT *,'ISOIL=1 CANNOT TAKE INPUT FROM ISOIL=2 RUN'                   24SEP99.270
+>           STOP                                                                   24SEP99.271
+395c439
+<         IF(.NOT.FNDSOILH)THEN                                                    RDINIT.395
+---
+>         IF(.NOT.FNDSOILH.AND..NOT.FNDLSMT)THEN                                   24SEP99.272
+403,404c447,450
+<         IF(.NOT.FNDSOILT)THEN                                                    RDINIT.403
+<            PRINT *,'NO SOIL TEMP FOUND: CHECK REGRID JOB'                        RDINIT.404
+---
+>         DO NL=1,NSTL                                                             24SEP99.273
+>         IF(.NOT.FNDSOILT(NL).AND..NOT.FNDLSMT)THEN                               24SEP99.274
+>            PRINT *,'SOIL TEMP NOT FOUND: CHECK REGRID JOB'                       24SEP99.275
+>            PRINT *,'SOILT LAYER = ',ISTLYR(NL)                                   24SEP99.276
+407,408c453,457
+<         IF(.NOT.FNDSOILM)THEN                                                    RDINIT.407
+<            PRINT *,'NO SOIL MOISTURE FOUND: CHECK REGRID JOB'                    RDINIT.408
+---
+>         ENDDO                                                                    24SEP99.277
+>         DO NL=1,NSML                                                             24SEP99.278
+>         IF(.NOT.FNDSOILM(NL).AND..NOT.FNDLSMM)THEN                               24SEP99.279
+>            PRINT *,'SOIL MOISTURE NOT FOUND: CHECK REGRID JOB'                   24SEP99.280
+>            PRINT *,'SOILM LAYER = ',ISMLYR(NL)                                   24SEP99.281
+410a460
+>         ENDDO                                                                    24SEP99.282
+550a601,602
+> C     CHECK FOR 1-WAY NESTED OUTPUT LSM DATA ALREADY ON CORRECT LAYERS           24SEP99.283
+>        IF(.NOT.FNDLSMT.AND..NOT.FNDLSMM)THEN                                     24SEP99.284
+560c612
+< C     READ DATAGRID OUTPUT FOR STCA, SMCA, SNOW DEPTH, SEA-ICE(?)                RDINIT.560
+---
+> C     READ REGRID OUTPUT FOR STCA, SMCA, SNOW DEPTH, SEA-ICE                     24SEP99.285
+581,583c633,635
+<               STCA(I,J,L)=((ZANN-ZS(L))*SOILT(I,J,NL)+                           RDINIT.581
+<      -                        (ZS(L)-STLEV(NL))*TMN(I,J))                        RDINIT.582
+<      -                        /(ZANN-STLEV(NL))                                  RDINIT.583
+---
+>               STCA(I,J,L)=((ZANN-ZS(L))*SOILT(I,J,NSTL)+                         24SEP99.286
+>      -                        (ZS(L)-STLEV(NSTL))*TMN(I,J))                      24SEP99.287
+>      -                        /(ZANN-STLEV(NSTL))                                24SEP99.288
+635a688
+>        ENDIF                                                                     24SEP99.289
+Index: domain/io/rdter.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/io/rdter.F,v
+retrieving revision 3.0
+retrieving revision 3.3
+diff -r3.0 -r3.3
+2c2
+<      -         XLAT,XLONG,MSFD,MSFX,F)                                           RDTER.2
+---
+>      -         XLAT,XLONG,MSFD,MSFX,F,ISOIL)                                     24SEP99.290
+10c10
+<       INTEGER IUNIT,INEST,IX,JX                                                  RDTER.10
+---
+>       INTEGER IUNIT,INEST,IX,JX,ISOIL                                            24SEP99.291
+21,23d20
+< #ifdef MPP1                                                                      RDTER.21
+< #define EQUATE(FIN,GI,GJ,GK,FOUT,LI,LJ,LK) MP_EQUATE(FIN,LI,LJ,LK,FOUT)          RDTER.22
+< #endif                                                                           RDTER.23
+131c128
+<           CALL EQUATE(HSCR1L,IX,JX,1,TMN,MIX,MJX,1)                              RDTER.131
+---
+>           IF(ISOIL.EQ.2)CALL EQUATE(HSCR1L,IX,JX,1,TMN,MIX,MJX,1)                24SEP99.292
+Index: domain/io/write_big_header.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/io/write_big_header.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+10a11,13
+> C NOTE THAT ON CERTAIN MACHINES (T3E, ALPHA) JBHI AND JBHR MAY                   24SEP99.293
+> C BE CHANGED/DESTROYED.  RSL SHOULD BE MODIFIED TO MAKE THIS SAFE                24SEP99.294
+> C BUT RIGHT NOW, THESE ARE NOT REUSED ANYWAY, SO OKAY FOR NOW (v3.1)             24SEP99.295
+Index: domain/nest/initnest.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/nest/initnest.F,v
+retrieving revision 3.0
+retrieving revision 3.9
+diff -r3.0 -r3.9
+45d44
+< #define EQUATE(FIN,GI,GJ,GK,FOUT,LI,LJ,LK) MP_EQUATE(FIN,LI,LJ,LK,FOUT)          INITNEST.45
+55c54
+<       INTEGER ISN,IDLEV,ICM,JCM                                                  INITNEST.55
+---
+>       INTEGER IDLEV,ICM,JCM                                                      24SEP99.296
+58c57
+<       INTEGER ICENT,JCENT,ISTOP,IS,ISML,JSML,NV,NOC,NOV                          INITNEST.58
+---
+>       INTEGER ISTOP,IS,ISML,JSML,NV,NOC,NOV                                      24SEP99.297
+111,113d109
+<       ISN=1                                                                      INITNEST.111
+<       IF(JULDAY.LT.105.OR.JULDAY.GT.288)ISN=2                                    INITNEST.112
+< C                                                                                INITNEST.113
+659c655
+< cmic$1        iyyn,jxxn,isouth,jwest,tga,tgan)                                   INITNEST.659
+---
+> cmic$1        iyyn,jxxn,isouth,jwest,tga,tgan,tss,tssn)                          24SEP99.298
+663c659
+<       DO 404 LPLOOP=1,8                                                          INITNEST.663
+---
+>       DO 404 LPLOOP=1,9                                                          24SEP99.299
+739a736,742
+> C                                                                                24SEP99.300
+> C---SEA SURFACE TEMPERATURE                                                      24SEP99.301
+>         ELSEIF(LPLOOP.EQ.9)THEN                                                  24SEP99.302
+>           CALL FILL(TSS,HELP1,MIX,MJX,IYY,JXX,IYY-1,JXX-1)                       24SEP99.303
+>           CALL EXAINT(HELP1,IYY,JXX,HSCR1N,IYYN,JXXN,ISOUTH,JWEST,1)             24SEP99.304
+>           CALL FILL(HSCR1N,TSSN,IYYN,JXXN,MIX,MJX,IYYN-1,JXXN-1)                 24SEP99.305
+> C                                                                                24SEP99.306
+956c959
+< C--- INVERT MAP-SCALE ACTORS                                                     INITNEST.956
+---
+> C--- INVERT MAP-SCALE FACTORS                                                    24SEP99.307
+989c992
+<      +       XLONG,MSFD,MSFX,F)                                                  INITNEST.989
+---
+>      +       XLONG,MSFD,MSFX,F,ISOIL)                                            24SEP99.308
+1109a1113,1132
+> C                                                                                24SEP99.309
+> C--- INVERT MAP-SCALE FACTORS                                                    24SEP99.310
+> C                                                                                24SEP99.311
+> cmic$ do all autoscope                                                           24SEP99.312
+> c$omp parallel do default(shared)                                                24SEP99.313
+> c$omp&private(i,j)                                                               24SEP99.314
+>         DO J=1,JL                                                                24SEP99.315
+>           DO I=1,IL                                                              24SEP99.316
+>             MSFD(I,J)=1./MSFD(I,J)                                               24SEP99.317
+>           ENDDO                                                                  24SEP99.318
+>         ENDDO                                                                    24SEP99.319
+>                                                                                  24SEP99.320
+> cmic$ do all autoscope                                                           24SEP99.321
+> c$omp parallel do default(shared)                                                24SEP99.322
+> c$omp&private(i,j)                                                               24SEP99.323
+>         DO J=1,JLX                                                               24SEP99.324
+>           DO I=1,ILX                                                             24SEP99.325
+>             MSFX(I,J)=1./MSFX(I,J)                                               24SEP99.326
+>           ENDDO                                                                  24SEP99.327
+>         ENDDO                                                                    24SEP99.328
+1112a1136,1138
+> #ifdef MPP1                                                                      24SEP99.329
+> #  include <mpp_initnest_33.incl>                                                24SEP99.330
+> #endif                                                                           24SEP99.331
+1617,1618d1642
+<       ICENT=INL/2                                                                INITNEST.1617
+<       JCENT=JNL/2                                                                INITNEST.1618
+1620d1643
+<       IF(XLATN(ICENT,JCENT).LT.0.0)ISN=3-ISN                                     INITNEST.1620
+1812c1835,1836
+<         IF(IBLTYP(NUMNES).NE.2.AND.IBLTYP(NUMNES).NE.5)THEN                      INITNEST.1812
+---
+>         IF(IBLTYP(NUMNES).NE.2.AND.IBLTYP(NUMNES).NE.5                           24SEP99.332
+>      1     .AND.IBLTYP(NUMNES).NE.6)THEN                                         24SEP99.333
+1815c1839
+<      1I2,': MULTI-LAYER PBL (2 OR 5) MUST BE USED !!!!')                         INITNEST.1815
+---
+>      1I2,': MULTI-LAYER PBL (2,5 OR 6) MUST BE USED !!!!')                       24SEP99.334
+Index: domain/util/equate.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/domain/util/equate.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+29a30,33
+>       SUBROUTINE EQUATO(FIN,IXI,JXI,KXI,FOUT,IXO,JXO,KXO)                        24SEP99.335
+>       CALL EQUATE(FIN,IXI,JXI,KXI,FOUT,IXO,JXO,KXO)                              24SEP99.336
+>       RETURN                                                                     24SEP99.337
+>       END                                                                        24SEP99.338
+Index: dynamics/nonhydro/solve.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/dynamics/nonhydro/solve.F,v
+retrieving revision 3.0
+retrieving revision 3.6
+diff -r3.0 -r3.6
+184a185,203
+> C                                                                                24SEP99.339
+> C --- INITIALIZE CLOUD FRACTION ARRAY FOR CCM2 RADIATION OPTION                  24SEP99.340
+> C                                                                                24SEP99.341
+>       IF(IFRAD.EQ.3)THEN                                                         24SEP99.342
+>         IF(MOD(KTAU,NTRAD(INEST)).EQ.0)THEN                                      24SEP99.343
+> cmic$ do all autoscope                                                           24SEP99.344
+> c$doacross                                                                       24SEP99.345
+> c$& local(i,j,k)                                                                 24SEP99.346
+> c$omp parallel do default(shared)                                                24SEP99.347
+> c$omp&private(i,j,k)                                                             24SEP99.348
+>           DO J=1,JLX                                                             24SEP99.349
+>             DO K=1,KL                                                            24SEP99.350
+>               DO I=1,ILX                                                         24SEP99.351
+>                 CLDFRA3D(I,J,K)=0.0                                              24SEP99.352
+>               ENDDO                                                              24SEP99.353
+>             ENDDO                                                                24SEP99.354
+>           ENDDO                                                                  24SEP99.355
+>         ENDIF                                                                    24SEP99.356
+>       ENDIF                                                                      24SEP99.357
+615a635,648
+> C                                                                                24SEP99.358
+> C     INITIALIZE DIFFUSION COEFFS                                                24SEP99.359
+> C                                                                                24SEP99.360
+>       DO K=1,MKX                                                                 24SEP99.361
+>         DO J=1,MJX                                                               24SEP99.362
+>           DO I=1,MIX                                                             24SEP99.363
+>             CRSXK(I,J,K)=0.                                                      24SEP99.364
+>             DOTXK(I,J,K)=0.                                                      24SEP99.365
+>           ENDDO                                                                  24SEP99.366
+>         ENDDO                                                                    24SEP99.367
+>       ENDDO                                                                      24SEP99.368
+> C                                                                                24SEP99.369
+>       CALL COEF_DIFFU(CRSXK,DOTXK,U3D,V3D,XKHZ,XKHMAX,C200,ILX,JLX,KL)           24SEP99.370
+> C                                                                                24SEP99.371
+662,677d694
+<         IF(IFRAD.EQ.3)THEN                                                       SOLVE.662
+<           IF(MOD(KTAU,NTRAD(INEST)).EQ.0)THEN                                    SOLVE.663
+< cmic$ do all autoscope                                                           SOLVE.664
+< c$doacross                                                                       SOLVE.665
+< c$& local(i,j,k)                                                                 SOLVE.666
+< c$omp parallel do default(shared)                                                SOLVE.667
+< c$omp&private(i,j,k)                                                             SOLVE.668
+<             DO J=1,JLX                                                           SOLVE.669
+<               DO K=1,KL                                                          SOLVE.670
+<                 DO I=1,ILX                                                       SOLVE.671
+<                   CLDFRA3D(I,J,K)=0.0                                            SOLVE.672
+<                 ENDDO                                                            SOLVE.673
+<               ENDDO                                                              SOLVE.674
+<             ENDDO                                                                SOLVE.675
+<           ENDIF                                                                  SOLVE.676
+<         ENDIF                                                                    SOLVE.677
+681c698
+< cmic$2 private(j,cldfra)                                                         SOLVE.681
+---
+> cmic$2 private(j,i,k,cldfra)                                                     24SEP99.372
+683c700
+< c$& local(j,cldfra)                                                              SOLVE.683
+---
+> c$& local(j,i,k,cldfra)                                                          24SEP99.373
+685c702
+< c$omp&private(j,cldfra)                                                          SOLVE.685
+---
+> c$omp&private(j,i,k,cldfra)                                                      24SEP99.374
+689a707,711
+>           DO K=1,KL                                                              24SEP99.375
+>             DO I=IBNES,IENES-1                                                   24SEP99.376
+>                CLDFRA(I,K) = 0.0                                                 24SEP99.377
+>             END DO                                                               24SEP99.378
+>           END DO                                                                 24SEP99.379
+717,718c739,740
+<           CALL CUPARA4(T3D,QV3D,PSB,T3DTEN,Q3DTEN,RAINC,HT,U3D,V3D,PP3D,         SOLVE.717
+<      +         INEST,J,IBNES,IENES-1)                                            SOLVE.718
+---
+>           CALL CUPARA4(T3D,QV3D,PSB,T3DTEN,QV3DTEN,RAINC,HT,U3D,V3D,             24SEP99.380
+>      +         PP3D,INEST,J,IBNES,IENES-1)                                       24SEP99.381
+1217,1228d1238
+< #ifdef MPP1                                                                      SOLVE.1217
+<       DO K=1,MKX                                                                 SOLVE.1218
+<         DO J=1,MJX                                                               SOLVE.1219
+<           DO I=1,MIX                                                             SOLVE.1220
+<             CRSXK(I,J,K)=0.                                                      SOLVE.1221
+<             DOTXK(I,J,K)=0.                                                      SOLVE.1222
+<           ENDDO                                                                  SOLVE.1223
+<         ENDDO                                                                    SOLVE.1224
+<       ENDDO                                                                      SOLVE.1225
+< #endif                                                                           SOLVE.1226
+<       CALL COEF_DIFFU(CRSXK,DOTXK,U3D,V3D,XKHZ,XKHMAX,C200,ILX,JLX,KL)           SOLVE.1227
+< C                                                                                SOLVE.1228
+1560,1562c1570,1572
+<             CALL LEXMOISR(J,INEST,IMOIST(INEST),IBNES,IENES-1,T3D,QV3D,          SOLVE.1560
+<      +           QC3D,QR3D,QI3D,QNI3D,PP3D,T3DTEN,QV3DTEN,QC3DTEN,               SOLVE.1561
+<      +           QR3DTEN,QI3DTEN,QNI3DTEN)                                       SOLVE.1562
+---
+>             CALL LEXMOISR(QC3DTEN,QR3DTEN,QI3DTEN,QNI3DTEN,QV3DTEN,              24SEP99.382
+>      +           T3DTEN,T3D,QV3D,QC3D,QR3D,QI3D,QNI3D,PP3D,PSB,RAINNC,           24SEP99.383
+>      +           INEST,J,IBNES,IENES-1)                                          24SEP99.384
+1652c1662
+< cmic$2 private(j,scr1)                                                           SOLVE.1652
+---
+> cmic$2 private(j,i,scr1)                                                         24SEP99.385
+1654c1664
+< c$& local(j)                                                                     SOLVE.1654
+---
+> c$& local(j,i)                                                                   24SEP99.386
+1656c1666
+< c$omp&private(j)                                                                 SOLVE.1656
+---
+> c$omp&private(j,i)                                                               24SEP99.387
+Index: fdda/grid/in4dgd.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/fdda/grid/in4dgd.F,v
+retrieving revision 3.0
+retrieving revision 3.4
+diff -r3.0 -r3.4
+54,56d53
+< #ifdef MPP1                                                                      IN4DGD.54
+< #define EQUATE(FIN,GI,GJ,GK,FOUT,LI,LJ,LK) MP_EQUATE(FIN,LI,LJ,LK,FOUT)          IN4DGD.55
+< #endif                                                                           IN4DGD.56
+91c88
+< #if defined(CRAY) || defined(rs6000)
+---
+> #if defined(CRAY) || defined(rs6000) || defined(SGI_Origin)                      24SEP99.388
+545c542
+<           OPEN(IUNS, FILE='RW4DDA_DOMAIN'//CHAR(IN+ICHAR('0')),                  IN4DGD.545
+---
+>           OPEN(IUNS, FILE='SFCFDDA_DOMAIN'//CHAR(IN+ICHAR('0')),                 24SEP99.389
+Index: include/btblk1.incl
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/include/btblk1.incl,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+34c34
+< !ibm* threadlocal /bt1/                                                          BTBLK1.34
+---
+> cibmp threadlocal /bt1/                                                          24SEP99.390
+Index: include/btblk2.incl
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/include/btblk2.incl,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+11,12c11,12
+< !ibm* threadlocal /blk1/                                                         BTBLK2.11
+< !ibm* threadlocal /blk2/                                                         BTBLK2.12
+---
+> cibmp threadlocal /blk1/                                                         24SEP99.391
+> cibmp threadlocal /blk2/                                                         24SEP99.392
+Index: include/config.INCL
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/include/config.INCL,v
+retrieving revision 3.0
+retrieving revision 3.3
+diff -r3.0 -r3.3
+1c1,18
+< 
+---
+> DRY = "0,0,0,0,0,0,0,1,1,1"
+> MOIST = "2,2,2,2,2,2,1,1,1,1"
+> EXMS = 1
+> ICE = 1
+> ICEG = 1
+> EXICE = 1
+> EXGR = 2
+> ARASC = 0
+> KFFC = 1
+> NAV = 1
+> NAV2 = 1
+> NAV3 = 0
+> GSPBL = 1
+> RDDIM = 1
+> SLDIM = 1
+> LDDIM = 0
+> PLACEDIM = 0
+> MLX = 6
+Index: include/landinp.incl
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/include/landinp.incl,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+1,9c1,6
+< C     NNRP INPUT FOR LAND-SURFACE SCHEME                                         LANDINP.1
+< C     NSTL=NUMBER OF SOIL-TEMPERATURE LAYERS (NNRP)                              LANDINP.2
+< C     NSML=NUMBER OF SOIL-MOISTURE LAYERS (NNRP)                                 LANDINP.3
+<       INTEGER NSML,NSTL                                                          LANDINP.4
+<       PARAMETER (NSTL=3, NSML=2)                                                 LANDINP.5
+<       REAL SOILM,SOILT                                                           LANDINP.6
+<       DIMENSION SOILT(MIXL,MJXL,NSTL),SOILM(MIXL,MJXL,NSML)                      LANDINP.7
+<       REAL SOILHGT                                                               LANDINP.8
+<       DIMENSION SOILHGT(MIXL,MJXL)                                               LANDINP.9
+---
+> C     SOIL LAYERS FOR REGRID INPUT FOR LAND-SURFACE SCHEME                       24SEP99.393
+> C     NSTL=NUMBER OF SOIL-TEMPERATURE LAYERS EXPECTED (SET IN PARAM)             24SEP99.394
+> C     NSML=NUMBER OF SOIL-MOISTURE LAYERS EXPECTED (SET IN PARAM)                24SEP99.395
+> C     MLX(=4) IS HERE USED AS A MAXIMUM DIMENSION FOR MEMORY                     24SEP99.396
+> C     ISTLYR AND ISMLYR ARE READ FROM LPARAM NAMELIST IN PARAM                   24SEP99.397
+> C     THESE ARE CM OF EXPECTED LAYERS (E.G. SOILT010 GIVES ISTLYR(1)=10)         24SEP99.398
+11,15c8,10
+<       DIMENSION ISTLYR(NSTL),ISMLYR(NSML)                                        LANDINP.11
+<       REAL SMLEV,STLEV                                                           LANDINP.12
+<       DIMENSION STLEV(NSTL),SMLEV(NSML)                                          LANDINP.13
+<       DATA ISTLYR/10,200,400/                                                    LANDINP.14
+<       DATA ISMLYR/10,200/                                                        LANDINP.15
+---
+>       INTEGER NSML,NSTL                                                          24SEP99.399
+>       DIMENSION ISTLYR(MLX),ISMLYR(MLX)                                          24SEP99.400
+>       COMMON/LANDINP/ISTLYR,ISMLYR,NSTL,NSML                                     24SEP99.401
+Index: include/landuse.incl
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/include/landuse.incl,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+4c4
+<       INTEGER ISICE,ISWATER,LUN,NSN                                              LANDUSE.4
+---
+>       INTEGER ISICE,ISWATER,LUN,NSN,ISN                                          24SEP99.402
+6c6
+<      1     LUN, NSN, ISWATER, ISICE, MMINLU                                      LANDUSE.6
+---
+>      1     LUN, NSN, ISWATER, ISICE, ISN, MMINLU                                 24SEP99.403
+Index: include/param2.incl
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/include/param2.incl,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+21c21
+<      3  LFBTER,BDYFRQ,BUFFRQ                                                     PARAM2.21
+---
+>      3  LFBTER,BDYFRQ,BUFFRQ,IFOGSW                                              24SEP99.404
+Index: include/parame
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/include/parame,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+74c74
+<       PARAMETER (NVARX=8,NVARMX=4,NVARSX=39,NVARI=13,                            PARAME.74
+---
+>       PARAMETER (NVARX=8,NVARMX=4,NVARSX=40,NVARI=13,                            PARAME.74
+138d137
+< C--- 40 FOR HYDROSTATIC SPLIT SCHEME (OLD BLANK COMMON),                         PARAME.138
+Index: include/point2d.incl
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/include/point2d.incl,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+18c18
+<      1 SATBRT,SINROT,SNOWC,TGA,TGB,UST                                           POINT2D.18
+---
+>      1 SATBRT,SINROT,SNOWC,TGA,TGB,TSS,UST                                       24SEP99.405
+28c28
+<      9        (IASR,SINROT(MIX,MJX))                                             POINT2D.28
+---
+>      9        (IASR,SINROT(MIX,MJX)), (IATSS,  TSS(MIX,MJX))                     24SEP99.406
+33c33
+<      4              IAGS, IAGL, IACG, IASC, IAEF, IACR, IASR                     POINT2D.33
+---
+>      4              IAGS, IAGL, IACG, IASC, IAEF, IACR, IASR, IATSS              24SEP99.407
+Index: include/point2dn.incl
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/include/point2dn.incl,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+18c18
+<      1 RAINPN,REGIMN,SATBRN,SINRTN,SNOWCN,TGAN,TGBN,USTN                         POINT2DN.18
+---
+>      1 RAINPN,REGIMN,SATBRN,SINRTN,SNOWCN,TGAN,TGBN,TSSN,USTN                    24SEP99.408
+28c28
+<      9        (INASR,SINRTN(MIX,MJX))                                            POINT2DN.28
+---
+>      9        (INASR,SINRTN(MIX,MJX)),(INATSS,  TSSN(MIX,MJX))                   24SEP99.409
+34c34
+<      4           INAGS,INAGL,INACG,INASC,INAEF,INACR,INASR                       POINT2DN.34
+---
+>      4           INAGS,INAGL,INACG,INASC,INAEF,INACR,INASR,INATSS                24SEP99.410
+Index: physics/advection/simple/hadv.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/advection/simple/hadv.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+101c101
+<       DO 40 J=2,JLXM                                                             HADV.101
+---
+>       DO 40 J=2+ICUT,JLXM-ICUT                                                   24SEP99.411
+103c103
+<           DO 40 I=2,ILXM                                                         HADV.103
+---
+>           DO 40 I=2+ICUT,ILXM-ICUT                                               24SEP99.412
+Index: physics/advection/simple/vadv.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/advection/simple/vadv.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+111c111
+<       DO 66 J=2,JLXM                                                             VADV.111
+---
+>       DO 66 J=2+ICUT,JLXM-ICUT                                                   24SEP99.413
+113c113
+<           DO 66 I=2,ILXM                                                         VADV.113
+---
+>           DO 66 I=2+ICUT,ILXM-ICUT                                               24SEP99.414
+Index: physics/cumulus/kf/kfpara.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/cumulus/kf/kfpara.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+453,454d452
+<           WABS=SQRT(ABS(WTW))                                                    KFPARA.453
+<           WU(NK1)=WTW/WABS                                                       KFPARA.454
+459c457,459
+<           IF(WU(NK1).LT.0.)GOTO 65                                               KFPARA.459
+---
+>           IF(WTW.LE.0.)GOTO 65                                                   24SEP99.415
+>           WABS=SQRT(ABS(WTW))                                                    24SEP99.416
+>           WU(NK1)=WTW/WABS                                                       24SEP99.417
+Index: physics/pbl_sfc/gspbl/gspbl.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/gspbl/gspbl.F,v
+retrieving revision 3.0
+retrieving revision 3.3
+diff -r3.0 -r3.3
+1421c1421,1422
+<           IF(MOD(KTAU,NTRAD(IN)).EQ.0)CALL SFCRAD(IYY,JXX,J,IN)                  GSPBL.1421
+---
+>           IF(MOD(KTAU,NTRAD(IN)).EQ.0)                                           24SEP99.544
+>      -       CALL SFCRAD(IYY,JXX,J,IN,T3D,QV3D,PP3D)                             24SEP99.545
+1861c1862
+<                 THX(I,K)=THLX(I,K)*(1.+XLVP(I,K)*QCX(I,K)/(CPM(I,K)*             GSPBL.1861
+---
+>                 THX(I,K)=THLX(I,K)/(1.-XLVP(I,K)*QCX(I,K)/(CPM(I,K)*             24SEP99.418
+Index: physics/pbl_sfc/hirpbl/hirpbl.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/hirpbl/hirpbl.F,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+160,164d159
+< C     *** NOTE ***                                                               HIRPBL.160
+< C         THE BOUNDARY WINDS MAY NOT BE ADEQUATELY AFFECTED BY FRICTION,         HIRPBL.161
+< C         SO USE ONLY INTERIOR VALUES OF UX AND VX TO CALCULATE                  HIRPBL.162
+< C         TENDENCIES.                                                            HIRPBL.163
+< C                                                                                HIRPBL.164
+Index: physics/pbl_sfc/mrfpbl/mrfpbl.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/mrfpbl/mrfpbl.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+582c582
+<      +       V10,TH2,Q2,RAINC,RAINNC,CHS2)                                       MRFPBL.582
+---
+>      +       V10,TH2,Q2,RAINC,RAINNC,SNOWC,CHS2)                                 24SEP99.419
+Index: physics/pbl_sfc/myepbl/mixlen.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/myepbl/mixlen.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+104a105
+>             QOL2ST=AMAX1(QOL2ST,1.E-20)                                          24SEP99.420
+111a113
+>           QOL2UN=AMAX1(QOL2UN,1.E-20)                                            24SEP99.421
+Index: physics/pbl_sfc/osusfc/Makefile
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/Makefile,v
+retrieving revision 3.0
+retrieving revision 3.1
+diff -r3.0 -r3.1
+105c105
+< surfce.o: ../../../include/soilp.incl
+---
+> surfce.o: ../../../include/soilp.incl ../../../include/landuse.incl
+Index: physics/pbl_sfc/osusfc/canres.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/canres.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+3a4
+>       IMPLICIT NONE                                                              24SEP99.422
+31a33
+>       INTEGER NSOLD,NSOIL,NROOT                                                  24SEP99.423
+33c35
+<       DIMENSION ZSOIL(NSOIL), SMC(NSOIL), PART(NSOLD)                            CANRES.33
+---
+>       REAL      ZSOIL(NSOIL), SMC(NSOIL), PART(NSOLD)                            24SEP99.424
+34a37
+>       REAL SIGMA, RD, CP, SLV                                                    24SEP99.425
+35a39,45
+> C **********************************************************************         24SEP99.426
+> C DECLARATIONS FOR IMPLICIT NONE                                                 24SEP99.427
+>       INTEGER K                                                                  24SEP99.428
+>       REAL RCS,RCT,RCQ,RCSOIL,RC,FF,SOLAR,RGL,RCMIN,RSMAX,TOPT,SFCTMP,           24SEP99.429
+>      +     P,SFCPRS,QS,Q2SAT,HS,Q2,GX,SMCWLT,SMCREF,TAIR4,ST1,SLVCP,RR,          24SEP99.430
+>      +     CH,DELTA,DQSDT2,PC                                                    24SEP99.431
+>                                                                                  24SEP99.432
+Index: physics/pbl_sfc/osusfc/dcoef.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/dcoef.F,v
+retrieving revision 3.0
+retrieving revision 3.5
+diff -r3.0 -r3.5
+1a2
+>       IMPLICIT NONE                                                              24SEP99.433
+40c41,45
+< c$omp threadprivate (/rite/)                                                     DCOEF.40
+---
+> #ifndef rs6000                                                                   24SEP99.434
+> c$omp threadprivate (/rite/)                                                     24SEP99.435
+> #else                                                                            24SEP99.436
+> cibmp threadlocal /rite/                                                         24SEP99.437
+> #endif                                                                           24SEP99.438
+Index: physics/pbl_sfc/osusfc/devap.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/devap.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+2a3
+>       IMPLICIT NONE                                                              24SEP99.439
+20a22,23
+>       REAL SMCWLT                                                                24SEP99.440
+>       REAL SMCREF                                                                24SEP99.441
+Index: physics/pbl_sfc/osusfc/hrt.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/hrt.F,v
+retrieving revision 3.0
+retrieving revision 3.4
+diff -r3.0 -r3.4
+41c41,45
+< c$omp threadprivate (/abci/)                                                     HRT.41
+---
+> #ifndef rs6000                                                                   24SEP99.442
+> c$omp threadprivate (/abci/)                                                     24SEP99.443
+> #else                                                                            24SEP99.444
+> cibmp threadlocal /abci/                                                         24SEP99.445
+> #endif                                                                           24SEP99.446
+Index: physics/pbl_sfc/osusfc/hrtice.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/hrtice.F,v
+retrieving revision 3.0
+retrieving revision 3.5
+diff -r3.0 -r3.5
+2a3
+>       IMPLICIT NONE                                                              24SEP99.447
+8a10
+>       INTEGER NSOLD                                                              24SEP99.448
+11a14
+>       REAL B                                                                     24SEP99.449
+40c43,47
+< c$omp threadprivate (/abci/)                                                     HRTICE.40
+---
+> #ifndef rs6000                                                                   24SEP99.450
+> c$omp threadprivate (/abci/)                                                     24SEP99.451
+> #else                                                                            24SEP99.452
+> cibmp threadlocal /abci/                                                         24SEP99.453
+> #endif                                                                           24SEP99.454
+Index: physics/pbl_sfc/osusfc/hstep.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/hstep.F,v
+retrieving revision 3.0
+retrieving revision 3.5
+diff -r3.0 -r3.5
+1a2
+>       IMPLICIT NONE                                                              24SEP99.455
+5a7
+>       INTEGER NSOLD                                                              24SEP99.456
+17c19,23
+< c$omp threadprivate (/abci/)                                                     HSTEP.17
+---
+> #ifndef rs6000                                                                   24SEP99.457
+> c$omp threadprivate (/abci/)                                                     24SEP99.458
+> #else                                                                            24SEP99.459
+> cibmp threadlocal /abci/                                                         24SEP99.460
+> #endif                                                                           24SEP99.461
+Index: physics/pbl_sfc/osusfc/nopac.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/nopac.F,v
+retrieving revision 3.0
+retrieving revision 3.5
+diff -r3.0 -r3.5
+6a7
+>       IMPLICIT NONE                                                              24SEP99.462
+67a69,70
+>       REAL RUNOFF1,RUNOFF2,RUNOFF3,EDIR1,EC1,ETT1,Q1                             24SEP99.463
+>       INTEGER NROOT,ICE                                                          24SEP99.464
+70c73,77
+< c$omp threadprivate (/rite/)                                                     NOPAC.70
+---
+> #ifndef rs6000                                                                   24SEP99.465
+> c$omp threadprivate (/rite/)                                                     24SEP99.466
+> #else                                                                            24SEP99.467
+> cibmp threadlocal /rite/                                                         24SEP99.468
+> #endif                                                                           24SEP99.469
+Index: physics/pbl_sfc/osusfc/penman.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/penman.F,v
+retrieving revision 3.0
+retrieving revision 3.5
+diff -r3.0 -r3.5
+2a3
+>       IMPLICIT NONE                                                              24SEP99.470
+21a23
+>       REAL DQSDT2                                                                24SEP99.471
+51a54
+>       REAL TT,T                                                                  24SEP99.472
+53c56,60
+< c$omp threadprivate (/rite/)                                                     PENMAN.53
+---
+> #ifndef rs6000                                                                   24SEP99.473
+> c$omp threadprivate (/rite/)                                                     24SEP99.474
+> #else                                                                            24SEP99.475
+> cibmp threadlocal /rite/                                                         24SEP99.476
+> #endif                                                                           24SEP99.477
+Index: physics/pbl_sfc/osusfc/sflx.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/sflx.F,v
+retrieving revision 3.0
+retrieving revision 3.5
+diff -r3.0 -r3.5
+5a6
+>       IMPLICIT NONE                                                              24SEP99.478
+68a70
+>       INTEGER NSOLD                                                              24SEP99.479
+99a102
+>       REAL RSMAX                                                                 24SEP99.480
+117a121
+>       REAL TOPT                                                                  24SEP99.481
+122a127,132
+> C DECLARATIONS FOR IMPLICIT NONE                                                 24SEP99.482
+>       INTEGER KZ,K                                                               24SEP99.483
+>       REAL RUNOFF1,RUNOFF2,RUNOFF3,SNMAX,ALBEDO,RCMIN,RGL,HS,PRCP1,              24SEP99.484
+>      +     DQSDT2,SATFLG,SOLDN,RC,EDIR1,EC1,ETT1,HEAT,CHKFF,T14,H,               24SEP99.485
+>      +     FUP,RES,SNOFLX,SOILM,SOILW,SOILWM,SOILWW                              24SEP99.486
+>       REAL BETA,DRIP,EC,EDIR,ETT,FLX1,FLX2,FLX3,RHO,RUNOF,DEW,RIB                24SEP99.487
+123a134
+> #ifndef rs6000                                                                   24SEP99.488
+124a136,138
+> #else                                                                            24SEP99.489
+> cibmp threadlocal /rite/                                                         24SEP99.490
+> #endif                                                                           24SEP99.491
+Index: physics/pbl_sfc/osusfc/smflx.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/smflx.F,v
+retrieving revision 3.0
+retrieving revision 3.4
+diff -r3.0 -r3.4
+56c56,60
+< c$omp threadprivate (/rite/)                                                     SMFLX.56
+---
+> #ifndef rs6000                                                                   24SEP99.492
+> c$omp threadprivate (/rite/)                                                     24SEP99.493
+> #else                                                                            24SEP99.494
+> cibmp threadlocal /rite/                                                         24SEP99.495
+> #endif                                                                           24SEP99.496
+Index: physics/pbl_sfc/osusfc/snopac.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/snopac.F,v
+retrieving revision 3.0
+retrieving revision 3.4
+diff -r3.0 -r3.4
+86c86,90
+< c$omp threadprivate (/rite/)                                                     SNOPAC.86
+---
+> #ifndef rs6000                                                                   24SEP99.497
+> c$omp threadprivate (/rite/)                                                     24SEP99.498
+> #else                                                                            24SEP99.499
+> cibmp threadlocal /rite/                                                         24SEP99.500
+> #endif                                                                           24SEP99.501
+Index: physics/pbl_sfc/osusfc/srt.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/srt.F,v
+retrieving revision 3.0
+retrieving revision 3.4
+diff -r3.0 -r3.4
+46c46,50
+< c$omp threadprivate (/abci/)                                                     SRT.46
+---
+> #ifndef rs6000                                                                   24SEP99.502
+> c$omp threadprivate (/abci/)                                                     24SEP99.503
+> #else                                                                            24SEP99.504
+> cibmp threadlocal /abci/                                                         24SEP99.505
+> #endif                                                                           24SEP99.506
+Index: physics/pbl_sfc/osusfc/sstep.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/sstep.F,v
+retrieving revision 3.0
+retrieving revision 3.4
+diff -r3.0 -r3.4
+25c25,29
+< c$omp threadprivate (/abci/)                                                     SSTEP.25
+---
+> #ifndef rs6000                                                                   24SEP99.507
+> c$omp threadprivate (/abci/)                                                     24SEP99.508
+> #else                                                                            24SEP99.509
+> cibmp threadlocal /abci/                                                         24SEP99.510
+> #endif                                                                           24SEP99.511
+Index: physics/pbl_sfc/osusfc/surfce.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/pbl_sfc/osusfc/surfce.F,v
+retrieving revision 3.1
+retrieving revision 3.5
+diff -r3.1 -r3.5
+3c3,4
+<      &,inest,u10,v10,th2,q2,rainc,rainnc,chs2)                                   SURFCE.3
+---
+>      &,inest,u10,v10,th2,q2,rainc,rainnc,SNOWC,chs2)                             24SEP99.512
+>       IMPLICIT NONE                                                              24SEP99.513
+34a36,40
+>                           R E A L                                                24SEP99.514
+>      & PQ0,TRESH,A2,A3,A4,T0,T1,ROW,ELWV,ELIV,ELIW,A23M4,RLIVWV,ROWLIW           24SEP99.515
+>      &,ROWLIV                                                                    24SEP99.516
+>                           I N T E G E R                                          24SEP99.517
+>      & NSOIL,NROOT                                                               24SEP99.518
+50c56,59
+<                           D I M E N S I O N                                      SURFCE.50
+---
+>                           I N T E G E R                                          24SEP99.519
+>      & J,INEST                                                                   24SEP99.520
+> C-----------------------------------------------------------------------         24SEP99.521
+>                           R E A L                                                24SEP99.522
+53c62
+<                           D I M E N S I O N                                      SURFCE.53
+---
+>                           R E A L                                                24SEP99.523
+59c68
+<      &,TMN(MIX,MJX),XLAND(MIX,MJX),qcx(mix,mkx)                                  SURFCE.59
+---
+>      &,TMN(MIX,MJX),XLAND(MIX,MJX),qcx(mix,mkx),SNOWC(MIX,MJX)                   24SEP99.524
+60a70,79
+> C----------------------------------------------------------------------          24SEP99.525
+> C***  DECLARATIONS FOR IMPLICIT NONE                                             24SEP99.526
+>                           R E A L                                                24SEP99.527
+>      & DTHALF,FDTLIW,Q2SAT,DTK,Z,FK,SOLDN,SFCTMP,SFCTH2,SFCPRS,PRCP              24SEP99.528
+>      &,RAINK,Q2K,DQSDTK,SATFLG,TBOTK,CHK,CHKFF,VGFRCK,T1K,CMCK,U10K              24SEP99.529
+>      &,V10K,TH2K,Q2M,SNODPK,PLFLX,ELFLX,HFLX,GFLX,RNOF1K,RNOF2K                  24SEP99.530
+>      &,Q1K,SMELTK,SOILQW,SOILQM,T2K,PRESK                                        24SEP99.531
+>                           I N T E G E R                                          24SEP99.532
+>      & I,K,NS,ICE,IVGTPK,ISLTPK,NOOUT                                            24SEP99.533
+>                                                                                  24SEP99.534
+66a86
+> #     include <landuse.incl>                                                     24SEP99.535
+230a251,257
+>           IF(SNOB(I,J).GT.1.0)THEN                                               24SEP99.536
+>             ALB(I,J)=0.01*ALBD(IVGTPK,ISN)*(1.+SCFX(IVGTPK))                     24SEP99.537
+>             SNOWC(I,J)=1.0                                                       24SEP99.538
+>           ELSE                                                                   24SEP99.539
+>             ALB(I,J)=0.01*ALBD(IVGTPK,ISN)                                       24SEP99.540
+>             SNOWC(I,J)=0.0                                                       24SEP99.541
+>           ENDIF                                                                  24SEP99.542
+Index: physics/radiation/cloud/lwrad.F
+===================================================================
+RCS file: /data7/mp/mesouser/MM5V3/MM5/physics/radiation/cloud/lwrad.F,v
+retrieving revision 3.0
+retrieving revision 3.2
+diff -r3.0 -r3.2
+87a88
+>             QR(I,J,K)=AMAX1(QR(I,J,K),0.)                                        24SEP99.543

@@ -1,0 +1,15 @@
+CSTART   mpp_solve_50.incl
+#ifdef MPP1
+        IF ((MPP_IO_NODE .EQ. 1 .AND. RSL_MYPROC .EQ. 1) .OR.
+     +      (MPP_IO_NODE .EQ. 0 .AND. RSL_IAMMONITOR())) THEN
+
+            PRINT *, NINT(XTIME*60.), INEST
+#  ifndef T3E
+            WRITE(0,*)'***',NINT(XTIME*60.),INEST,KTAU,MILLICLOCK()
+#  else
+            WRITE(0,*)'***',NINT(XTIME*60.),INEST
+#  endif
+        ENDIF
+#endif
+CEND   mpp_solve_50.incl
+

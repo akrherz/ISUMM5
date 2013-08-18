@@ -1,0 +1,18 @@
+C                                                                                PNAVYN.1
+C----------------------------------------------------------------------          PNAVYN.2
+C                                                                                PNAVYN.3
+      REAL PQWSBN,PTHLQNB,PTHLSN,QVTENCN,QVTENVN,TTENVN,TURKEN,UTENVN,           PNAVYN.4
+     1 VTENVN                                                                    PNAVYN.5
+      POINTER ( INTURK,TURKEN(MIXV,MJXV,MKXV)),                                  PNAVYN.6
+     1        ( INTHSB,PTHLSN(MIXV2,MJXV2,MKXV2)),                               PNAVYN.7
+     1        ( INTHQW,PTHLQNB(MIXV2,MJXV2,MKXV2)),                              PNAVYN.8
+     1        ( INQWSB,PQWSBN(MIXV2,MJXV2,MKXV2)),                               PNAVYN.9
+     1        (INUTV,UTENVN(MIXV3,MJXV3,MKXV3)),                                 PNAVYN.10
+     1        (INVTV,VTENVN(MIXV3,MJXV3,MKXV3)),                                 PNAVYN.11
+     1        (INTTV,TTENVN(MIXV3,MJXV3,MKXV3)),                                 PNAVYN.12
+     1        (INQVTV,QVTENVN(MIXV3,MJXV3,MKXV3)),                               PNAVYN.13
+     1        (INQCTV,QVTENCN(MIXV3,MJXV3,MKXV3))                                PNAVYN.14
+C                                                                                PNAVYN.15
+      COMMON/ADDRVN/ INTURK,INTHSB,INTHQW,INQWSB,INUTV,INVTV,INTTV,              PNAVYN.16
+     1    INQVTV,INQCTV                                                          PNAVYN.17
+C                                                                                PNAVYN.18

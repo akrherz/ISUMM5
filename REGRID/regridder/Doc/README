@@ -1,0 +1,112 @@
+April 1999, last update February 2000
+
+This briefly describes the usage of the regridder program.  This
+is the second part of the REGRID package (comprised of the 
+pregrid programs and the regridder program).  
+
+If you have not yet run any of the REGRID pregrid utility 
+programs, or prepared data in the intermediate format yourself, 
+you should not be here.  If you have run at least one
+of the pregrid programs and you have a file of the form
+   nnnn:YYYY-MM-DD_HH,
+(where nnnn is the CHARACTER string prefix of the first-guess
+file, and YYYY, MM, DD, HH are the UTC date/time of the file)
+then you can proceed with this program, regridder.  You also
+need to have an MM5V3-formatted TERRAIN file for the output grid
+definition.
+
+
+SUPPORT
+------
+
+If you have any questions, please contact mesouser@ucar.edu.
+
+
+HOW DO I GET THE TAR FILE
+-------------------------
+
+The REGRID.TAR.gz file (a compressed tar file) is available from 
+ftp.ucar.edu (an anonymous ftp site at NCAR).  As with all
+anonymous ftp sites, log in as "anonymous", with your full email
+address as the password.  Change to the mesouser/MM5V3 directory
+(cd mesouser/MM5V3).  To make sure the binary/text switch is
+correctly set, type "bin".  Pick up the file REGRID.TAR.gz
+("get REGRID.TAR.gz") and exit the ftp session ("quit").
+
+
+PURPOSE
+-------
+
+The purpose of this program is to provide access to the different 
+analyses archived at NCAR, and analyses and forecasts on the Web 
+as first-guess fields for the MM5 system.  This program assumes 
+that one of the pregrid programs has been run to generate the input,
+or you have followed the format information described in pregrid/Doc
+directory to prepare data in the intermediate format. On successful 
+completion of this program, a file called "./REGRID_DOMAINx" will 
+exist in the working directory (REGRID/regridder).  This is the MM5 V3 
+modeling system formatted file.  This file will have data interpolated to 
+the same mesoscale domain as the input TERRAIN file (whose location 
+provided in the file REGRID/regidder/namelist.input).
+
+
+MINIMUM NEEDS FOR INPUT FILES
+-----------------------------
+
+The user has to already have at least two types of binary files for the 
+REGRID/regridder/regridder executable as input: an MM5V3-formatted TERRAIN 
+file and a file from one of the pregrid utility programs (which provides 
+the first-guess data).  The user also needs to have the NAMELIST file 
+(REGRID/regridder/namelist.input) set up for their particular run.  
+
+Mininum required data should contain pressure level data from mandatory
+levels: 100, 150, 200, 250, 300, 400, 500, 700, 850, 1000 mb, fields at
+surface, sea-level pressure (SLP) and SST. Without SLP and SST, regridder
+will stop. Without first guess fields for U, V, T, RH at surface,
+regridder will currently use 1000 mb data to fill surface fields. Please
+note that this is not a realistic representation of surface condition
+when there is significant topography in the model domain.
+If regridder does not find surface data, it will print out a warning
+message at each processing time.  One can use namelist option in INTERPF: 
+usesfc = .FALSE. to exclude the use of improperly generated surface data.
+Still, providing surface data is a preferred choice.
+
+
+HOW TO ADD A NEW ARCHITECTURE
+-----------------------------
+
+The regridder program is designed to be portable to machines where the
+FORTRAN 90 software is available.  The user needs to modify the 
+Makefile in the REGRID directory to add a new architecture.  The 
+compiler/loader options need to be consistent with the new name of 
+the architecture/software that the user would like to identify.
+
+
+HOW TO RUN IT
+-------------
+
+1. Make all of the REGRID executables.  The REGRID/Makefile is for that.
+
+2. If the build was successful, there should be a file called "./regridder"
+   in the current working directory (REGRID/regridder).
+
+3. Other files that are needed include the namelist file 
+   (./namelist.input in REGRID/regridder), the input terrain file and the 
+   data output from the pregrid program (see README.namelist in 
+   REGRID/regridder/Doc).
+
+4. To execute the program, type "./regridder" from REGRID/regridder.  On a 
+   successful completion, the binary output file ./REGRID_DOMAINx in the 
+   current working directory should be generated, where 'x' should be the
+   same as the suffix of your terrain file provided to regridder.
+
+5. When setting up the ./namelist.input file in the REGRID/regridder
+   directory, remember that the first occurrence of a replicated field is 
+   retained.  As a good rule of thumb, place the input data names for the 
+   SST and surface fields before the input name with the upper-air data.
+
+
+GOSH, IT DIDN'T WORK
+-------------------
+
+Simply put, this is impossible.  It should work.  

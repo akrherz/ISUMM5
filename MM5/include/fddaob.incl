@@ -1,0 +1,8 @@
+C                                                                                FDDAOB.1
+      REAL ERRF,RIO,RJO,RKO,SAVWT,TIMEOB,VAROBS                                  FDDAOB.2
+      POINTER (IFSVWT,SAVWT(4,MIXFO,MJXFO,MKXFO)),                               FDDAOB.3
+     1    (IFVAR,VAROBS(5,NIOBF)),(IFRIO,RIO(NIOBF)),                            FDDAOB.4
+     1    (IFRJO,RJO(NIOBF)),(IFRKO,RKO(NIOBF)),                                 FDDAOB.5
+     1    (IFTIM,TIMEOB(NIOBF)),(IFERR,ERRF(8,NIOBF))                            05DEC01.640
+C                                                                                FDDAOB.7
+      COMMON /ADDR8/IFSVWT,IFVAR,IFRIO,IFRJO,IFRKO,IFTIM,IFERR                   FDDAOB.8

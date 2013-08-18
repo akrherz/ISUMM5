@@ -1,0 +1,136 @@
+CSTART   mpp_errob_60.incl
+C The idea here is to gather the obs errors that have been computed locally
+C on each processor into global vectors containing all the obs errors and
+C having these vectors replicated on all processors.  This is done using
+C the MPI_ALLGatherv routine (we use the 'v' form since different processors
+C can have different numbers of local obs errors).  This is something like
+C the idea behind the n-body particle code in _Using MPI_ (Gropp, Lusk, and
+C Skjellum, 1996, MIT Press) page 106.
+C
+C An additional wrinkle for us is that we don't want to alter the station
+C indices for each obs.  For a given field, the local obs errors are
+C packed into a contiguous buffer of length 'count', but at the same
+C time, the original station index is also stored in an array that will
+C be gatherv-ed so that each observation can be put back into its
+C original index once the gatherv is complete and the global set of obs
+C errors has been collected on each processor.
+C
+C We rely on the masks having been set above to indicate which of the
+C stations are local for this processor's partition.
+C
+C Currently the fields are treated separately; however, as a further
+C optimization, this should be doable with a single series of gathers
+C for all 5 fields.
+C 
+C John Michalakes, ANL, 980406
+C
+C ---
+C
+C Do the dot fields, U and V
+C
+
+      NLOCAL_DOT = 0
+      DO N = 1, NSTA
+	IF ( MP_LOCAL_DOBMASK(N) ) THEN
+	  NLOCAL_DOT = NLOCAL_DOT + 1
+          U_BUFFER(NLOCAL_DOT) = ERRF(1,N)
+          V_BUFFER(NLOCAL_DOT) = ERRF(2,N)
+          PDOT_BUFFER(NLOCAL_DOT) = ERRF(6,N)
+          PDOT2_BUFFER(NLOCAL_DOT) = ERRF(8,N)
+          N_DOTBUFFER(NLOCAL_DOT) = N
+	ENDIF
+      ENDDO
+      CALL MPI_ALLGATHER(NLOCAL_DOT,1,MPI_INTEGER,
+     +                   ICOUNT,1,MPI_INTEGER,
+     +                   MPI_COMM_WORLD,IERR)
+      I = 1
+
+      IDISPLACEMENT(1) = 0
+      DO I = 2, RSL_NPROC_ALL
+	IDISPLACEMENT(I) = IDISPLACEMENT(I-1) + ICOUNT(I-1)
+      ENDDO
+      CALL MPI_ALLGATHERV( N_DOTBUFFER, NLOCAL_DOT, MPI_INTEGER,
+     +                     IFULL_BUFFER, ICOUNT, IDISPLACEMENT,
+     +                     MPI_INTEGER, MPI_COMM_WORLD, IERROR)
+C U
+      CALL MPI_ALLGATHERV( U_BUFFER, NLOCAL_DOT, MPI_REAL,
+     +                     FULL_BUFFER, ICOUNT, IDISPLACEMENT,
+     +                     MPI_REAL, MPI_COMM_WORLD, IERROR)
+      DO N = 1, NSTA
+	ERRF(1,IFULL_BUFFER(N)) = FULL_BUFFER(N)
+      ENDDO
+C V
+      CALL MPI_ALLGATHERV( V_BUFFER, NLOCAL_DOT, MPI_REAL,
+     +                     FULL_BUFFER, ICOUNT, IDISPLACEMENT,
+     +                     MPI_REAL, MPI_COMM_WORLD, IERROR)
+      DO N = 1, NSTA
+	ERRF(2,IFULL_BUFFER(N)) = FULL_BUFFER(N)
+      ENDDO
+C P DOT
+      CALL MPI_ALLGATHERV( PDOT_BUFFER, NLOCAL_DOT, MPI_REAL,
+     +                     FULL_BUFFER, ICOUNT, IDISPLACEMENT,
+     +                     MPI_REAL, MPI_COMM_WORLD, IERROR)
+      DO N = 1, NSTA
+	ERRF(6,IFULL_BUFFER(N)) = FULL_BUFFER(N)
+      ENDDO
+C P DOT2
+      CALL MPI_ALLGATHERV( PDOT2_BUFFER, NLOCAL_DOT, MPI_REAL,
+     +                     FULL_BUFFER, ICOUNT, IDISPLACEMENT,
+     +                     MPI_REAL, MPI_COMM_WORLD, IERROR)
+      DO N = 1, NSTA
+	ERRF(8,IFULL_BUFFER(N)) = FULL_BUFFER(N)
+      ENDDO
+
+C
+C DO THE CROSS FIELDS, T AND Q
+C
+      NLOCAL_CRS = 0
+      DO N = 1, NSTA
+	IF ( MP_LOCAL_COBMASK(N) ) THEN
+	  NLOCAL_CRS = NLOCAL_CRS + 1
+          T_BUFFER(NLOCAL_CRS) = ERRF(3,N)
+          Q_BUFFER(NLOCAL_CRS) = ERRF(4,N)
+          PCRS_BUFFER(NLOCAL_CRS) = ERRF(5,N)
+          PCRS2_BUFFER(NLOCAL_CRS) = ERRF(7,N)
+          N_CRSBUFFER(NLOCAL_CRS) = N
+	ENDIF
+      ENDDO
+      CALL MPI_ALLGATHER(NLOCAL_CRS,1,MPI_INTEGER,
+     +                   ICOUNT,1,MPI_INTEGER,
+     +                   MPI_COMM_WORLD,IERR)
+      IDISPLACEMENT(1) = 0
+      DO I = 2, RSL_NPROC_ALL
+	IDISPLACEMENT(I) = IDISPLACEMENT(I-1) + ICOUNT(I-1)
+      ENDDO
+      CALL MPI_ALLGATHERV( N_CRSBUFFER, NLOCAL_CRS, MPI_INTEGER,
+     +                     IFULL_BUFFER, ICOUNT, IDISPLACEMENT,
+     +                     MPI_INTEGER, MPI_COMM_WORLD, IERROR)
+C T
+      CALL MPI_ALLGATHERV( T_BUFFER, NLOCAL_CRS, MPI_REAL,
+     +                     FULL_BUFFER, ICOUNT, IDISPLACEMENT,
+     +                     MPI_REAL, MPI_COMM_WORLD, IERROR)
+      DO N = 1, NSTA
+	ERRF(3,IFULL_BUFFER(N)) = FULL_BUFFER(N)
+      ENDDO
+C Q
+      CALL MPI_ALLGATHERV( Q_BUFFER, NLOCAL_CRS, MPI_REAL,
+     +                     FULL_BUFFER, ICOUNT, IDISPLACEMENT,
+     +                     MPI_REAL, MPI_COMM_WORLD, IERROR)
+      DO N = 1, NSTA
+	ERRF(4,IFULL_BUFFER(N)) = FULL_BUFFER(N)
+      ENDDO
+C P CROSS
+      CALL MPI_ALLGATHERV( PCRS_BUFFER, NLOCAL_CRS, MPI_REAL,
+     +                     FULL_BUFFER, ICOUNT, IDISPLACEMENT,
+     +                     MPI_REAL, MPI_COMM_WORLD, IERROR)
+      DO N = 1, NSTA
+	ERRF(5,IFULL_BUFFER(N)) = FULL_BUFFER(N)
+      ENDDO
+C P CROSS2
+      CALL MPI_ALLGATHERV( PCRS2_BUFFER, NLOCAL_CRS, MPI_REAL,
+     +                     FULL_BUFFER, ICOUNT, IDISPLACEMENT,
+     +                     MPI_REAL, MPI_COMM_WORLD, IERROR)
+      DO N = 1, NSTA
+	ERRF(7,IFULL_BUFFER(N)) = FULL_BUFFER(N)
+      ENDDO
+CEND   mpp_errob_60.incl

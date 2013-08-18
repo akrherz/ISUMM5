@@ -1,0 +1,31 @@
+C                                                                                POINT3D.1
+C----------------------------------------------------------------------          POINT3D.2
+C                                                                                POINT3D.3
+C                                                                                POINT3D.4
+      REAL QVA,QVB,TA,TB,UA,UB,VA,VB                                             POINT3D.5
+      POINTER ( IAUA, UA(MIX,MJX,MKX)), ( IAUB, UB(MIX,MJX,MKX)),                POINT3D.6
+     1        ( IAVA, VA(MIX,MJX,MKX)), ( IAVB, VB(MIX,MJX,MKX)),                POINT3D.7
+     2        ( IATA, TA(MIX,MJX,MKX)), ( IATB, TB(MIX,MJX,MKX)),                POINT3D.8
+     3        (IAQVA,QVA(MIX,MJX,MKX)), (IAQVB,QVB(MIX,MJX,MKX))                 POINT3D.9
+C                                                                                POINT3D.10
+C----------------------------------------------------------------------          POINT3D.11
+C                                                                                POINT3D.12
+      REAL QCA,QCB,QRA,QRB                                                       POINT3D.13
+      POINTER (IAQCA,QCA(MIXM,MJXM,MKXM)), (IAQCB,QCB(MIXM,MJXM,MKXM)),          POINT3D.14
+     1        (IAQRA,QRA(MIXM,MJXM,MKXM)), (IAQRB,QRB(MIXM,MJXM,MKXM))           POINT3D.15
+      REAL QIA,QIB,QNIA,QNIB                                                     POINT3D.16
+      POINTER (IAQIA,QIA(MIXIC,MJXIC,MKXIC)),                                    POINT3D.17
+     1        (IAQIB,QIB(MIXIC,MJXIC,MKXIC)),                                    POINT3D.18
+     1        (IAQNIA,QNIA(MIXIC,MJXIC,MKXIC)),                                  POINT3D.19
+     1        (IAQNIB,QNIB(MIXIC,MJXIC,MKXIC))                                   POINT3D.20
+      REAL QGA,QGB,QNCA,QNCB                                                     POINT3D.21
+      POINTER (IAQGA,QGA(MIXIG,MJXIG,MKXIG)),                                    POINT3D.22
+     1        (IAQGB,QGB(MIXIG,MJXIG,MKXIG)),                                    POINT3D.23
+     1        (IAQNCA,QNCA(MIXIG,MJXIG,MKXIG)),                                  POINT3D.24
+     1        (IAQNCB,QNCB(MIXIG,MJXIG,MKXIG))                                   POINT3D.25
+C                                                                                POINT3D.26
+C----------------------------------------------------------------------          POINT3D.27
+C                                                                                POINT3D.28
+      COMMON/ADDR1/  IAUA,  IAUB,  IAVA,  IAVB,  IATA,  IATB, IAQVA,             POINT3D.29
+     1  IAQVB,IAQCA,IAQCB,IAQRA,IAQRB,IAQIA,IAQIB,IAQNIA,IAQNIB                  POINT3D.30
+     2  ,IAQGA,IAQGB,IAQNCA,IAQNCB                                               POINT3D.31

@@ -1,0 +1,8 @@
+CSTART   mpp_setupgd_20.incl
+        IF ( RSL_IAMMONITOR() ) THEN
+        READ (40)NPERDS,DMSCR_G
+        ENDIF
+        CALL RSL_MON_BCAST(NPERDS,IWORDSIZE)
+        CALL RSL_MON_BCAST(DMSCR,MIX_G*MJX_G*RWORDSIZE)
+
+CEND   mpp_setupgd_20.incl

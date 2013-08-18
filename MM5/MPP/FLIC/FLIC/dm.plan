@@ -1,0 +1,74 @@
+DM Distributed memory source translator
+
+Transformations
+
+Ex 1.
+
+  cdm decomp_m mix
+  cdm decomp_n mjx
+    real a(mix,mjx)
+
+    do j = 2, jl-1
+      do i = 2, il-1
+        a(i,j) = ...
+      enddo
+    enddo
+
+  0.  Directives: Declarator MIX is assocatiated w/ M, MJX w/ N
+  1.  Declaration: A is entered into a table S as being
+                   decomposed in m (1) and n (2)
+            
+  2.  Entering a loop
+      Loop nest level++
+      New LOOP
+      LI is loop index
+      LOOP.LI = LI
+      LOOPLIST = ( LOOP, LOOPLIST )
+
+  3.  Reference to array A encountered
+      Get entry for A in S
+      New AR
+      Foreach LOOP in LOOPLIST
+	AR.SYM = symbol table entry of A
+	AR.NDIM = dimensionality of A
+        For each dimension d of A
+           if ( d is over [M|N] )
+             if ( index expression associated w/ d a fcn of LOOP.LI )
+               LOOP.LI.LI_IS |= OVER_[M|N]
+               AR.LI(d) = LOOP.LI    ! can check this to see that all the LI's w/ AR accounted for
+      Foreach LOOP in LOOPLIST
+        LOOP.ARLIST = ( AR, LOOP.ARLIST )
+
+  4.  Exiting a loop
+      LOOP = car( LOOPLIST )
+
+      ! classify the loop
+      switch ( LOOP.LI.LI_IS )
+      case OVER_M :  Classify loop as an M loop and generate appropriate code
+      case OVER_N :  Classify loop as an N loop and generate appropriate code
+      case OVER_M | OVER_N :
+		     Loop is over both M and N?  Looks like an error.
+      default :
+		     Loop is over neither M nor N, leave it alone.
+      endsw
+
+      ! Handle any references to arrays in the loop that are over the
+      ! classified dimension but that are indexed by an expression that is
+      ! not a function of LOOP.LI.
+      Foreach AR in LOOP.ARLIST
+      switch ( LOOP.LI.LI_IS )
+
+      case OVER_M :
+	d = AR.SYM.MDEX
+	if ( .NOT. EXPRESSION_OF( AR.INDEX(d), LOOP.LI ) )
+	  Generate code to handle constant expression in index of A
+	endif
+      endsw
+	
+      Loop nest level--
+      LOOPLIST = cdr( LOOPLIST )
+            
+            
+
+          
+          

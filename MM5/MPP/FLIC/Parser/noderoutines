@@ -1,0 +1,70 @@
+# noderoutines SCCS(4.1 91/02/18 15:40:03)
+
+#!/bin/csh
+#
+# noderoutines
+#  
+# script to make the files edt.aw and minor.c
+# from the files majornodes and minornodes
+#
+
+# make edt.aw
+
+(cat > edt.aw) << "H1"
+/* edt.h
+
+   Enumerated Data Types
+
+   created  11-22-89	michalak@atlantis.ees.anl.gov
+*/
+
+"H1"
+
+awk 'BEGIN{}/^[a-z]/{print"#define "$1;continue}{print$0}END{}' \
+	majornodes \
+	minornodes | \
+cat >> edt.aw
+
+######################################################################
+# make minor.c
+
+(cat > minor.c) << "H2"
+/*
+    minor.c
+
+    routine to print the AST produced by a parse
+
+*/
+#include <stdio.h>
+#include "node.h"
+
+char *
+minorKind( node )
+NodePtr node ;
+{
+    switch (node->nodeKind) {
+        case defK : break ;
+        case exK : break ;
+        case typeK : break ;
+        case tokenK : if( node->u.Token )
+                        return(GETDESCRIP(node->u.Token)) ;
+                      else
+                        return("unknownK -- MAYBE BAD NODE") ;
+                      break ;
+        default : return("unknownK" ) ;
+    }
+
+    switch (node->u.Generic->GenericKind) {
+"H2"
+
+awk '/^[a-z]/{print $1 "\t" $1}' minornodes | \
+sed 's/^/  case /' | \
+sed 's/	/: return("/'  | \
+sed 's/$/\" \) ; break ; /' | \
+cat >> minor.c
+
+(cat >> minor.c) << "H3"
+    default : return("unknown" ) ;
+    }
+}
+"H3"

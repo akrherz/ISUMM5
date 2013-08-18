@@ -1,0 +1,149 @@
+C vec_exmoisr_80.incl
+      DO I=IST,IEN    
+        NSTEP(I) = 1
+      ENDDO
+      DO 80 K=1,KL   
+        DO 90 I=IST,IEN                                                            EXMOISR.425
+C IN THE NONHYDROSTATIC MODEL PSC IS THE SAME AS PSB, PSA                        EXMOISR.428
+C SIGMA=(PRESSURE-PTOP)/(PSURFACE-PTOP)                                          EXMOISR.429
+C NOTE THAT TEMPERATURE=T*PSC, P UNITS OF KILOPASCALS/M2                         EXMOISR.430
+          RHO2=(A(K)*PSB(I,J)+PTOP+PP3D(I,J,K)*0.001)/(R*SCR7(I,K))              EXMOISR.431
+          SLOR1=(1000.*RHO2*SCR4R(I,K)/TOPR)**(0.25*BR)                          EXMOISR.432
+          SLOS1=(1000.*RHO2*SCR4S(I,K)/(TOPS*SONV(I,K)))**(0.25*BS)              EXMOISR.433
+          VT2R=FRAIN*SLOR1                                                       EXMOISR.434
+          VT2S=FSNOW*SLOS1                                                       EXMOISR.435
+          RHO3=((A(K)*PSB(I,J)+PTOP)*1000.+PP3D(I,J,K))/(R*SCR7(I,K)*            EXMOISR.436
+     +         RPSC(I,J))                                                        EXMOISR.437
+C  SEDIMENTATION FORMULA OF HEYMSFIELD AND DONNER (1990 JAS)                     EXMOISR.438
+          IF(ICE(I,K).GT.1.E-25)THEN                                             EXMOISR.439
+            VSED=3.29*(RHO3*ICE(I,K))**0.16                                      EXMOISR.440
+          ELSE                                                                   EXMOISR.441
+            VSED=0.                                                              EXMOISR.442
+          ENDIF                                                                  EXMOISR.443
+C UNITS ARE G-M/S2, RHO2-S2/M2,VT2-M/S                                           EXMOISR.444
+	  RHOFAC(I,K)=RHO0(I,J,K)/(PSB(I,J)*1000.)/RHO2                          05DEC01.mod
+          FR(I,K)=G*RHO2*VT2R                                                      EXMOISR.445
+          FS(I,K)=G*RHO2*VT2S                                                      EXMOISR.446
+          FI(I,K)=G*RHO2*VSED                                                      EXMOISR.447
+C      RGVM=AMAX1(FR(I,K),FS(I,K))                                                   EXMOISR.448
+          RGVM=AMAX1(FR(I,K),FS(I,K),FI(I,K))                                          EXMOISR.449
+C 1 IS TO ROUND UP, REPRESENTS NUMBER OF STEPS                                   EXMOISR.450
+          NSTEP(I)=MAX0(IFIX(RGVM*DT/DSIGMA(K)+1.),NSTEP(I))                           EXMOISR.451
+   90   CONTINUE                                                                 EXMOISR.452
+   80 CONTINUE
+      MORETODO = .TRUE.
+      N = 1
+      DO WHILE ( MORETODO .AND. N .LT. 1000 )
+        MORETODO = .FALSE.
+        DO K=1,KL
+          DO I=IST,IEN
+            IF ( N .LE. NSTEP(I) ) THEN
+              FALOUTR(I,K)=FR(I,K)*SCR4R(I,K)                                          EXMOISR.457
+              FALOUTS(I,K)=FS(I,K)*SCR4S(I,K)                                          EXMOISR.458
+              FALOUTI(I,K)=FI(I,K)*SCR4I(I,K)                                          EXMOISR.459
+            ENDIF
+          ENDDO
+        ENDDO
+C FOR TOP OF MODEL 
+        K=1        
+        DO I=IST,IEN
+          IF ( N .LE. NSTEP(I) ) THEN
+#  ifdef KMA
+            rcp_nstep=1.0/NSTEP(I)
+            FALTNDR=RHOFAC(I,K)*FALOUTR(I,K)*DSIGMA_rcp(K)
+            FALTNDS=RHOFAC(I,K)*FALOUTS(I,K)*DSIGMA_rcp(K)
+            FALTNDI=RHOFAC(I,K)*FALOUTI(I,K)*DSIGMA_rcp(K)
+            QR3DTEN(I,J,K)=QR3DTEN(I,J,K)-FALTNDR* rcp_nstep
+            QNI3DTEN(I,J,K)=QNI3DTEN(I,J,K)-FALTNDS* rcp_nstep
+            QI3DTEN(I,J,K)=QI3DTEN(I,J,K)-FALTNDI* rcp_nstep
+            SCR4R(I,K)=SCR4R(I,K)-FALTNDR*DT* rcp_nstep
+            SCR4S(I,K)=SCR4S(I,K)-FALTNDS*DT* rcp_nstep
+            SCR4I(I,K)=SCR4I(I,K)-FALTNDI*DT* rcp_nstep
+#  else
+            FALTNDR=RHOFAC(I,K)*FALOUTR(I,K)/DSIGMA(K)
+            FALTNDS=RHOFAC(I,K)*FALOUTS(I,K)/DSIGMA(K)    
+            FALTNDI=RHOFAC(I,K)*FALOUTI(I,K)/DSIGMA(K)     
+            QR3DTEN(I,J,K)=QR3DTEN(I,J,K)-FALTNDR/NSTEP(I)                            EXMOISR.466
+            QNI3DTEN(I,J,K)=QNI3DTEN(I,J,K)-FALTNDS/NSTEP(I)                          EXMOISR.467
+            QI3DTEN(I,J,K)=QI3DTEN(I,J,K)-FALTNDI/NSTEP(I)                            EXMOISR.468
+            SCR4R(I,K)=SCR4R(I,K)-FALTNDR*DT/NSTEP(I)                                 EXMOISR.469
+            SCR4S(I,K)=SCR4S(I,K)-FALTNDS*DT/NSTEP(I)                                 EXMOISR.470
+            SCR4I(I,K)=SCR4I(I,K)-FALTNDI*DT/NSTEP(I)                                 EXMOISR.471
+#  endif
+          ENDIF
+        ENDDO
+        DO 120 K=2,KL
+          DO I=IST,IEN
+            IF ( N .LE. NSTEP(I) ) THEN
+#  ifdef KMA
+              rcp_nstep=1.0/NSTEP(I)
+              FALTNDR=RHOFAC(I,K)*(FALOUTR(I,K)-FALOUTR(I,K-1))*
+     &                   DSIGMA_rcp(K)
+              FALTNDS=RHOFAC(I,K)*(FALOUTS(I,K)-FALOUTS(I,K-1))*
+     &                   DSIGMA_rcp(K)
+              FALTNDI=RHOFAC(I,K)*(FALOUTI(I,K)-FALOUTI(I,K-1))*
+     &                   DSIGMA_rcp(K)
+              QR3DTEN(I,J,K)=QR3DTEN(I,J,K)-FALTNDR* rcp_nstep
+              QNI3DTEN(I,J,K)=QNI3DTEN(I,J,K)-FALTNDS* rcp_nstep
+              QI3DTEN(I,J,K)=QI3DTEN(I,J,K)-FALTNDI* rcp_nstep
+              SCR4R(I,K)=SCR4R(I,K)-FALTNDR*DT* rcp_nstep
+              SCR4S(I,K)=SCR4S(I,K)-FALTNDS*DT* rcp_nstep
+              SCR4I(I,K)=SCR4I(I,K)-FALTNDI*DT* rcp_nstep
+              FR(I,K)=AMAX1(FR(I,K)/DSIGMA(K),FR(I,K-1)*
+     +              DSIGMA_rcp(K-1))*DSIGMA(K)
+              FS(I,K)=AMAX1(FS(I,K)/DSIGMA(K),FS(I,K-1)*
+     +              DSIGMA_rcp(K-1))*DSIGMA(K)
+              FI(I,K)=AMAX1(FI(I,K)/DSIGMA(K),FI(I,K-1)*
+     +              DSIGMA_rcp(K-1))*DSIGMA(K)
+#  else
+              FALTNDR=RHOFAC(I,K)*(FALOUTR(I,K)-FALOUTR(I,K-1))
+     &                  /DSIGMA(K)
+              FALTNDS=RHOFAC(I,K)*(FALOUTS(I,K)-FALOUTS(I,K-1))
+     &                  /DSIGMA(K)  
+              FALTNDI=RHOFAC(I,K)*(FALOUTI(I,K)-FALOUTI(I,K-1))
+     &                  /DSIGMA(K) 
+              QR3DTEN(I,J,K)=QR3DTEN(I,J,K)-FALTNDR/NSTEP(I)                          EXMOISR.476
+              QNI3DTEN(I,J,K)=QNI3DTEN(I,J,K)-FALTNDS/NSTEP(I)                        EXMOISR.477
+              QI3DTEN(I,J,K)=QI3DTEN(I,J,K)-FALTNDI/NSTEP(I)                          EXMOISR.478
+              SCR4R(I,K)=SCR4R(I,K)-FALTNDR*DT/NSTEP(I)                               EXMOISR.479
+              SCR4S(I,K)=SCR4S(I,K)-FALTNDS*DT/NSTEP(I)                               EXMOISR.480
+              SCR4I(I,K)=SCR4I(I,K)-FALTNDI*DT/NSTEP(I)                               EXMOISR.481
+              FR(I,K)=AMAX1(FR(I,K)/DSIGMA(K),FR(I,K-1)/
+     +              DSIGMA(K-1))*DSIGMA(K)
+              FS(I,K)=AMAX1(FS(I,K)/DSIGMA(K),FS(I,K-1)/
+     +              DSIGMA(K-1))*DSIGMA(K)
+              FI(I,K)=AMAX1(FI(I,K)/DSIGMA(K),FI(I,K-1)/
+     +              DSIGMA(K-1))*DSIGMA(K)
+#  endif
+            ENDIF
+          ENDDO
+  120   CONTINUE
+
+C     ACCUMULATED RAIN                                                           EXMOISR.486
+        DO I=IST,IEN
+          IF ( N .LE. NSTEP(I) ) THEN
+            MORETODO = .TRUE.
+#  ifdef KMA
+            rcp_nstep=1.0/NSTEP(I)
+            RAINNC(I,J)=RAINNC(I,J)+(FALOUTR(I,KL)+FALOUTS(I,KL)+
+     +                  FALOUTI(I,KL))*
+     +                  DTMIN*6000.*g_rcp*rcp_nstep
+c      snownct stores current timestep snowfall for ifsnow=2 option     
+            SNOWNCT(I,J)=(FALOUTS(I,KL)+FALOUTI(I,KL))*
+     &                  DTMIN*6000.*g_rcp*rcp_nstep
+#  else
+            RAINNC(I,J)=RAINNC(I,J)+(FALOUTR(I,KL)+FALOUTS(I,KL)+
+     +                  FALOUTI(I,KL))*
+     +                  DTMIN*6000./G/NSTEP(I)                            
+c      snownct stores current timestep snowfall for ifsnow=2 option  
+      SNOWNCT(I,J)=(FALOUTS(I,KL)+FALOUTI(I,KL))*DTMIN*6000./G/NSTEP(I)
+#  endif
+          ENDIF
+        ENDDO
+        N = N + 1
+      ENDDO ! WHILE
+      IF(N.GE.1000)THEN
+            PRINT *, 'STOPPING IN VECTOR EXMOISR, NEST = ',IN,' I = ',I    
+            STOP 'IN SUB. EXMOISR, NSTEP TOO LARGE, PROBABLY NAN'          
+      END IF
+C end vec_exmoisr_80.incl

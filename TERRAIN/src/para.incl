@@ -1,0 +1,3 @@
+       PARAMETER (XMINLAT=  72.965, XMAXLAT=  78.152)                            PARA.1
+       PARAMETER (XMINLON= -42.381, XMAXLON= -26.904)                            PARA.2
+       PARAMETER (NLN = 1, NLT = 1, IFORT=60)                                    PARA.3

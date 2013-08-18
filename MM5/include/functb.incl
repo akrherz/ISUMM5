@@ -1,0 +1,116 @@
+      REAL L2BVTS3,                                                              FUNCTB.1
+     1     L2BVTS2,                                                              FUNCTB.2
+     2     L2BVT3,                                                               FUNCTB.3
+     3     L2BVT2,                                                               FUNCTB.4
+     4     L2BVT,                                                                FUNCTB.5
+     5     L2BVTS,                                                               FUNCTB.6
+     6     NCICE,                                                                FUNCTB.7
+     7     LAMDAW,                                                               FUNCTB.8
+     8     LAMDAI,                                                               FUNCTB.9
+     9     PRC20P33,                                                             FUNCTB.10
+     1     PRE20P5,                                                              FUNCTB.11
+     2     T21P81,                                                               FUNCTB.12
+     3     T21P50,                                                               FUNCTB.13
+     4     SATVPI,                                                               FUNCTB.14
+     5     SATVPW,                                                               FUNCTB.15
+     6     NOSFAC,                                                               FUNCTB.16
+     7     HETFRZ,                                                               FUNCTB.17
+     8     XMI20P5,                                                              FUNCTB.18
+     9     NOSF0P25,                                                             FUNCTB.19
+     1     NOS25,                                                                FUNCTB.20
+     2     NOS                                                                   FUNCTB.21
+      REAL SCR                                                                   FUNCTB.22
+                                                                                 FUNCTB.23
+C                                                                                FUNCTB.24
+C STATEMENT FUNCTIONS USED FOR LOOK-UP TABLES                                    FUNCTB.25
+C                                                                                FUNCTB.26
+C L2BVTS3 : LAMDA**BVTS3 (LAMDA REFERS TO (1/(RHO*Q))**0.25)                     FUNCTB.27
+C L2BVTS2 : LAMDA**BVTS2                                                         FUNCTB.28
+C L2BVT3  : LAMDA**BVT3                                                          FUNCTB.29
+C L2BVT2  : LAMDA**BVT2                                                          FUNCTB.30
+C L2BVT   : LAMDA**BVT                                                           FUNCTB.31
+C L2BVTS  : LAMDA**BVTS                                                          FUNCTB.32
+C PRC20P33: PRC**0.333                                                           FUNCTB.33
+C PRE20P5 : PRE**0.5                                                             FUNCTB.34
+C NCICE   : NUMBER CONCENTRATION FOR ICE                                         FUNCTB.35
+C T21P81  : T**1.81                                                              FUNCTB.36
+C T21P50  : T**1.50                                                              FUNCTB.37
+C LAMDAW  : LAMDA OVER WATER                                                     FUNCTB.38
+C LAMDAI  : LAMDA OVER ICE                                                       FUNCTB.39
+C SATVPI  : SATURATION VAPOR PRESSURE OVER ICE                                   FUNCTB.40
+C SATVPW  : SATURATION VAPOR PRESSURE OVER WATER                                 FUNCTB.41
+C NOSF    : FACTOR OF SLOP INTERCEPT FOR SNOW                                    FUNCTB.42
+C NOSF0P25: 1/(NOSF**0.25)                                                       FUNCTB.43
+C HETFRZ  : HETEOROGENOUS FREEZING OF CLOUD DROPLETS                             FUNCTB.44
+C XMI20P5 : XMI**0.5                                                             FUNCTB.45
+                                                                                 FUNCTB.46
+      L2BVTS3(SCR) =PBVTS3(INT(SCALE*SCR))                                       FUNCTB.47
+     1      +(SCALE*SCR-FLOAT(INT(SCALE*SCR)))*(PBVTS3(INT(SCALE*SCR)+1)         FUNCTB.48
+     2      -PBVTS3(INT(SCALE*SCR)))                                             FUNCTB.49
+                                                                                 FUNCTB.50
+      L2BVTS2(SCR) =PBVTS2(INT(SCALE*SCR))                                       FUNCTB.51
+     1      +(SCALE*SCR-FLOAT(INT(SCALE*SCR)))*(PBVTS2(INT(SCALE*SCR)+1)         FUNCTB.52
+     2      -PBVTS2(INT(SCALE*SCR)))                                             FUNCTB.53
+                                                                                 FUNCTB.54
+      L2BVT3(SCR)  =PBVT3(INT(SCALE*SCR))                                        FUNCTB.55
+     1       +(SCALE*SCR-FLOAT(INT(SCALE*SCR)))*(PBVT3(INT(SCALE*SCR)+1)         FUNCTB.56
+     2       -PBVT3(INT(SCALE*SCR)))                                             FUNCTB.57
+                                                                                 FUNCTB.58
+      L2BVT2(SCR)  =PBVT2(INT(SCALE*SCR))                                        FUNCTB.59
+     1       +(SCALE*SCR-FLOAT(INT(SCALE*SCR)))*(PBVT2(INT(SCALE*SCR)+1)         FUNCTB.60
+     2       -PBVT2(INT(SCALE*SCR)))                                             FUNCTB.61
+                                                                                 FUNCTB.62
+      L2BVT(SCR)   =PBVT(INT(SCALE*SCR))                                         FUNCTB.63
+     1      +(SCALE*SCR-FLOAT(INT(SCALE*SCR)))*(PBVT(INT(SCALE*SCR)+1)           FUNCTB.64
+     2      -PBVT(INT(SCALE*SCR)))                                               FUNCTB.65
+                                                                                 FUNCTB.66
+      L2BVTS(SCR)  =PBVTS(INT(SCALE*SCR))                                        FUNCTB.67
+     1       +(SCALE*SCR-FLOAT(INT(SCALE*SCR)))*(PBVTS(INT(SCALE*SCR)+1)         FUNCTB.68
+     2       -PBVTS(INT(SCALE*SCR)))                                             FUNCTB.69
+                                                                                 FUNCTB.70
+      PRC20P33(SCR)=RPRC(INT(1.E2*SCR))+(1.E2*SCR-FLOAT(INT(1.E2*SCR)))          FUNCTB.71
+     1        *(RPRC(INT(1.E2*SCR)+1)-RPRC(INT(1.E2*SCR)))                       FUNCTB.72
+                                                                                 FUNCTB.73
+      PRE20P5(SCR) =RPRE(INT(1.E6*SCR))+(1.E6*SCR-FLOAT(INT(1.E6*SCR)))          FUNCTB.74
+     1        *(RPRE(INT(1.E6*SCR)+1)-RPRE(INT(1.E6*SCR)))                       FUNCTB.75
+                                                                                 FUNCTB.76
+      NCICE(SCR)   =XNCTBL(INT(100.0*SCR))                                       FUNCTB.77
+     1      +(100.0*SCR-FLOAT(INT(100.0*SCR)))*(XNCTBL(INT(100.0*SCR)+1)         FUNCTB.78
+     2      -XNCTBL(INT(100.0*SCR)))                                             FUNCTB.79
+                                                                                 FUNCTB.80
+      T21P81(SCR)  =HDT181(INT(10.0*SCR))                                        FUNCTB.81
+     1       +(10.0*SCR-FLOAT(INT(10.0*SCR)))*(HDT181(INT(10.0*SCR)+1)           FUNCTB.82
+     1           -HDT181(INT(10.0*SCR)))                                         FUNCTB.83
+                                                                                 FUNCTB.84
+      T21P50(SCR)  =HDT150(INT(10.0*SCR))                                        FUNCTB.85
+     1       +(10.0*SCR-FLOAT(INT(10.0*SCR)))*(HDT150(INT(10.0*SCR)+1)           FUNCTB.86
+     2       -HDT150(INT(10.0*SCR)))                                             FUNCTB.87
+                                                                                 FUNCTB.88
+                                                                                 FUNCTB.89
+      LAMDAW(SCR)  =(RLAMDA(INT(SCR))+(SCR-FLOAT(INT(SCR)))                      FUNCTB.90
+     1       *(RLAMDA(INT(SCR)+1)-RLAMDA(INT(SCR))))*PPICAL                      FUNCTB.91
+                                                                                 FUNCTB.92
+      LAMDAI(SCR)  =(RLAMDA(INT(SCR))+(SCR-FLOAT(INT(SCR)))                      FUNCTB.93
+     1    *(RLAMDA(INT(SCR)+1)-RLAMDA(INT(SCR))))*PPISCL                         FUNCTB.94
+                                                                                 FUNCTB.95
+      SATVPI(SCR)  =HDIES(INT(100.0*SCR))                                        FUNCTB.96
+     1       +(100.0*SCR-FLOAT(INT(100.0*SCR)))                                  FUNCTB.97
+     2       *(HDIES(INT(100.0*SCR)+1)-HDIES(INT(100.0*SCR)))                    FUNCTB.98
+                                                                                 FUNCTB.99
+      SATVPW(SCR)  =HDWES(INT(100.0*SCR))                                        FUNCTB.100
+     1       +(100.0*SCR-FLOAT(INT(100.0*SCR)))                                  FUNCTB.101
+     2       *(HDWES(INT(100.0*SCR)+1)-HDWES(INT(100.0*SCR)))                    FUNCTB.102
+                                                                                 FUNCTB.103
+      NOSFAC(SCR)  =NOS(INT(SCR))+(SCR-FLOAT(INT(SCR)))                          FUNCTB.104
+     1              *(NOS(INT(SCR)+1)-NOS(INT(SCR)))                             FUNCTB.105
+                                                                                 FUNCTB.106
+      NOSF0P25(SCR)  =NOS25(INT(1.E5*SCR))                                       FUNCTB.107
+     1              +(1.0E5*SCR-FLOAT(INT(1.0E5*SCR)))                           FUNCTB.108
+     1              *(NOS25(INT(1.0E5*SCR)+1)-NOS25(INT(1.0E5*SCR)))             FUNCTB.109
+                                                                                 FUNCTB.110
+      XMI20P5(SCR) =RXMI(INT(1.0E12*SCR))                                        FUNCTB.111
+     1              +(1.0E12*SCR-FLOAT(INT(1.0E12*SCR)))                         FUNCTB.112
+     1              *(RXMI(INT(1.0E12*SCR)+1)-RXMI(INT(1.0E12*SCR)))             FUNCTB.113
+                                                                                 FUNCTB.114
+      HETFRZ(SCR)  =HETF(INT(10.0*SCR))+(10.0*SCR-FLOAT(INT(10.0*SCR)))          FUNCTB.115
+     1              *(HETF(INT(10.0*SCR)+1)-HETF(INT(10.0*SCR)))                 FUNCTB.116

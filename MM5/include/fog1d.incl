@@ -1,0 +1,12 @@
+C                                                                                FOG1D.1
+C**********************************************************************          FOG1D.2
+C                                                                                FOG1D.3
+      INTEGER KFOGT                                                              FOG1D.4
+      REAL FOGFR,FOGFRT,FGINET                                                   FOG1D.5
+      COMMON/FOG1D/  FOGFR, FOGFRT, KFOGT, FGINET                                FOG1D.6
+      DIMENSION FOGFR(MIXG),                                                     FOG1D.7
+     &          FOGFRT(MIXG), KFOGT(MIXG), FGINET(MIXG)                          FOG1D.8
+c$omp threadprivate (/fog1d/)                                                    FOG1D.10
+C                                                                                FOG1D.11
+C**********************************************************************          FOG1D.12
+C                                                                                FOG1D.13

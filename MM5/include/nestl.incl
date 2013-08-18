@@ -1,0 +1,15 @@
+      INTEGER IEN,INM1,INM2,INORTH,INP1,INP2,ISM1,ISM2,ISOUTH,ISP1,ISP2          NESTL.1
+     $,ISTAR,ISTO,JEAST,JEM1,JEM2,JEN,JEP1,JEP2,JSTAR,JSTO,JWEST,JWM1,J          NESTL.2
+     $WM2,JWP1,JWP2,NUMNES                                                       NESTL.3
+      POINTER ( INN1,NUMNES),( INN2,JEAST),( INN3,JWEST),                        NESTL.4
+     1    ( INN4,INORTH),( INN5,ISOUTH),( INN6,JEP2),(INN7,JEP1),                NESTL.5
+     2    ( INN8,JEM1),( INN9,JEM2), ( INN10,JWP2),( INN11,JWP1),                NESTL.6
+     3    ( INN12,JWM1),( INN13,JWM2),(INN14,ISP2),( INN15,ISP1),                NESTL.7
+     4    ( INN16,ISM1),( INN17,ISM2),(INN18,INP2),( INN19,INP1),                NESTL.8
+     5    ( INN20,INM1),( INN21,INM2),                                           NESTL.9
+     5  (INN22,ISTAR(MAXSES)),(INN23,IEN(MAXSES)),                               NESTL.10
+     6  (INN24,JSTAR(MAXSES)),(INN25,JEN(MAXSES)),                               NESTL.11
+     7  (INN26,ISTO(MAXSES)),(INN27,JSTO(MAXSES))                                NESTL.12
+      COMMON/ADDRNN/ INN1,INN2,INN3,INN4,INN5,INN6,INN7,INN8,INN9,               NESTL.13
+     1    INN10,INN11,INN12,INN13,INN14,INN15,INN16,INN17,INN18,                 NESTL.14
+     2    INN19,INN20,INN21,INN22,INN23,INN24,INN25,INN26,INN27                  NESTL.15

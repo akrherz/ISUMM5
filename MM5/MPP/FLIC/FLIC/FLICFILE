@@ -1,0 +1,29 @@
+cflic mdim=mix,mixm,mixa,mixr,mixs,mixic,mixicg
+cflic mdim=mixig,mixfo,mixfg,mixnh,mixc,mixv
+cflic mdim=id3
+
+cflic ndim=mjx,mjxm,mjxa,mjxr,mjxs,mjxic,mjxicg
+cflic ndim=mjxig,mjxfo,mjxfg,mjxnh,mjxc,mjxv
+cflic ndim=id4
+
+cflic n=decpu:j
+cflic n=nudge:j
+cflic n=hadv:j
+cflic n=vadv:j
+cflic n=diffu:j,diffut:j
+cflic n=blkpbl:j
+cflic n=hirpbl:j,slab:j,sfcrad:j
+cflic n=navypb:j,mrfpbl:j
+cflic n=shallcu:j
+cflic n=swrad:j,lwrad:j
+cflic n=zexmoisr:j,lexmoisr:j,exmoisr:j,exmoisg:j,godmic:j
+cflic n=cupara2:j
+cflic n=cupara3:j,cup:j,minimi:j,maximi:j
+cflic n=cupara4:j,arasch:j
+cflic n=cupara5:j,fcpara:j
+cflic n=cupara6:j,kfpara:j
+cflic n=cupara7:j,bmpara:j
+cflic n=radcool:j
+cflic n=convad:j
+cflic n=nconvp:j
+

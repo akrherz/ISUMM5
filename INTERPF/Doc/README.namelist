@@ -1,0 +1,124 @@
+6 June 1999
+
+INTRODUCTION
+------------
+
+The INTERP namelist file is named "namelist.input" and must be
+in the user's current working directory.  The namelist has
+comments (anything after a "!" on a line).  This is part of
+the f95 standard.  SGI and Cray machines do not yet support
+this capability, so the comments need to be removed when 
+running on one of those platforms.  IBM and Compaq support
+comments.
+
+
+NAMELIST RECORDS
+----------------
+
+The namelist is broken into several records.  All of the user
+defined information to run the INTERP program are provided by
+namelist options.
+
+The INTERP program accepts either a single input file or multiple
+input files from the same domain (such as would happen if a single
+first-guess analysis file was separated into several pieces).  The
+INTERP program  does not do any horizontal interpolation.  Only a 
+first-guess pressure-level data set may be input to INTERP.  In the 
+MM5 system, this file is either from regridder or from RAWINS/little_r,
+or interpolated model output.  The file name may contain directory 
+information.
+
+&record0
+ input_file     = '/mmmtmp/mesouser/v3/rawins.out.v3' /    ! Input file name
+
+An example with multiple input files is:
+
+&record0
+ input_file     = '/mmmtmp/mesouser/v3/rawins.out.v3_01'   ! Input file name
+                  '/mmmtmp/mesouser/v3/rawins.out.v3_02' / ! Input file name
+
+
+The dates are specified as components: a 4-digit year, 2-digit
+month, 2-digit day and 2-digit hour.  Both the starting and ending
+time of the INTERP processing are required.  The time interval is
+specified in seconds.
+
+&record1
+ start_year     =  1993                               ! The starting and
+ start_month    =    03                               ! ending dates to
+ start_day      =    13                               ! process
+ start_hour     =    00                               !
+ end_year       =  1993                               !
+ end_month      =    03                               !
+ end_day        =    14                               ! 
+ end_hour       =    00                               !
+ interval       = 43200                               ! time difference (s)
+ less_than_24h  = .FALSE. /
+
+
+The next record deal loosely with vertical information.  The sigma
+data are to be filled in as full levels, in the bottom-up orientation.
+The user must have 1.0 as the first value, 0.0 as the last value,
+and a monotonically decreasing distribution between these two
+anchoring points.  
+
+The switch "isfc" allows
+the user to adjust how many layers are forced to use the surface data
+from the input.  Isfc=0 forces the traditional technique where the 
+two surrounding pressure levels are interpolated to the sigma surface.
+Isfc=1 uses the surface data as the lowest sigma level.  Isfc=N, where
+N > 1, uses the surface data for all interpolations to the N sigma layers
+closest to the ground.
+
+&record2
+ sigma_f_bu     = 1.00,0.99,0.98,0.96,0.93,0.89,      ! full sigma, bottom-up,
+                  0.85,0.80,0.75,0.70,0.65,0.60,      ! start with 1.0, end
+                  0.55,0.50,0.45,0.40,0.35,0.30,      ! with 0.0
+                  0.25,0.20,0.15,0.10,0.05,0.00       !
+ ptop           = 100.                                ! top model pressure
+ isfc           = 0 /                                 ! # sigma levels to spread
+                                                      ! surface information
+
+The MM5 base state is built in INTERP.  The user supplies the reference
+sea-level pressure (1.e5 Pa), the temperature lapse rate (50 d(T)/d(ln P)), 
+the reference sea-level temperature (K), and the temperature at which the
+base state turns isothermal.
+
+&record3
+ p0             = 1.e5                                ! base state sea-level pres (Pa)
+ tlp            = 50                                  ! base state lapse rate d(T)/d(ln P)
+ ts0            = 275 /                               ! base state sea-level temp (K)
+ tiso           = 0 /                                 ! base state isothermal stratospheric temp (K)
+
+To turn off the isothermal part of the base state, leave tiso=0.   
+This option is useful if the trapopause is low and 
+your model top is well within statosphere.
+
+Several user options are available.  Options exists to remove the
+integrated mean divergience, to force the interpolation scheme to
+use the meteorological surface field (u, v, T, RH), and the choice
+of computing specific humidty with respect to water (T) or ice (F).
+Since version 3.6, a new option is added (psfc_method) that gives the
+user the choice between using the default calculation for surface
+pressure (psfc_method = 0), or to calculate the surface pressure from
+the dirurnal avarage (psfc_method = 1). The new method is recommended
+in cases where strong inversion exists in the lower atmosphere. Such
+case may occur in polar, and/or other very cold regions. 
+
+&record4
+ removediv      = .TRUE.                              ! T/F remove integrated mean divergence
+ usesfc         = .TRUE.                              ! T/F use surface data 
+ wrth2o         = .TRUE.                              ! T/F specific humidity wrt H2O
+ psfc_method    = 0 /                                 ! 0: old method
+                                                      ! 1: sfc temperature from diurnal avg
+
+For users not doing any grid point nudging, the option is available to
+simply output a single time for the initial condition.  Ifdatim=N says to output
+N time periods of initital condition data.  This option does not effect the
+period through which the lateral boundary file or the lower boundary file are 
+valid.  This option simply reduces the amount of data that is written to the 
+initial condition file.  Without analysis FDDA, ifdatim=1 is adeqate for 
+the model.
+
+&record5
+ ifdatim        = 3 /                                 ! # of IC time periods to output

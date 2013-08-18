@@ -1,0 +1,145 @@
+#	Lower level Makefile for TERRAIN
+
+#       Suffix rules and commands
+#######################
+FIX01 =
+#######################
+
+.IGNORE:
+
+.SUFFIXES:      .F .f .i .o
+
+.F.o:
+		$(RM) $@ 
+#		cut -c1-72 $*.F | $(CPP) $(CPPFLAGS) -D$(MACH) $(FIX01)  > $*.f
+		$(FC) -c $(CPPFLAGS) -D$(MACH) $(FIX01) $(FCFLAGS) $*.F
+#		$(RM) $*.f
+
+.F.f:
+		$(RM) $@
+#		cut -c1-72 $*.F | $(CPP) $(CPPFLAGS) -D$(MACH) $(FIX01)  > $*.f
+
+.f.o:
+		$(RM) $@
+		$(FC) -c $(FCFLAGS) $(FIX01) $*.f
+#		$(RM) $*.f
+
+OBJS	=	ia.o anal2.o bint.o bndry.o crlnd.o crter.o dfclrs.o exaint.o \
+		finprt.o fudger.o interp.o label.o lakes.o \
+		latlon.o llxy.o mxmnll.o nestll.o oned.o \
+		outpt.o output.o pltter.o rdldtr.o replace.o rflp.o setup.o sint.o \
+		smth121.o smther.o smthtr.o terdrv.o terrain.o tfudge.o vtran.o \
+		xyobsll.o hiresmap.o plots.o crvst.o \
+		crvst30s.o nestbdy.o crsoil.o  equate.o  labels.o  labelv.o patch.o   \
+		plotcon.o watercheck.o crlwmsk.o soil_tg.o water_vfr.o check_data.o \
+		terrestial_info.o write_fieldrec.o
+
+SRC	=	$(OBJS:.o=.F)
+
+#
+#	for preprocessor 1
+#
+
+OBJS1	=  	latlon.o llxy.o mxmnll.o nestll.o rflp.o setup.o outpt.o vtran.o \
+        	search.o data30s.o data_area.o
+
+SRC1	=   	$(OBJS1:.o=.i)
+
+#
+#	for preprocessor 2     
+#
+
+OBJS2	=  	cr30sdata.o  read30s.o rdem.o ia.o
+
+SRC2	=   	$(OBJS2:.o=.i)
+   
+cray dec hp ibm sgi sun default:
+		@echo "you need to be up a directory to make terrain.exe"
+
+all:: 		terrain.exe data_area.exe rdem.exe rdnml
+
+rdnml:		rdnml.o
+		$(FC) rdnml.o -o $@
+
+terrain.exe:	$(OBJS) 
+		$(FC) -o $@ $(LDOPTIONS) $(OBJS) $(LOCAL_LIBRARIES)
+
+code:		$(SRC) 
+
+data_area.exe: 	$(OBJS1)
+		$(RM) $@
+		$(FC) -o $@ $(OBJS1) $(LDOPTIONS) $(LOCAL_LIBRARIES) $(LDLIBS)
+
+code1: 		$(SRC1)
+
+rdem.exe: 	$(OBJS2)
+		$(RM) $@
+		$(FC) -o $@ $(OBJS2) $(LDOPTIONS) $(LOCAL_LIBRARIES) $(LDLIBS)
+
+code2: 		$(SRC2)
+
+# -------------------------------------------------------------------------
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+anal2.o: 	parame.incl nestdmn.incl io.incl
+bndry.o: 	maps.incl option.incl
+crlnd.o: 	parame.incl paramed.incl ltdata.incl fudge.incl option.incl
+crlnd.o: 	maps.incl nestdmn.incl trfudge.incl ezwater.incl ../Makefile
+crlnd.o: 	io.incl 
+crlwmsk.o: 	parame.incl paramesv.incl paramed.incl maps.incl nestdmn.incl
+crlwmsk.o: 	ltdata.incl io.incl
+crsoil.o: 	parame.incl paramesv.incl paramed.incl ltdata.incl io.incl
+crter.o: 	parame.incl paramed.incl nestdmn.incl option.incl ltdata.incl
+crter.o: 	io.incl
+crvst.o: 	parame.incl paramed.incl ltdata.incl io.incl
+crvst30s.o: 	parame.incl paramed.incl nestdmn.incl maps.incl ltdata.incl
+crvst30s.o: 	io.incl 
+cr30sdata.o: 	../Makefile
+data_area.o: 	parame.incl maps.incl nestdmn.incl ltdata.incl io.incl
+dfclrs.o: 	../Makefile
+exaint.o: 	parame.incl
+finprt.o: 	option.incl parame.incl paramesv.incl headerv3.incl ../Makefile
+finprt.o: 	io.incl
+interp.o: 	option.incl ltdata.incl io.incl
+hiresmap.o: 	../Makefile
+ia.o: 		../Makefile
+label.o: 	paramesv.incl vs_cmn2.incl ../Makefile
+labels.o: 	paramesv.incl vs_cmn2.incl ../Makefile
+labelv.o: 	paramesv.incl vs_cmn2.incl ../Makefile
+latlon.o: 	maps.incl option.incl
+llxy.o: 	maps.incl
+mxmnll.o: 	parame.incl maps.incl option.incl
+nestbdy.o: 	parame.incl
+nestll.o: 	option.incl
+output.o: 	option.incl paramesv.incl ltdata.incl headerv3.incl nestdmn.incl
+output.o: 	maps.incl namelist.incl vs_cmn2.incl vs_cmn1.incl io.incl
+plotcon.o: 	../Makefile
+plots.o: 	../Makefile
+pltter.o: 	parame.incl maps.incl nestdmn.incl option.incl paramesv.incl
+pltter.o: 	vs_cmn1.incl vs_cmn2.incl ../Makefile
+rdldtr.o: 	paramed.incl paramesv.incl space.incl
+rdem.o: 	../Makefile
+replace.o: 	parame.incl option.incl paramesv.incl vs_cmn1.incl maps.incl
+replace.o: 	nestdmn.incl io.incl
+rflp.o: 	maps.incl
+search.o: 	parame.incl maps.incl nestdmn.incl ltdata.incl option.incl
+search.o: 	io.incl
+setup.o: 	ezwater.incl parame.incl paramesv.incl maps.incl nestdmn.incl
+setup.o: 	fudge.incl trfudge.incl option.incl ltdata.incl namelist.incl
+setup.o: 	vs_cmn1.incl vs_cmn2.incl vs_data.incl io.incl ../Makefile
+sint.o: 	parame.incl
+smth121.o: 	parame.incl
+smthtr.o: 	parame.incl
+terdrv.o: 	paramed.incl parame.incl paramesv.incl maps.incl nestdmn.incl
+terdrv.o: 	option.incl ltdata.incl trfudge.incl space.incl vs_cmn1.incl
+terdrv.o: 	vs_cmn2.incl io.incl
+terrain.o: 	parame.incl paramesv.incl maps.incl nestdmn.incl option.incl
+terrain.o: 	ezwater.incl io.incl ../Makefile
+terrestial_info.o: maps.incl
+tfudge.o: 	parame.incl paramesv.incl vs_cmn1.incl maps.incl nestdmn.incl
+tfudge.o: 	io.incl 
+vtran.o: 	parame.incl
+xyobsll.o: 	maps.incl option.incl
+
+clean:
+		$(RM) $(RM_LIST)

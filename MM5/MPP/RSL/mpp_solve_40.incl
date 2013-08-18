@@ -1,0 +1,10 @@
+C mpp_solve_40.incl begin
+C 
+C             + *
+C             + +
+C 
+C u3dten       x
+C v3dten       x
+C 
+      CALL RSL_EXCH_STENCIL(DOMAINS(INEST),STEN_C(INEST))
+C mpp_solve_40.incl end

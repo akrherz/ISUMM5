@@ -1,0 +1,22 @@
+      REAL DQDTN,DQIDTN,DQLDTN,DQRDTN,DQSDTN,DTDTN,DUDTN,DVDTN,RAINCVN,          ADDRCUN.1
+     1     W0AVGN                                                                ADDRCUN.2
+      INTEGER NCAN                                                               ADDRCUN.3
+      REAL TNCAN,PSRCN,PCLBN,UMFBN,SPSRCN,SPCLBN,SUMFBN,CINN                     05DEC01.628
+      INTEGER NCADN                                                              05DEC01.629
+      POINTER                                                                    ADDRCUN.4
+     1(INDTDT,DTDTN(MIXC,MJXC,MKXC))  ,(INDQDT,DQDTN(MIXC,MJXC,MKXC)),           ADDRCUN.5
+     2(INDUDT,DUDTN(MIXC,MJXC,MKXC))  ,(INDVDT,DVDTN(MIXC,MJXC,MKXC)),           ADDRCUN.6
+     3(INDQLDT,DQLDTN(MIXC,MJXC,MKXC)),(INDQRDT,DQRDTN(MIXC,MJXC,MKXC)),         ADDRCUN.7
+     4(INDQIDT,DQIDTN(MIXC,MJXC,MKXC)),(INDQSDT,DQSDTN(MIXC,MJXC,MKXC)),         ADDRCUN.8
+     5(INW0AVG,W0AVGN(MIXC,MJXC,MKXC)),(INRCV,RAINCVN(MIXC,MJXC)),               ADDRCUN.9
+     1 (INTNCA,TNCAN(MIXC,MJXC)),      (INPSRC,PSRCN(MIXC,MJXC)),                05DEC01.630
+     2 (INPCLB,PCLBN(MIXC,MJXC)),      (INUMFB,UMFBN(MIXC,MJXC)),                05DEC01.631
+     3 (INSPSRC,SPSRCN(MIXC,MJXC)),    (INSPCLB,SPCLBN(MIXC,MJXC)),              05DEC01.632
+     4 (INSUMFB,SUMFBN(MIXC,MJXC)),    (INCIN,CINN(MIXC,MJXC)),                  05DEC01.633
+     5 (INNCAD,NCADN(MIXC,MJXC)),                                                05DEC01.634
+     6 (INNCA,NCAN(MIXC,MJXC))                                                   05DEC01.635
+                                                                                 05DEC01.636
+      COMMON /ADDRCUN/INDTDT,INDQDT,INDUDT,INDVDT,INDQLDT,                       ADDRCUN.11
+     1          INDQRDT,INDQIDT,INDQSDT,INW0AVG,INRCV,                           05DEC01.637
+     2          INTNCA,INPSRC,INPCLB,INUMFB,INSPSRC,INSPCLB,                     05DEC01.638
+     3          INSUMFB,INCIN,INNCAD,INNCA                                       05DEC01.639

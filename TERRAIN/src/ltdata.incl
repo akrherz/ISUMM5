@@ -1,0 +1,15 @@
+C    CONTENT:   THE INFORMATION ON THE RAW TERRAIN HEIGHT AND                    LTDATA.1
+C               LANDUSE DATASET.                                                 LTDATA.2
+C    USED IN:   CRLND, INTERP,  SETUP,  TERDRV.                                  LTDATA.3
+C                                                                                LTDATA.4
+      COMMON /LTDATA/ ID1,  ID2, NREC, LND, ITR, XLATI, XLONI, CENTER,           LTDATA.5
+     1        NIOLD,       XMAXLAT,XMINLAT,XMAXLON,XMINLON,XEXTND,               06NOV00.82
+     2        LNDNAME, TERNAME, IVOL_lw, IVOL_vg, IVOL_so, IVOL_vf,              06NOV00.83
+     3        IVOL_ts,  DISOBS                                                   06NOV00.84
+      DIMENSION   ID1(max_type), ID2(max_type), NREC(max_type),                  06NOV00.85
+     1            LND(max_type), ITR(max_type),XLATI(max_type),                  06NOV00.86
+     2          XLONI(max_type), CENTER(max_type), DISOBS(max_type)              06NOV00.87
+      CHARACTER LNDNAME(max_type)*20, TERNAME(max_type)*20,                      06NOV00.88
+     1           VGNAME(max_type)*20,  SONAME(max_type)*20,                      06NOV00.89
+     2           LWNAME(max_type)*20, VFNAME*20, TSNAME*20                       06NOV00.90
+C                                                                                LTDATA.12

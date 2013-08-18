@@ -1,0 +1,5 @@
+C    CONTENT:   EZMAP WATER BODY INFORMATION                                     EZWATER.1
+C    USED IN:   TERRAIN, CRLND                                                   EZWATER.2
+C                                                                                EZWATER.3
+      COMMON /EZWATER/ HTPS(2000), IDWATER(100), HTWATER(100), NWAREAS           EZWATER.4
+C                                                                                EZWATER.5

@@ -1,0 +1,21 @@
+        REAL rkip1(MIX,MJX,MKX,MAXNES),rkip2(MIX,MJX,MKX,MAXNES),                ZDIFFU2.1
+     &       rkim1(MIX,MJX,MKX,MAXNES),rkim2(MIX,MJX,MKX,MAXNES),                ZDIFFU2.2
+     &       rkjp1(MIX,MJX,MKX,MAXNES),rkjp2(MIX,MJX,MKX,MAXNES),                ZDIFFU2.3
+     &       rkjm1(MIX,MJX,MKX,MAXNES),rkjm2(MIX,MJX,MKX,MAXNES)                 ZDIFFU2.4
+        REAL mrkip1(MIX,MJX,MKX),mrkip2(MIX,MJX,MKX),                            ZDIFFU2.5
+     &       mrkim1(MIX,MJX,MKX),mrkim2(MIX,MJX,MKX),                            ZDIFFU2.6
+     &       mrkjp1(MIX,MJX,MKX),mrkjp2(MIX,MJX,MKX),                            ZDIFFU2.7
+     &       mrkjm1(MIX,MJX,MKX),mrkjm2(MIX,MJX,MKX),                            ZDIFFU2.8
+     &       gezipwh(MIX,MJX,MKX),gezimwh(MIX,MJX,MKX),                          ZDIFFU2.9
+     &       gezjpwh(MIX,MJX,MKX),gezjmwh(MIX,MJX,MKX)                           ZDIFFU2.10
+        INTEGER irkip1(MIX,MJX,MKX),irkip2(MIX,MJX,MKX),                         ZDIFFU2.11
+     &          irkim1(MIX,MJX,MKX),irkim2(MIX,MJX,MKX),                         ZDIFFU2.12
+     &          irkjp1(MIX,MJX,MKX),irkjp2(MIX,MJX,MKX),                         ZDIFFU2.13
+     &          irkjm1(MIX,MJX,MKX),irkjm2(MIX,MJX,MKX)                          ZDIFFU2.14
+                                                                                 ZDIFFU2.15
+                                                                                 ZDIFFU2.16
+       common /zdiffu2/                                                          ZDIFFU2.17
+     &  rkip1,rkip2,rkim1,rkim2,rkjp1,rkjp2,rkjm1,rkjm2,                         ZDIFFU2.18
+     &  mrkip1,mrkip2,mrkim1,mrkim2,mrkjp1,mrkjp2,mrkjm1,mrkjm2,                 ZDIFFU2.19
+     &  gezipwh,gezimwh,gezjpwh,gezjmwh,                                         ZDIFFU2.20
+     &  irkip1,irkip2,irkim1,irkim2,irkjp1,irkjp2,irkjm1,irkjm2                  ZDIFFU2.21

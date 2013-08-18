@@ -1,0 +1,13 @@
+CSTART   mpp_param_15.incl
+C SET UP CFL
+      ICFLPERIOD = 0
+      CFLTHRESH = 1.1
+      DO N=1,MAXNES
+        ICFL(N) = 0
+        DO I=1,CFLMAXAVG
+          CFLMEM(I,N) = 0.
+        END DO
+        NCFL(N) = 0
+        CFLTAVG(N) = 0.
+      END DO
+CEND   mpp_param_15.incl

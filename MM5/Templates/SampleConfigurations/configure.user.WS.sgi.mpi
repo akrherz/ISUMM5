@@ -1,0 +1,182 @@
+# Sections
+# 1. System Variables
+# 2. User Variables
+# 3. Fortran options
+# 4. General commands
+# 5. Options for making "./include/parame.incl"
+# 6. Physics Options (memory related)
+# 7. MPP Options (Set no options in section 3)
+#    7c. SGI Origin 2000
+#
+# This configure.user file is customized for usage on an SGI
+# O2000 using nqe.  Use it as a template for running on such
+# a system - modifying as necessary.
+#
+#-----------------------------------------------------------------------------
+# 1. System Variables 
+#-----------------------------------------------------------------------------
+SHELL = 	/bin/sh
+.SUFFIXES: .F .i .o .f .c
+#-----------------------------------------------------------------------------
+# 2. User Variables
+#-----------------------------------------------------------------------------
+# RUNTIME_SYSTEM		- Currently supported systems.
+#				  SGI_R4000,SGI_R8000,CRAY,CRAY_IA,
+#                                 SUN,DEC_ALPHA,IBM,HP,,HP-SPP,HP-SPP_IA
+#                               - MPP version:
+#				  o2k, t3e, alpha, sp2, hp, vpp
+#				  Presently, of the MPP platforms only the "sp2" 
+#				  is supplied with the "make deck" capability.
+RUNTIME_SYSTEM = "o2k"
+#
+#-----------------------------------------------------------------------------
+# 3. Fortran options
+#-----------------------------------------------------------------------------
+LIBINCLUDE = $(DEVTOP)/include
+#-----------------------------------------------------------------------------
+# 4. General commands
+#-----------------------------------------------------------------------------
+AR = ar ru
+RM = rm -f
+RM_CMD = $(RM) *.CKP *.ln *.BAK *.bak *.o *.i core errs ,* *~ *.a \
+.emacs_* tags TAGS make.log MakeOut *.f !
+GREP = grep -s
+CC = cc
+#-----------------------------------------------------------------------------
+# 5. Options for making ./include/parame.incl
+#-----------------------------------------------------------------------------
+#
+# NHYDRO (integer)                  - "1" -> NonHydrostatic run
+#                                   - "0" -> Hydrostatic run
+NHYDRO = 1
+# FDDAGD (integer)                  - "1" -> FDDA gridded run
+#                                   - "0" -> NonFDDA run
+FDDAGD = 0
+# FDDAOBS (integer)                 - "1" -> FDDA obs run
+#                                   - "0" -> NonFDDA run
+FDDAOBS = 0
+# MAXNES (integer)                  - Max Number of Domains in simulation
+MAXNES = 1
+# MIX,MJX,MKX (integer)             - Maximum Dimensions of any Domain
+MIX = 200
+MJX = 250
+MKX = 27
+#-----------------------------------------------------------------------------
+# 6. Physics Options
+#    The first MAXNES values in the list will be used for the corresponding
+#        model nests; the rest in the list can be used to compile other options.
+#        The exception is FRAD, of which only the first value is used in the model,
+#        (i.e., only one radiation option is used for all nests). The rest allow 
+#        other options to be compiled.
+#-----------------------------------------------------------------------------
+# IMPHYS - for explicit moisture schemes (array,integer)
+IMPHYS = "4,4,1,1,1,1,1,1,1,1"      
+#                                   - Dry,stable precip.,warm rain,simple ice 
+#                                   - 1  ,2             ,3        ,4
+#                                   - mix phase,graupel(gsfc),graupel(reisner2)
+#                                   - 5        ,6            ,7
+MPHYSTBL = 0
+#                                   - 0=do not use look-up tables for moist 
+#                                     physics
+#                                   - 1=use look-up tables for moist physics 
+#                                     (currently only simple ice and mix phase 
+#                                      are available)
+#
+# ICUPA - for cumulus schemes (array,integer)
+#                                   - None,Kuo,Grell,AS,FC,KF,BM - 1,2,3,4,5,6,7
+ICUPA  = "3,3,1,1,1,1,1,1,1,1"
+#
+# IBLTYP - for planetary boundary layer (array,integer)
+#                                   - PBL type 0=no PBL fluxes,1=bulk,
+#                                     2=Blackadar,3=Burk-Thompson,5=MRF(ISOIL=1)
+IBLTYP  = "5,5,2,2,2,2,2,2,2,1"
+#
+# FRAD - for atmospheric radiation (integer)
+#                                   - Radiation cooling of atmosphere 
+#                                     0=none,1=simple,2=cloud,3=ccm2
+FRAD = "2,0,0,0,0"
+#
+# ISOIL - for multi-layer soil temperature model (integer)
+#                                   - 0=no,1=yes (only works with IBLTYP=2,5)
+ISOIL = 1
+#
+# ISHALLO (array,integer)           - Shallow Convection Option
+#                                     1=shallow convection,0=No shallow convection
+ISHALLO  = "0,0,0,0,0,0,0,0,0,0"
+#-----------------------------------------------------------------------------
+# 7. MPP options
+#-----------------------------------------------------------------------------
+# MPP Software Layer
+MPP_LAYER=RSL
+#MPP_LAYER=NNTSMS
+# 
+# PROCMIN_NS - minimum number of processors allowed in N/S dim
+#
+PROCMIN_NS = 4
+#
+# PROCMIN_EW - minimum number of processors allowed in E/W dim
+#
+PROCMIN_EW = 4
+#
+# ASSUME_HOMOGENOUS_ENVIRONMENT - on a machine with a heterogeneous
+# mix of processors (different speeds) setting this compile time
+# constant to 0 (zero) allows the program to detect the speed of each
+# processor at the beginning of a run and then to attempt to come up with
+# an optimal (static) mapping.  Set this to 0  for a heterogeneous
+# mix of processors, set it to 1 for a homogeneous mix.  Unless you
+# are certain you have a heterogeneous mix of processors, leave this
+# set to 1.  Currently, this option is ignored on platforms other
+# than the IBM SP.
+#   ---(Note to AFGWC: set this to 0 for your SP2)---
+#
+ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
+#
+#-----------------------------------------------------------------------------
+#    7c. Origin 2000
+#-----------------------------------------------------------------------------
+MPP_TARGET=$(RUNTIME_SYSTEM)
+MFC = f77 -n32 -mips4 -w
+MCC = cc -n32 -mips4 -w
+MLD = f77 -n32 -mips4
+##FCFLAGS = -g
+FCFLAGS = -O3 -OPT:roundoff=3:IEEE_arithmetic=3 -OPT:fold_arith_limit=2001
+LDOPTIONS =
+LOCAL_LIBRARIES = -lfastm /usr/lib32/libmpi.so
+MAKE = make -i -r
+AWK = awk
+SED = sed
+CAT = cat
+CUT = cut
+EXPAND = expand
+M4 = m4
+CPP = /lib/cpp -C -P
+CPPFLAGS = -DMPI -DO2K
+CFLAGS = -DO2K -DMPI
+ARCH_OBJS = milliclock.o
+IWORDSIZE = 4
+RWORDSIZE = 4
+LWORDSIZE = 4
+ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
+#-----------------------------------------------------------------------------
+# Don't touch anything below this line
+#-----------------------------------------------------------------------------
+.F.i:
+	$(RM) $@
+	$(CPP) $(CPPFLAGS) $*.F > $@
+	mv $*.i $(DEVTOP)/pick/$*.f
+	cp $*.F $(DEVTOP)/pick
+.c.o:
+	$(RM) $@ && \
+	$(CC) -c $(CFLAGS) $*.c
+
+.F.o:
+	$(RM) $@
+	$(FC) -c $(FCFLAGS) $*.F
+
+.F.f:
+	$(RM) $@
+	$(CPP) $(CPPFLAGS) $*.F > $@
+
+.f.o:
+	$(RM) $@
+	$(FC) -c $(FCFLAGS) $*.f

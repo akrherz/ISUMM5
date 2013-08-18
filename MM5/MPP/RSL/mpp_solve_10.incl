@@ -1,0 +1,154 @@
+CSTART   mpp_solve_10.incl
+C The purpose of this is to prevent floating point exceptions during
+C replicated computation on the pads.  Some processors cannot disable
+C these exceptions (eg. T3E) and in any case, we do not want a performance
+C penalty from exception handling.
+#ifdef UPSHOT
+      call mm5_logevent(20)
+#endif
+
+C Always defined variables
+c$omp parallel do default(shared)
+c$omp&private(i,j,k)
+      do k = 1,mkx
+        do j = 1,mjx
+          do i = 1,mix
+            U3D     (i,j,k) = 1.0
+            V3D     (i,j,k) = 1.0
+            T3D     (i,j,k) = 1.0
+            W3D     (i,j,k) = 1.0
+            PP3D    (i,j,k) = 1.0
+            QV3D    (i,j,k) = 1.0
+            U3DTEN  (i,j,k) = 1.0
+            V3DTEN  (i,j,k) = 1.0
+            T3DTEN  (i,j,k) = 1.0
+            W3DTEN  (i,j,k) = 1.0
+            PP3DTEN (i,j,k) = 1.0
+            QV3DTEN (i,j,k) = 1.0
+          enddo
+        enddo
+      enddo
+      do j = 1,mjx
+        do i = 1,mix
+            W3D     (i,j,mkx+1) = 1.0
+            W3DTEN  (i,j,mkx+1) = 1.0
+        enddo
+      enddo
+
+C M defined variables
+c$omp parallel do default(shared)
+c$omp&private(i,j,k)
+      do k = 1,mkxm
+        do j = 1,mjxm
+          do i = 1,mixm
+            QC3D     (i,j,k) = 1.0
+            QR3D     (i,j,k) = 1.0
+            QC3DTEN  (i,j,k) = 1.0
+            QR3DTEN  (i,j,k) = 1.0
+          enddo
+        enddo
+      enddo
+
+C IC defined variables
+c$omp parallel do default(shared)
+c$omp&private(i,j,k)
+      do k = 1,mkxic
+        do j = 1,mjxic
+          do i = 1,mixic
+            QI3D     (i,j,k) = 1.0
+            QNI3D    (i,j,k) = 1.0
+            QI3DTEN  (i,j,k) = 1.0
+            QNI3DTEN (i,j,k) = 1.0
+          enddo
+        enddo
+      enddo
+
+C IG defined variables
+c$omp parallel do default(shared)
+c$omp&private(i,j,k)
+      do k = 1,mkxig
+        do j = 1,mjxig
+          do i = 1,mixig
+            QG3D     (i,j,k) = 1.0
+            QNC3D    (i,j,k) = 1.0
+            QG3DTEN  (i,j,k) = 1.0
+            QNC3DTEN (i,j,k) = 1.0
+          enddo
+        enddo
+      enddo
+
+c$omp parallel do default(shared)
+c$omp&private(i,k)
+      do k = 1,mkx
+        do i = 1,mix
+          SCR1(i,k) = 1.0
+          SCR2(i,k) = 1.0
+          SCR3(i,k) = 1.0
+          SCR4(i,k) = 1.0
+        enddo
+      enddo
+      do i = 1,mix
+        DUMMY(i) = 1.0
+      enddo
+c$omp parallel do default(shared)
+c$omp&private(i,j,k)
+      do k = 1, mkx
+        do j = 1, mjx
+          do i = 1, mix
+            PR1(i,j,k) = 1.0/k
+            RHO1(i,j,k) = 1.0/k
+          enddo
+        enddo
+      enddo
+C set up FDDA for this time step
+      do i = 1,nvar
+        frst_blnudgd(i) = .true.
+      enddo
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C STEN_A
+C
+C        8 PT SQ   8 PT STAR   9 PT STAR     12 PT STAR      24 PT
+C                      +            +             +       + + + + +
+C         + + +        +            +           + + +     + + + + +
+C         + * +    + + * + +    + + * + +     + + + + +   + + * + +
+C         + + +        +          + +           + + +     + + + + +
+C                      +            +             +       + + + + +
+C
+C ua                                                          x        ! extra pts for bdyval
+C va                                                          x        ! extra pts for bdyval
+C ub                                                          x
+C vb                                                          x
+C ta                                                          x
+C tb                                                          x
+C wa                                                          x
+C wb                                                          x
+C ppa                                                         x
+C ppb                                                         x
+C qva                                                         x
+C qvb                                                         x
+C
+C qca                                                         x
+C qcb                                                         x
+C qra                                                         x
+C qrb                                                         x
+C
+C qia                                                         x
+C qib                                                         x
+C qnia                                                        x
+C qnib                                                        x
+C
+C qga                                                         x
+C qgb                                                         x
+C qnga                                                        x
+C qngb                                                        x
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#ifdef UPSHOT
+      call mm5_logevent(30)
+#endif
+      CALL RSL_EXCH_STENCIL( DOMAINS(INEST), STEN_A(INEST) )
+#ifdef UPSHOT
+      call mm5_logevent(21)
+#endif
+CEND   mpp_solve_10.incl

@@ -1,0 +1,25 @@
+c        CALL DIFFU(VTEN,VB,HSCR2,RHSCR2,XKDOT,MSFD,SCR3,C203,J,ILX,JLX,0         SOLVE3.634
+c     +       ,INEST)                                                             SOLVE3.635
+c#ifdef DEBUGGAL
+c#   include <solve3_014>
+c#endif
+c        CALL HADV(UTEN,UA,VA,U,MSFD,DX16,J,3,INEST)                              SOLVE3.636
+c        CALL HADV(VTEN,UA,VA,V,MSFD,DX16,J,3,INEST)                              SOLVE3.637
+
+      if ( j.eq.JDEBUG.and.inest.eq.NESTDEBUG ) then
+      i = IDEBUG
+      k = KDEBUG
+            print *,'solve3_014: after diffu of uv',inest
+            print *,'xkdot ', xkdot(i,k)
+            print *,'ub    ', ub(i,j,k)
+            print *,'vb    ', vb(i,j,k)
+            print *,'uten  ', uten(i,k)
+            print *,'vten  ', vten(i,k)
+            print *,'msfd  ', msfd(i,j)
+            print *,'scr3  ', scr3(i,k)
+            print *,'c203  ', c203
+            print *,'RHSCR2 ', RHSCR2(i,j)
+      print*,'ta   ',ta(i,j,k)
+      print*,'tc   ',tc(i,j,k)
+
+      endif

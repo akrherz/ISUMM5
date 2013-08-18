@@ -1,0 +1,482 @@
+
+You will find descriptions of the changes to the TERRAIN version 3
+source code in this file. For the difference file between the
+current release and the last release, please see
+Diff/diff.ddmmmyy. The 'current release' refers to the newest
+source code, while the 'last release' refers to the source code
+with the last change. Each release will be a complete tar file
+such as this. The bug fixes/changes in the diff.ddmmmyy
+files will be the differences between successive releases.
+
+The current release is 3.7 (December 23, 2004)
+
+========================================================
+
+Bug fixes and changes in V3.7:
+
+Bug fixes:
+
+- Add a fix to correct water points if running with more 
+  than 6 domains.
+  Thanks to Alexander Kalmikov
+
+  Affected files:
+  src/output.F
+  src/replace.F
+  src/tfudge.F
+
+- Add a missing IPRINT argument to the WATERCHECK calls.
+  
+  Affected file:
+  src/terdrv.F
+
+- Correct bugs in print statements.
+
+  Affected files:
+  src/crvst.F
+  src/pltter.F
+
+Changes and improvements:
+
+- Add an extra plot that combines the MESH plot with a
+  map background plot. Thanks to Jim Bresch.
+
+  Affected file:
+  src/pltter.F
+
+- Add compiler flags for INTEL. PGI compiler remains the 
+  default compiler. To compile with INTEL compiler, type
+  "make intel"
+
+  Affected files:
+  Makefile
+  src/Makefile
+  Templates/terrain.deck.intel
+
+- Add compiler flags for Cray X1 
+  Thanks to Peter Johnsen from Cray
+
+  Affected files:
+  Makefile
+  src/Makefile.x1
+  Templates/terrain.deck.x1
+
+- Remove also the LANDUSE files when 'make dataclean' 
+  is executed.
+
+  Affected file:
+  Makefile
+
+- Add maxstack and maxdata for running larger jobs on 
+  IBM computers.
+
+  Affected file:
+  Makefile
+
+========================================================
+
+Bug fixes and changes in V3.6:
+
+Bug fixes:
+
+- A fix to correct problems to generate terrain and deep soil
+  temperature on NCAR's IBM using xlf 8.1 compiler. (This change 
+  has been in the TERRAIN.TAR file since 10/09/02)
+
+  Affected file:
+  src/ia.F
+
+- Modify ftp script so that old 13-category landuse data are
+  always downloaded. This will correct a problem with using
+  old landuse data with IFEZFUG = .F. option (which requires
+  new land-water mask data).
+
+  Affected file:
+  Data/ftp.csh
+
+- Modify the ftp scripts so that 30sec data is still processed
+  when the data is downloaded manually.
+
+  Affected files:
+  Data/ftp30s.csh
+  Templates/terrain.deck.*
+
+- Correction to job script if switching input data types between
+  USGS and SiB.
+
+  Affected files:
+  Templates/terrain.deck.*
+
+- Correct the problem of calculating core factor for Lambert-Conformal 
+  projection when TRUELAT1=TRUELAT2. Not commonly done.
+  (Thanks to Mariusz Pagowski of NOAA.)
+
+  Affected files:
+  src/setup.F, plots.F
+
+
+Changes and improvements:
+
+- Add a print statement when 30sec elevation data is accessed.
+
+  Affected files:
+  src/terdrv.F
+
+- Add option "dataclean" to Makefile 
+  This will clean up all data files in the TERRAIN/Data 
+  directory and well as remove the entire TERRAIN/Data30s
+  directory
+
+  Affected files:
+  Makefile
+
+- Make IBM batch jobs more user friendly
+
+  Affected files:
+  Templates/terrain.deck.ibm.batch
+
+- Add batch terrain job script for NCAR IBM for running large
+  terrain jobs. This deck is available on NCAR's computer under
+  ~mesouser/MM5V3/IBM
+
+
+========================================================
+
+Bug fixes and changes in V3.5:
+
+1. Bug fixes:
+
+- Correct a problem with Makefile for Linux (Thanks to Matthew Johnson
+  of Air Quality Bureau, Iowa). (This change has been in TERRAIN.TAR file
+  since 11/28/00.)
+
+  Affected file:
+  Makefile
+
+- Add missing script variable (Where30sTer) in terrain deck for Cray.
+  Note, if you run Terrain job on Cray using 30 sec data, set time
+  limit to be very large, as gunzip files will take a very long time.
+  (This change has been in TERRAIN.TAR file since 11/28/00.)
+
+  Affected file:
+  Templates/terrain.deck.cray
+
+- Minor correction in ftp script that gets the 30 sec elevation data.
+  
+  Affected file:
+  Data/ftp30s.csh
+
+- Remove &END in Data/namelist.usgsdata and namelist.sigdata.
+
+- Remove data coverage check for global datasets. Prevents occational
+  STOP in terrain program.
+
+  Affected file:
+  src/terdrv.F, crlwmsk.F, crsoil.F
+
+- Change print format so that it can print grid numbers greater than 99.
+
+  Affected file:
+  src/outpt.F
+
+- Correct an error in calculating deep soil T over island.
+
+  Affected file:
+  src/patch.F 
+
+- Correct a problem with TERRAIN plotting when terrain output files
+  with 100x90 dimensions.
+
+  Affected file:
+  src/plots.F
+
+- Correct a problem with landwater masking plot: it will now place
+  the landwater mask value in correct location on the map.
+
+  Affected file:
+  src/pltter.F
+
+- Correct a problem with using 2 min TERRAIN input data - the data
+  should be located at the center of a grid box.
+
+  Affected file:
+  src/rdldtr.F
+
+- Correction to domain checks - it will stop TERRAIN if the check fails.
+
+  Affected file:
+  src/setup.F 
+
+- Check data dimensions separately.
+
+  Affected file:
+  src/terdrv.F
+
+- Subroutine crlnd must be called if IFEZFUG is true.
+
+  Affected file:
+  src/terdrv.F
+
+- Correction to Mercator map projection near dateline.
+  (Thanks to AFWA.)
+
+  Affected file:
+  src/terrestial_info.F
+
+- Remove namelist variable DATASW from all decks. The option of allowing
+  the model to choose a resolution isn't always working. 
+
+
+2. Changes and improvements:
+
+- README files in top directory and Data/ directory are updated to 
+  reflect the new available data.
+
+- Global soil category data are updated from 1 degree resolution to
+  5 minutes resolution from USGS FAO dataset. Over the continental
+  US (CONUS), the data resolution is still 30 seconds.
+
+  In addition, two layers of soil data are provided: 0 - 30 cm top soil 
+  layer, 30-100 cm bottom soil layer.
+
+  The new input data are in ftp://ftp.ucar.edu/mesouser/MM5V3/TERRAIN_DATA
+
+- USGS 30-seconda, 24-categroy vegetation data are updated with the 
+  USGS Version 2 data. The landwater mask data are recreated using
+  the new vegetation data. All lower resolution data (2, 5, 10, 30
+  and 60 min) are recreated. The new data are located at the center
+  of a grid box. This means that the old TERRAIN tar file cannot be
+  used to read the new data files.
+
+- All decks are updated to use ./terrain.exe, instead of terrain.exe.
+
+  Decks are also modified to allow a user to choose different soil data.
+
+- ftp.csh is modified to access new data in new directory. A new ftp2.csh 
+  is included to access different soil data.
+
+- Add minor version number in TERRAIN's header.
+
+- vs_data1.incl is removed since it is no longer used.
+
+
+========================================================
+
+Bug fixes and changes in V3.4:
+
+Bug fixes:
+
+- Fix a problem when MAXNES is greater than the number of data
+  types.
+
+  Affected file:
+  src/tfudge.F
+
+- Fix print option. IPRTHT = .T. will now generate print of all
+  processed fields at mesh points. 
+
+  Affected file:
+  src/finprt.F
+
+- Fix a bound check for polar projection option.
+
+  Affected file:
+  src/check_data.F, mxmnll.F
+
+- Correct a typo in plots.F in calling error handler.
+
+  Affected file:
+  src/plots.F
+
+- Print out exact dimensions (ITRH and JTRH) required to process data.
+  (change in tar file since 10/12/00).
+
+  Affected file:
+  src/terdrv.F
+
+- Add 'binary' to ftp script in the decks to ensure data are
+  acquired correctly from NCAR's ftp site.
+  (change in tar file since 5/16/00)
+
+  Affected files:
+  Templates/terrain.deck.*
+
+- Correct a problem of deep soil temperature not being reset
+  along nest interface in the adjustment. This causes the 
+  deep soil temp on the nest boundary being not consistent with
+  that in the coarse domain. Affect land-surface model data 
+  option only. (change in tar file since 4/12/00)
+
+  Affected file:
+  src/tfudge.F
+
+- Correct a problem in openning land-water mask file when a 
+  combination of options of IFEZFUG=T and NewLandUse=T is used.
+  (change in tar file since 3/10/00)
+
+  Affected file:
+  src/setup.F
+
+- Clean up field name in subheader for vegetation fraction.
+  (change in tar file since 3/10/00)
+
+  Affected file:
+  src/output.F
+
+- All USGS vegetation data files and land-water mask data files 
+  are updated to include Hawaii Islands, and a few other Pacific Islands.
+
+
+Changes and improvements:
+
+- Add a 2-minute resolution data (~3.7 km) input option. This fills a
+  gap in data resolution between 5 min (~9 km) and 30 sec (~1 km), and 
+  allows a user to make use of high-resolution data without the excessive
+  requirement on computer memory. The 2-min data are created from the 
+  USGS 30 second dataset.
+
+  Affected files:
+  src/anal2.F, crlwmsk.F, crsoil.F, data_area.F, finprt.F,
+      interp.F, io.incl, ltdata.incl, maps.incl, mxmnll.F, output.F, 
+      paramed.incl, plots.F, pltter.F, rdldtr.F, replace.F, search.F,
+      setup.F, terdrv.F, terrain.F, tfudge.F, vs_cmn1.incl, vs_data.incl,
+      vs_data0.incl, vs_data2.incl
+
+- Elevation data at 1 degree, 30, 10 and 5 minute resolutions are 
+  recreated from the USGS 30 second dataset. This allows consistency
+  between datasets, and also correct a number of data problems discovered
+  in these low-resolution datasets. A user will see (hopefully) small
+  differences between data created in this and previous releases.
+
+- Major change in decks. The purposes of the change include: accomodate
+  additional data input option, and separate ftp functions from the deck.
+  The new decks are smaller, and with a number of script variables removed.
+  Users are required to fill the namelist variables that are used to be
+  filled via script variables (e.g. IFTER, IFILL, etc.). Two new namelist
+  variables are added to better help user to select data option: LSMDATA,
+  and VEGTYPE. A program is added to read the namelist and pass the options
+  to ftp scripts. 
+
+  Because of all these changes, one must recreate a new deck for use of 
+  release-3-4 code, and data. 
+
+  Affected files:
+  Templates/terrain.deck.*
+  src/Makefile, namelist.incl, setup.F, rdnml.F (new)
+  Data/ftp.csh, ftp30s.csh, namelist.usgsdata, namelist.sibdata (all new)
+
+- Domain configuration check (whether the nest is too close to its mother
+  domain) is now done even if terrain data are not generated.
+
+  Affected file:
+  src/setup.F
+
+- Use of IPRINT to control print output. IPRINT = 1 will generate
+  a terrain.print.out file that similar to before, while the default
+  IPRINT = 0 will only generate limited output in terrain.print.out.
+
+  Affected files:
+  src/crlnd.F, crlwmsk.F, crsoil.F, crter.F, crvst.F, crvst30s.F,
+      finprt.F, lakes.F, mxmnll.F, output.F, plotcon.F, plots.F,
+      rdldtr.F, replace.F, setup.F, smthtr.F, soil_tg.F, terdrv.F,
+      terrain.F, tfudge.F, water_vfr.F, watercheck.F, xyobsll.F
+
+- Modify earth rotation parameter omega to be the same as in MM5.
+
+  Affected file:
+  src/terrestial_info.F
+
+- Allow boundary feedback in soil and vegetation category data, since 
+  these data are required input for the new Pleim-Xiu LSM in MM5.
+  Generation of these extra data is controled by namelist variable IEXTRA.
+
+  Affected file:
+  src/tfudge.F
+  Templates/terrain.deck.*
+
+- Add compile option for Linux. (change in tar file since 5/2/00)
+  Also makes a few changes so that PGI compiler will not complain.
+
+  Affected file:
+  Makefile
+  src/Makefile, plots.F, pltter.F
+
+- Add comments in Makefile regarding using no-NCAR-Graphics option.
+
+  Affected files:
+  Makefile
+
+=======================================
+
+Updated 1/24/00:
+
+- The way terrain's executables are created is simplified. A user no
+  longer needs to edit configure.make file (the file is removed).
+  A user can simply type 'make' to create terrain executables if the
+  default parameter statements meet the requirement. For details, see
+  README file. 
+
+  Affected files:
+  Makefile
+  src/Makefile, rdem.F, data30s.F
+  Templates/terrain.deck.*
+
+- Landuse fudging capability is added when using new landuse option.
+
+  Affected file:
+  src/terdrv.F
+
+- One-way or two-way option for choosing a nest run is added to
+  record header.
+
+  Affected file:
+  src/output.F
+
+- Labels are added to all plots generated by Terrain. Colors of the
+  labels are changed from white to red.
+
+  Affected files:
+  map.tbl, mapfi.tbl
+  src/plots.F, pltter.F, label.F, labelv.F, labels.F
+
+
+========================================================
+
+Updated 9/16/99:
+
+- Correct an error when IFEZFUG and LandSurface options are used together.
+
+  Affected file:
+  src/terdrv.F
+
+Updated 8/9/99:
+
+- Update terrain decks to remove TerPlt check for catting data.namelist
+
+  Affected files: 
+  all decks
+
+Updated 8/6/99:
+
+- Correct an error in making adjustment in coarse mesh landuse. It was
+  omitted prior to this change.
+
+  Affected file:
+  src/replace.F
+
+- Correct an error in resetting vegetation fraction along nest boundary.
+  It was omitte prior to this change.
+
+  Affected file:
+  src/tfudge.F
+
+- Change USGS ftp filenames to lower case.
+
+  Affected file:
+  src/data30s.F
+
+- For the open of 10 minutes landuse data file if old landuse is used and
+  only 5 min and 30 sec data are requested.
+
+  Affected file:
+  src/setup.F

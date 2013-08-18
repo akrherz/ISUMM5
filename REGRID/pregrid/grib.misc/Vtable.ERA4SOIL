@@ -1,0 +1,13 @@
+GRIB | Level| Level| Level| REGRID   |  REGRID  | REGRID                                      |
+Code | Code |   1  |   2  | Name     |  Units   | Description                                 |
+-----+------+------+------+----------+----------+---------------------------------------------+
+139  | 112  |   0  |   7  | SOILT007 | K        | T of 0-7 cm ground layer                    |
+170  | 112  |   7  |  28  | SOILT028 | K        | T of 7-28 cm ground layer                   |
+183  | 112  |  28  | 100  | SOILT100 | K        | T of 28-100 cm ground layer                 |
+236  | 112  | 100  | 255  | SOILT255 | K        | T of 100-255 cm ground layer                |
+ 39  | 112  |   0  |   7  | SOILM007 | fraction | Soil Moisture of 0-7 cm ground layer        |
+ 40  | 112  |   7  |  28  | SOILM028 | fraction | Soil Moisture of 7-28 cm ground layer       |
+ 41  | 112  |  28  | 100  | SOILM100 | fraction | Soil Moisture of 28-100 cm ground layer     |
+ 42  | 112  | 100  | 255  | SOILM255 | fraction | Soil Moisture of 100-255 cm ground layer    |
+ 31  |  1   |   0  |      | SEAICE   | 0/1 Flag | Ice flag                                    |
+-----+------+------+------+----------+----------+---------------------------------------------+

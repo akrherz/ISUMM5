@@ -1,0 +1,49 @@
+&record1
+ start_year                      =  1993
+ start_month                     =    03
+ start_day                       =    13 
+ start_hour                      =    00
+ end_year                        =  1993
+ end_month                       =    03
+ end_day                         =    14 
+ end_hour                        =    00
+ interval                        = 43200 /
+
+&record2
+ ptop_in_Pa                      = 10000
+ new_levels_in_Pa                = 95000 , 92500 , 90000 , 
+                                   80000 , 
+                                   75000 , 
+                                   65000 , 60000 ,
+                                   55000 , 
+                                   45000 , 
+                                   35000 
+ sst_to_ice_threshold            = -9999
+ linear_interpolation            = .FALSE. /
+
+&record3
+ root                            = '../pregrid/ON84' '../pregrid/ON84_SST' '../pregrid/ON84_SNOW'
+ terrain_file_name               = '../../TERRAIN/TERRAIN_DOMAIN1' /
+ constants_full_name             = './ALMX_FILE' '../pregrid/SST_FILE:1993-03-13_00'
+
+&record4
+ print_echo                      = .FALSE. , 
+ print_debug                     = .FALSE. , 
+ print_mask                      = .FALSE. ,
+ print_interp                    = .FALSE. ,
+ print_link_list_store           = .FALSE. , 
+ print_array_store               = .FALSE. , 
+ print_header                    = .FALSE. , 
+ print_output                    = .FALSE. , 
+ print_file                      = .FALSE. ,
+ print_tc                        = .FALSE. ,
+ print_f77_info                  = .TRUE. /
+
+&record5
+ insert_bogus_storm              = .FALSE.
+ num_storm                       =       1
+ latc_loc                        =      36.0
+ lonc_loc                        =     -35.0
+ vmax_meters_per_second          =      35.0
+ rmax                            =   90000.0
+ vmax_ratio                      =       0.75 /

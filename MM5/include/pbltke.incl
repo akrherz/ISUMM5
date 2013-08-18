@@ -1,0 +1,18 @@
+C                                                                                PBLTKE.1
+C**********************************************************************          PBLTKE.2
+C                                                                                PBLTKE.3
+      REAL TKEA,TKEB                                                             PBLTKE.4
+      INTEGER MSTEPSS                                                            PBLTKE.5
+      COMMON/ADDRPBLTKE/ ITKEA,ITKEB                                             PBLTKE.6
+C                                                                                PBLTKE.7
+      POINTER (ITKEA, TKEA(MIXG,MJXG,MKXG+1)),                                   PBLTKE.8
+     &        (ITKEB, TKEB(MIXG,MJXG,MKXG+1))                                    PBLTKE.9
+C                                                                                PBLTKE.10
+      COMMON/ADDRMSTEPSS/ IMSTEPSS                                               PBLTKE.11
+#ifndef MPP1                                                                     25JAN00.445
+      POINTER(IMSTEPSS, MSTEPSS(MJXG))                                           PBLTKE.12
+#else                                                                            25JAN00.446
+      POINTER(IMSTEPSS, MSTEPSS(MIXG,MJXG))                                      25JAN00.447
+#endif                                                                           25JAN00.448
+C                                                                                PBLTKE.13
+C**********************************************************************          PBLTKE.14

@@ -1,0 +1,53 @@
+c  300   CONTINUE                                                                 SOUND.244
+c#ifdef DEBUGGAL
+c#  include <sound_004>
+c#endif
+c        IF(IT.EQ.1)GOTO 321                                                      SOUND.245
+ccmic$ do all autoscope                                                           SOUND.246
+cc$doacross                                                                       SOUND.247
+cc$& share(n,m,l,ppa,xkd,pi),                                                     SOUND.248
+
+      if(inest.eq.NESTDEBUG)then
+        print *,'sound_004: end of sound1 (loop 300)',it
+      i=IDEBUG
+      j=JDEBUG
+      print*, 'ps0  '
+      print*, '     ',ps0(i  ,j-1),ps0(i  ,j  )
+      print*, '     ',ps0(i-1,j-1),ps0(i-1,j  )
+      print*, 'xmut ',xmut(i  ,j-1,inest),xmut(i  ,j,inest)
+      print*, '     ',xmut(i-1,j-1,inest),xmut(i-1,j,inest)
+      print*, 'xnut ',xnut(i  ,j-1,inest),xnut(i  ,j,inest)
+      print*, '     ',xnut(i-1,j-1,inest),xnut(i-1,j,inest)
+
+      do k = 1, mkx
+      print*,'k = ',k
+      print*, 'utens',k,utens(i,j,k)
+      print*, 'vtens',k,vtens(i,j,k)
+      print*, 'pptens',k,pptens(i,j,k)
+      print*, 'wtens',k,wtens(i,j,k)
+      print*, 'u3d   ',k,u3d(i,j,k)
+      print*, 'v3d   ',k,v3d(i,j,k)
+      print*, 't3d   ',k,t3d(i,j,k)
+      print*, 'w3d   ',k,w3d(i,j,k)
+      print*, 'ua   ',k,ua(i,j,k)
+      print*, 'va   ',k,va(i,j,k)
+      print*, 'ub   ',k,ub(i,j,k)
+      print*, 'vb   ',k,vb(i,j,k)
+      print*, 'ta   ',k,ta(i,j,k)
+      print*, 't0   ',k,t0(i,j,k)
+      print*, 'wa   ',k,wa(i,j,k)
+      print*, 'ppa  ',k,ppa(i,j,k-1),ppa(i,j,k)
+      print*, '     ',k,ppa(i-1,j-1,k),ppa(i-1,j,k)
+      print*, 'pp3d  ',k,pp3d(i,j,k-1),pp3d(i,j,k)
+      print*, '     ',k,pp3d(i-1,j-1,k),pp3d(i-1,j,k)
+      print*, 'tb   ',k,tb(i,j,k-1),tb(i,j,k)
+      print*, '     ',k,tb(i-1,j-1,k),tb(i-1,j,k)
+      print*, 'qvb  ',k,qvb(i,j,k-1),qvb(i,j,k)
+      print*, '     ',k,qvb(i-1,j-1,k),qvb(i-1,j,k)
+      print*, 'q3d  ',k,q3d(i,j,k-1),q3d(i,j,k)
+      print*, '     ',k,q3d(i-1,j-1,k),q3d(i-1,j,k)
+      print*, 'ppb  ',k,ppb(i,j,k-1),ppb(i,j,k)
+      print*, '     ',k,ppb(i-1,j-1,k),ppb(i-1,j,k)
+      enddo
+      endif
+

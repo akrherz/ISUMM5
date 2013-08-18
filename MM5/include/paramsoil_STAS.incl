@@ -1,0 +1,11 @@
+      INTEGER NSLTYPE,SLCATS
+      PARAMETER (NSLTYPE=30)                                                
+      REAL BB, DRYSMC, F11, MAXSMC,REFSMC,SATPSI,SATDK,SATDW,                 &
+     &     WLTSMC,QTZ
+      COMMON /SOILPARM/SLCATS,SLTYPE,BB, DRYSMC, F11, MAXSMC,                 &
+     &       REFSMC,SATPSI,SATDK,SATDW,WLTSMC,QTZ
+      DIMENSION BB(NSLTYPE),DRYSMC(NSLTYPE),F11(NSLTYPE),                     &
+     &   MAXSMC(NSLTYPE), REFSMC(NSLTYPE),SATPSI(NSLTYPE),                    &
+     &   SATDK(NSLTYPE),SATDW(NSLTYPE), WLTSMC(NSLTYPE),                      &
+     &   QTZ(NSLTYPE)
+      CHARACTER*4 SLTYPE

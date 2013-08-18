@@ -1,0 +1,40 @@
+CSTART   mpp_param_30.incl
+C
+C MONITOR PROCESSOR READS NAMELIST AND BROADCASTS TO OTHERS
+C
+      IF(RSL_IAMMONITOR())THEN
+C       CODE ON MONITOR ONLY
+        READ (ILIF10,OPARAM)
+        READ (ILIF10,LPARAM)
+        READ (ILIF10,NPARAM)
+        READ (ILIF10,PPARAM)
+        READ (ILIF10,FPARAM)
+C       FILE CONTAINING AUTOMATICALLY GENERATED PACK STATEMENTS
+#       include "read_config2.h"
+      ENDIF
+      CALL RSL_MON_BCAST(IBUF,IBUFLEN*IWORDSIZE)
+      CALL RSL_MON_BCAST(LBUF,LBUFLEN*LWORDSIZE)
+      CALL RSL_MON_BCAST(RBUF,RBUFLEN*RWORDSIZE)
+C
+      call dm_bcast_string   ( cdatest ,  19)
+C
+      IF(.NOT.RSL_IAMMONITOR())THEN
+C       CODE ON OTHERS ONLY
+C       FILE CONTAINING AUTOMATICALLY GENERATED UNPACK STATEMENTS
+#       include "read_config3.h"
+      ENDIF
+C COMPUTE NPROC_LT AND NPROC_LN IF NOT SPECIFIED IN NAMELIST
+      IF (NPROC_LT .EQ. -1 .OR. NPROC_LN .EQ. -1 ) THEN
+        IF ( MPP_IO_NODE .NE. 1 ) THEN
+	  CALL MPASPECT( RSL_NPROC, NPROC_LT, NPROC_LN,
+     +                   PROCMIN_NS, PROCMIN_EW )
+        ELSE
+C figure the mesh based on one less processor -- that extra will
+C be considered to be p0 and will be just an I/O node; lb_alg.c will
+C decompose the domain so that p0 gets no work.
+	  CALL MPASPECT( RSL_NPROC-1, NPROC_LT, NPROC_LN,
+     +                   PROCMIN_NS, PROCMIN_EW )
+        ENDIF
+      ENDIF
+
+CEND   mpp_param_30.incl

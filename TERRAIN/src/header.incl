@@ -1,0 +1,9 @@
+C                                                                                HEADER.1
+C    CONTENT:   HEADER INFORMATION                                               HEADER.2
+C    USED IN:   TERRAIN, REPLACE, SETUP, TERDRV, TFUDGE, FINPRT.                 HEADER.3
+C                                                                                HEADER.4
+      COMMON /HEADER/ MIF,MRF,MIFC,MRFC                                          HEADER.5
+      INTEGER      MIF(1000,20)                                                  HEADER.6
+      REAL         MRF(1000,20)                                                  HEADER.7
+      CHARACTER*80 MIFC(1000,20),                                                HEADER.8
+     1             MRFC(1000,20)                                                 HEADER.9

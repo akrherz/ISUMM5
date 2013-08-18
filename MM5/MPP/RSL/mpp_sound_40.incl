@@ -1,0 +1,44 @@
+CSTART   mpp_sound_40.incl
+          DO J = 1, M
+            DO I = 1, L
+              TB2D(I,J) = TB(I,J,1)
+              RHOTMP(I,J) = RHO1(I,J,1)
+            ENDDO
+          ENDDO
+C
+          CALL RSL_WRITE(astore_g, IO2D_IJ_INTERNAL,
+     +                   ASTORE,DOMAINS(INEST),RSL_REAL,GLEN,LLEN)
+          CALL RSL_WRITE(rpsa_g, IO2D_IJ_INTERNAL,
+     +                   RPSA,DOMAINS(INEST),RSL_REAL,GLEN,LLEN)
+          CALL RSL_WRITE(msfx_g, IO2D_IJ_INTERNAL,
+     +                   MSFX,DOMAINS(INEST),RSL_REAL,GLEN,LLEN)
+          CALL RSL_WRITE(tb2d_g, IO2D_IJ_INTERNAL,
+     +                   TB2D,DOMAINS(INEST),RSL_REAL,GLEN,LLEN)
+          CALL RSL_WRITE(rhotmp_g, IO2D_IJ_INTERNAL,
+     +                   RHOTMP,DOMAINS(INEST),RSL_REAL,GLEN,LLEN)
+          IF(RSL_IAMMONITOR())THEN
+C Note that variables with a _G in them are liable to expansion by
+C the CPP defines in mpp_sound_00.incl.  This may push them past
+C column 72; hence the continuations in the expressions below.
+          DO 401 J=JSTART,JEND
+            DO 401 I=ISTART,IEND
+              ATOT=ATOT+ASTORE_G(I,J)
+              ENSQ=G*G/CP/
+     +         (TB2D_G(I,J)*
+     +          RPSA_G(I,J))
+              RHONTOT=RHONTOT+
+     +          RHOTMP_G(I,J)*
+     +          SQRT(ENSQ)
+              XMSFTOT=XMSFTOT+MSFX_G(I,J)
+  401       CONTINUE
+            NPTS=(IEND-ISTART+1)*(JEND-JSTART+1)
+            ABAR=ATOT/NPTS
+            RHON=RHONTOT/NPTS
+            XMSFBAR=XMSFTOT/NPTS
+      PRINT *,' INEST ABAR RHON XMSFBAR NPTS ',INEST,ABAR,RHON,XMSFBAR 
+     -     ,NPTS                                                      
+          ENDIF
+          CALL RSL_MON_BCAST(  ABAR,    RWORDSIZE )
+          CALL RSL_MON_BCAST(  RHON,    RWORDSIZE )
+          CALL RSL_MON_BCAST(  XMSFBAR, RWORDSIZE )
+CEND   mpp_sound_40.incl

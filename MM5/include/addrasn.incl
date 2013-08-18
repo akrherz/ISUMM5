@@ -1,0 +1,7 @@
+      COMMON /ADDRASN/INOUTT,INOUTQ,INPRET,INKDT                                 ADDRASN.1
+C                                                                                ADDRASN.2
+      REAL OUTTQN,OUTTTN,PRETTN                                                  ADDRASN.3
+      INTEGER KDTN                                                               ADDRASN.4
+      POINTER                                                                    ADDRASN.5
+     1 (INOUTT,OUTTTN(MIXA,MJXA,MKXA)),(INOUTQ,OUTTQN(MIXA,MJXA,MKXA)),          ADDRASN.6
+     2 (INPRET,PRETTN(MIXA,MJXA))     ,(INKDT,KDTN(MIXA,MJXA))                   ADDRASN.7

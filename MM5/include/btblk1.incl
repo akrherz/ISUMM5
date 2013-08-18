@@ -1,0 +1,34 @@
+      REAL ABT,ABTH,C1,C2,C3,CLAM2,COSALP,DECL,DECLN,DQWDZ,DT,DTHLDZ,            BTBLK1.1
+     1     DTHVDZ,DUDZ,DUMV,DVDZ,EKH,EKM,ENUL,FML,FMS,FPL,FPS,GW,GWWG,           BTBLK1.2
+     2     HASSID,HDUCT,P,PHIM,PRATIO,PS,PSTEND,QL,QRL,QRN,QRS,QS,QSL,           BTBLK1.3
+     3     QTEND,QW,QWSB,QWSTAR,QWZ,RC,RLAT,RLON,SINALP,SPECHUM,SST,             BTBLK1.4
+     4     TDEW,TH,THL,THLQWB,THLSB,THLSTAR,THLWB,THLZ,THTEND,THVWB,             BTBLK1.5
+     5     TIMER,TKE,TKESR,TL,TRSTORE,TSTEND,TV,U,UF,UG,UN,USTAR,UTEND,          BTBLK1.6
+     6     V,VF,VG,VN,VT,VTEND,WK,WQWB,X1U,X2U,X2UL,XBC,XL,XM,XMZ,Y1,Z1,         BTBLK1.7
+     7     ZL,ZN,ZS,ZTIME                                                        BTBLK1.8
+                                                                                 BTBLK1.9
+      INTEGER IBLKST,IDELAY,IEXTRP,IGMT,IM1,IM2,IM3,IT,ITD,ITOT,IUV,             BTBLK1.10
+     1        KTND,LL,NSND                                                       BTBLK1.11
+                                                                                 BTBLK1.12
+C II IS DEFINED IN THE NAVYPB PACKAGE (AS MKX)                                   BTBLK1.13
+      COMMON/BT1/ ABT(II),ABTH(II),C1(II),PS,ENUL(II),LL,                        BTBLK1.14
+     2 C2(II),C3(II),CLAM2(II),UN(II),VN(II),UF(II),VF(II),                      BTBLK1.15
+     3 DQWDZ(II),DT,DTHLDZ(II),DUDZ(II),DUMV(II),DVDZ(II),EKH(II),               BTBLK1.16
+     4 EKM(II),IM1,IM2,IM3,IT,ITOT,P(II),X1U(II),X2U(II),DTHVDZ(II),             BTBLK1.17
+     5 PRATIO(II),QL(II),QRN(II),QSL(II),QS(II),X2UL(II),                        BTBLK1.18
+     6 QW(II),QWSB(II),QWSTAR,QWZ,RC(II),RLAT,RLON,IBLKST,                       BTBLK1.19
+     7 SPECHUM(II),PHIM,COSALP,SINALP,SST,WK(II,11),                             BTBLK1.20
+     8 TH(II),THL(II),THLQWB(II),THLSB(II),HDUCT,TRSTORE,                        BTBLK1.21
+     9 THLSTAR,THLWB(II),THLZ,THVWB(II),TKE(II),                                 BTBLK1.22
+     A TKESR(II),TL(II),TV(II),U(II),UG(II),USTAR,V(II),VG(II),                  BTBLK1.23
+     B WQWB(II),XL(II),THTEND(II),QTEND(II),VT(II),TDEW(II),                     BTBLK1.24
+     C Y1,Z1,ZL,ZN(II),ZS(II),DECLN,ZTIME,UTEND(II),VTEND(II),PSTEND,            BTBLK1.25
+     D QRL(II),QRS(II),TIMER,IDELAY,XMZ,XBC,XM(II),                              BTBLK1.26
+     E FML(II),FPL(II),TSTEND,GW,GWWG,DECL,                                      BTBLK1.27
+     F FMS(II),FPS(II),KTND,                                                     BTBLK1.28
+     3 IGMT,NSND,IEXTRP,IUV,ITD,HASSID                                           BTBLK1.29
+#ifndef rs6000                                                                   BTBLK1.31
+c$omp threadprivate (/bt1/)                                                      BTBLK1.32
+#else                                                                            BTBLK1.33
+cibmp threadlocal /bt1/                                                          24SEP99.390
+#endif                                                                           BTBLK1.35

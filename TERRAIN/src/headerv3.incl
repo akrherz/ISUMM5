@@ -1,0 +1,27 @@
+C     VERSION 3 HEADER                                                           HEADERV3.1
+C-----------------------------------------------------------------               HEADERV3.2
+C                                                                                HEADERV3.3
+C     HEADER INFORMATION FOR MM5 V3 INPUT                                        HEADERV3.4
+C                                                                                HEADERV3.5
+      INTEGER NUMINT,NUMPROGS,NUMREAL                                            HEADERV3.6
+      PARAMETER (NUMINT=50,NUMREAL=20,NUMPROGS=20)                               HEADERV3.7
+                                                                                 HEADERV3.8
+      INTEGER       BHI (NUMINT,NUMPROGS),JBHI (NUMINT,NUMPROGS)                 HEADERV3.9
+      REAL          BHR (NUMREAL,NUMPROGS),JBHR (NUMREAL,NUMPROGS)               HEADERV3.10
+      CHARACTER *80 BHIC(NUMINT,NUMPROGS),JBHIC(NUMINT,NUMPROGS)                 HEADERV3.11
+      CHARACTER *80 BHRC(NUMREAL,NUMPROGS),JBHRC(NUMREAL,NUMPROGS)               HEADERV3.12
+      COMMON /HEADER / BHI ,BHR                                                  HEADERV3.13
+      COMMON /HEADERC/ BHIC,BHRC                                                 HEADERV3.14
+      COMMON /JBH / JBHI, JBHR                                                   HEADERV3.15
+      COMMON /JBHC/ JBHIC, JBHRC                                                 HEADERV3.16
+                                                                                 HEADERV3.17
+      INTEGER FLAG                                                               HEADERV3.18
+      INTEGER START_INDEX(4)                                                     HEADERV3.19
+      INTEGER END_INDEX(4)                                                       HEADERV3.20
+      CHARACTER*4 STAGGERING                                                     HEADERV3.21
+      CHARACTER*4 ORDERING                                                       HEADERV3.22
+      CHARACTER*24 START_DATE                                                    HEADERV3.23
+      CHARACTER*24 CURRENT_DATE                                                  HEADERV3.24
+      CHARACTER*9 NAME                                                           HEADERV3.25
+      CHARACTER*25 UNITS                                                         HEADERV3.26
+      CHARACTER*46 DESCRIPTION                                                   HEADERV3.27

@@ -1,0 +1,22 @@
+cC                                                                                SOLVE3.704
+cC..T..COMPUTE THE HORIZONTAL ADVECTION TERM:                                     SOLVE3.705
+cC                                                                                SOLVE3.706
+c        CALL HADV(TTEN,UA,VA,T,MSFX,DX4,J,1,INEST)                               SOLVE3.707
+c#ifdef DEBUGGAL
+c#  include <solve3_016>
+c#endif
+cC                                                                                SOLVE3.708
+cC..T..COMPUTE THE VERTICAL ADVECTION TERM:                                       SOLVE3.709
+      if ( j.eq.JDEBUG.and.inest.eq.NESTDEBUG ) then
+      i = IDEBUG
+      k = KDEBUG
+            print*,'solve3_016: after hadv of t',inest
+            print*,'ua   ',ua(i,j,k)
+            print*,'va   ',va(i,j,k)
+            print*,'ta   ',ta(i,j,k)
+            print*,'tc   ',tc(i,j,k)
+            print*,'t    ',t(JD00,i,k)
+            print*,'tten ',tten(i,k)
+            print*,'msfx ',msfx(i,j)
+            print*,'dx4  ',dx4
+      endif

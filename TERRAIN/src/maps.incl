@@ -1,0 +1,14 @@
+C    CONTENT:   THE INFORMATION ON THE MAP BACKGROUND.                           MAPS.1
+C    USED IN:   TERRAIN,   BNDRY,   LATLON,   LLXY,  MXMNLL,  PLTTER,            MAPS.2
+C                  RELP,  TERDRV,  XYOBSLL.                                      MAPS.3
+C                                                                                MAPS.4
+      COMMON /MAPS/    PHIC,   XLONC,       XN,    PSI1,   POLE,                 MAPS.5
+     1             CONV,       A,      C2,                                       06NOV00.91
+     2             IXEX,    JXEX,     XJC,   XCNTR,   YCNTR,                     06NOV00.92
+     3           CNTRJ0,  CNTRI0,  IOFFST,  JOFFST,   NPROJ,                     06NOV00.93
+     4          PROJECT,    IPROJ                                                06NOV00.94
+      CHARACTER NPROJ(3)*6, PROJECT*2, IPROJ*6                                   MAPS.9
+                                                                                 06NOV00.95
+                                                                                 06NOV00.96
+                                                                                 06NOV00.97
+                                                                                 06NOV00.98

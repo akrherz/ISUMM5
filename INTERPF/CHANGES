@@ -1,0 +1,215 @@
+
+You will find descriptions of the changes to the INTERPF version 3
+source code in this file. Each release will be a complete tar file
+such as this. 
+
+The current release is 3.7 (December 23, 2004)
+
+========================================================
+Bug fixes and Changes in release 3.7
+
+1. Bug fixes:
+
+- When SKINTEMP is used, only average temp is produced for TSEASFC 
+  in LOWBDY file.
+
+  Affected file:
+  src/module_all_io.F
+
+- Change default value for namelist variables psfc_method
+  from logical to integer.
+
+  Affected file:
+  namelist.input, namelist.input.SOC
+
+- Ensure consistency of the CP constant across programs.
+
+  Affected file:
+  src/module_phys_consts.F
+
+2. Changes and improvements
+
+- Set min RH to be 1% (down from 5%). If a min of 5% was using
+  during the regridder stage - the min in INTERPF will be around 5%.
+
+  Affected file:
+  src/module_diags.F 
+
+- Add compiler flags for Cray X1. Thanks to Peter Johnsen from
+  Cray
+
+  Affected files:
+  Makefile
+  src/module_hydro_interp.F
+  src/module_nh_interp.F
+  src/module_util.F
+
+- Add INTEL compiler flags. Default will remain PGI. To compile
+  with INTEL, type "make intel"
+
+  Affected file:
+  Makefile
+
+========================================================
+Bug fixes and Changes in release 3.6
+
+1. Bug fixes:
+
+- The moisture variables going into MM5 are mixing ratios, not 
+  specific humidities. Changes have been made to the comments and 
+  header information so that they are now consistent with this.
+
+  Affected files:
+  src/module_all_io.F, module_lateral_bdy.F
+
+2. Changes and improvements
+
+- Add an option to use a different method to compute surface pressure. 
+  This option is controlled by the new namelist variable psfc_method in
+  namelist record4. This new option improves surface pressure calculation
+  for regions where strong inversion exists in the lower troposhere.
+
+  Affected files:
+  namelist.input, namelist.input.SOC
+  src/Makefile, interpf.F, module_all_io.F, module_diags.F
+
+- Add sea ice fraction field in the lower boundary file. This field
+  may be used by MM5 model when polar physics option is chosen.
+
+  Affected file:
+  src/module_all_io.F
+
+- Change the calls to subroutine "clean_rh" to 3d calls, rather
+  than KX 2d calls. This prevents potential problems from running on
+  some computers.
+
+  Affected files:
+  src/interpf.F, module_util.F
+
+- Removing optimization for compilation on IBM - it was too slow.
+
+  Affected file:
+  Makefile
+
+========================================================
+
+Bug fixes and Changes in release 3.5
+
+1. Bug fixes:
+
+- Correct an error in computing mixing ratio when namelist
+  option WRTH2O is set to FALSE. Thanks to Lt Col Mike Walters of AFIT.
+
+  Affected file:
+  src/module_diags.F
+
+2. Changes and improvements
+
+- Allow additional 3D fields to pass through, and compute lateral
+  boundary conditions for model microphysical fields (e.g. cloud
+  and rain water, cloud ice and snow, etc.) if they are present
+  in the input files.
+
+- Add comments in namelist back. If you are using a machine that
+  doesn't like comments in namelist, copy namelist.input.SOC to
+  namelist.input.
+
+  Affected file:
+  namelist.input
+
+- Change default output time periods in interpf.deck.cray.
+
+  Affected file:
+  interpf.deck.cray
+
+========================================================
+
+Bug fixes and Changes in release 3.4
+
+1. Bug fixes:
+
+- Uncomment the STOP statement when INTERPF detects an out-of-order
+  interpolation. (Change in tar file since 8/11/00.)
+
+  Affected file:
+  src/module_hydro_interp.F
+
+- Correct ground temperature calculation problem if usesfc = .F..
+  Now the recalculated lowest sigma level temperature is used to 
+  approximate ground temperature. (Change in tar file since 3/8/00.)
+
+  Affected file:
+  src/interpf.F
+
+2. Changes and improvements:
+
+- Simplify the way make is done. Now one needs only to type 'make'
+  to compile on one's machine. (Change in tar file since 6/7/00.)
+
+  Affected files:
+  Makefile, configure.rules, macros_pregrid, macros_regridder (new)
+  src/Makefile
+
+- Starting from release-3-4, INTERPF will be able to generate a 
+  time-dependent LOWBDY file for SST, snow cover, sea ice, if these
+  fields exist in the input. INTERPF will create a time-averaged SST
+  if the input field is SKINTEMP. When time-averaged SST is created,
+  snow cover and sea ice will also not change with time either. Only 
+  the first-time-period fields will appear in the LOWBDY file.
+
+  Affected file:
+  src/interpf.F, module_all_io.F 
+
+- Making all time periods the default number of time periods to 
+  be in MMINPUT_DOMAINx file. Previously the default number of 
+  time period is 1. (Change in tar file since 6/7/00.)
+
+  Affected file:
+  src/interpf.F
+
+- Add a check for user-defined full sigma levels, which must monotonically
+  decrease from 1 to 0.
+
+  Affected file:
+  src/interpf.F
+
+- Change the constant of acceleration due to gravity to be consistent
+  throughout the MM5 modeling system (from 9.8 to 9.81).
+
+  Affected file:
+  src/module_phys_consts.F
+
+
+==============================================
+
+Updated 1/25/00:
+
+- Allow processing time period to be less than a day. Use namelist
+  variable less_than_24h = .TRUE. in record1, or see Doc/README.namelist
+  for an example. Remember though to properly calculate substrate
+  temperature for use in MM5 with ISOIL =0 or 1 option, one
+  needs a time period of at least a full day.
+
+- A mean SST field is added to LOWBDY output for use in MM5 to
+  properly mask the land-sea contrast during nest initialization.
+
+- Allow input pressure levels to vary between times. Set Ptop value
+  in namelist record2, or see Doc/README.namelist for an example.
+
+- Calculate mixing ratio from RH instead of specific humidity, since
+  MM5 uses mixing ratio.
+
+========================================================
+
+Updated 9/25/99:
+
+- Correct units for lateral boundary fields. 
+
+Updated 8/12/99:
+
+- Added OpenMP parallel directives. Compile options on parallel
+  Dec Alpha and IBM are available.
+
+Updated 8/6/99:
+
+- Added Cray batch job deck.

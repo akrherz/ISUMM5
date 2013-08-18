@@ -1,0 +1,274 @@
+===================================================================
+CHANGES
+diff -r3.13 -r3.15
+6c6
+< The current release is 3.6 (December 19, 2002)
+---
+> The current release is 3.7 (December 23, 2004)
+8a9
+> Bug fixes and Changes in release 3.7
+9a11,53
+> 1. Bug fixes:
+> 
+> - When SKINTEMP is used, only average temp is produced for TSEASFC 
+>   in LOWBDY file.
+> 
+>   Affected file:
+>   src/module_all_io.F
+> 
+> - Change default value for namelist variables psfc_method
+>   from logical to integer.
+> 
+>   Affected file:
+>   namelist.input, namelist.input.SOC
+> 
+> - Ensure consistency of the CP constant across programs.
+> 
+>   Affected file:
+>   src/module_phys_consts.F
+> 
+> 2. Changes and improvements
+> 
+> - Set min RH to be 1% (down from 5%). If a min of 5% was using
+>   during the regridder stage - the min in INTERPF will be around 5%.
+> 
+>   Affected file:
+>   src/module_diags.F 
+> 
+> - Add compiler flags for Cray X1. Thanks to Peter Johnsen from
+>   Cray
+> 
+>   Affected files:
+>   Makefile
+>   src/module_hydro_interp.F
+>   src/module_nh_interp.F
+>   src/module_util.F
+> 
+> - Add INTEL compiler flags. Default will remain PGI. To compile
+>   with INTEL, type "make intel"
+> 
+>   Affected file:
+>   Makefile
+> 
+> ========================================================
+===================================================================
+Makefile
+diff -r3.10 -r3.12
+18c18,36
+< 	@grep CRAY .tmpfile ; \
+---
+> 	@grep crayx1 .tmpfile ; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for Cray X1"                                                      ; \
+> 		echo "AR                =       $(AR)"                          >  macros_interpf       ; \
+> 		echo "RM                =       $(RM)"                          >> macros_interpf       ; \
+> 		echo "RM_LIST           =       $(RM_LIST)"                     >> macros_interpf       ; \
+> 		echo "CD                =       $(CD)"                          >> macros_interpf       ; \
+> 		echo "LN                =       $(LN)"                          >> macros_interpf       ; \
+> 		echo "MAKE              =       $(MAKE)"                        >> macros_interpf       ; \
+> 		echo "SHELL             =       /bin/sh"                        >> macros_interpf       ; \
+> 		echo "TOUCH             =       touch"                          >> macros_interpf       ; \
+> 		echo "CPP               =       cpp"                            >> macros_interpf       ; \
+> 		echo "CPPFLAGS          =       -I. -C -P -DSGI -DBIT32 -UCRAY" >> macros_interpf       ; \
+> 		echo "FC                =       ftn"                            >> macros_interpf       ; \
+> 		echo "FCFLAGS           =       -f free -O2 -ra"                >> macros_interpf       ; \
+> 		echo "LDFLAGS           =       "                               >> macros_interpf       ; \
+> 		echo "CCFLAGS           =       -DSGI -DBIT32 -I."              >> macros_interpf       ; \
+> 		echo "LOCAL_LIBRARIES   =       "                               >> macros_interpf       ; \
+> 		( $(CD) src ; $(MAKE) all )                                                             ; \
+> 	else @grep CRAY .tmpfile ; \
+169a188
+> 	fi ; \
+172a192,211
+> intel:
+> 	echo "Compiling for Linux with INTEL compiler"						; \
+> 		echo "AR		=	$(AR)"				>  macros_interpf	; \
+> 		echo "RM		=	$(RM)"				>> macros_interpf	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_interpf	; \
+> 		echo "CD		=	$(CD)"				>> macros_interpf	; \
+> 		echo "LN		=	$(LN)"				>> macros_interpf	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_interpf	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_interpf	; \
+> 		echo "TOUCH		=	touch"				>> macros_interpf	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_interpf	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DDEC -traditional"	>> macros_interpf	; \
+> 		echo "FC		=	ifort"				>> macros_interpf	; \
+> 		echo "FCFLAGS		=	-FR -pc 32 -convert big_endian"	>> macros_interpf	; \
+> 		echo "LDFLAGS		=	" 				>> macros_interpf	; \
+> 		echo "CCFLAGS		=	-DDEC -I."			>> macros_interpf	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_interpf	; \
+> 		( $(CD) src ; $(MAKE) all	) 							; \
+> 	( $(RM) interpf ; $(LN) src/interpf . )
+> 
+===================================================================
+README
+diff -r3.7 -r3.8
+2,3c2,3
+< VERSION 3 INTERPF PROGRAM (release 3-6)
+< (Updated December 19, 2002)
+---
+> VERSION 3 INTERPF PROGRAM (release 3-7)
+> (Updated December 23, 2004)
+===================================================================
+namelist.input
+diff -r3.11 -r3.12
+34,35c34,35
+<  wrth2o         = .TRUE.                             ! T/F specific humidity wrt H2O
+<  psfc_method    = .FALSE./                           ! T/F sfc temperature from diurnal avg
+---
+>  wrth2o         = .TRUE.                             ! T/F specific humidity wrt liquid H2O
+>  psfc_method    = 0 /                                ! 0 => (Tsfc+Tslv)/2 , 1 => diurnally avg temp
+===================================================================
+namelist.input.SOC
+diff -r3.6 -r3.7
+33c33
+<  antarctic      = .FALSE. / 
+---
+>  psfc_method    = 0 /
+===================================================================
+Doc/README
+diff -r3.2 -r3.3
+18c18,19
+< (the reservoir temperature [a daily mean] and time-averaged SST).  
+---
+> (the reservoir temperature [a daily mean], snow cover, seaice
+> fractional seaice, and time-averaged SST).  
+===================================================================
+src/module_all_io.F
+diff -r3.28 -r3.31
+945a946
+>             ELSE IF ( (       daily_mean_sst ) .AND. ( sfc_sh%name(1:8) .EQ. 'TSEASFC ' ) ) THEN
+1489c1490
+<          bhi( 3,5) = 6 ; bhic( 3,5) = 'INTERP Program Version Number                                                   '
+---
+>          bhi( 3,5) = 7 ; bhic( 3,5) = 'INTERP Program Version Number                                                   '
+===================================================================
+src/module_diags.F
+diff -r3.5 -r3.7
+73c73
+<                   rh(i,j,k) = MIN ( MAX ( rh(i,j,k) , 10. ) , 100. ) 
+---
+>                   rh(i,j,k) = MIN ( MAX ( rh(i,j,k) ,  1. ) , 100. ) 
+208c208
+<                   rh(i,j,k) = MIN ( MAX ( rh(i,j,k) , 10. ) , 100. ) 
+---
+>                   rh(i,j,k) = MIN ( MAX ( rh(i,j,k) ,  1. ) , 100. ) 
+===================================================================
+src/module_hydro_interp.F
+diff -r3.2 -r3.3
+34a35
+> !csd$ parallel do private(i,j,k)
+44a46
+> !csd$ end parallel do
+56a59
+> !csd$ parallel do private(i,j,k,ksf)
+79a83
+> !csd$ end parallel do
+373a378
+> !cmeys!csd$ parallel do private(i,j,kloop,kn,ktemp,ko)
+395a401
+> !cmeys!csd$ end parallel do
+406a413
+> !csd$ parallel do private( i , j , kn , kt , kb )
+416a424
+> !csd$ end parallel do
+420a429
+> !csd$ parallel do private(i , j , kn , kt , kb )
+438a448
+> !csd$ end parallel do
+443a454
+> !csd$ parallel do private(i,j,kb)
+453a465
+> !csd$ end parallel do
+===================================================================
+src/module_nh_interp.F
+diff -r3.2 -r3.3
+44a45
+> !csd$ parallel do private(i,j,k,ac,b,alnp,pres0)
+63a65
+> !csd$ end parallel do
+136a139
+> !csd$ parallel do private(i,j,k,pr0,alnp,ziso,zq,l)
+163a167
+> !csd$ end parallel do
+170a175
+> !csd$ parallel do private(i,j,k,pr0dot,alnp,ziso,zq,ip,im,jp,jm,l,tvav)
+199a205
+> !csd$ end parallel do
+205a212
+> !csd$ parallel do private(i,j,k,ll,l,zu,zl,fu,fl,alnqvn)
+236a244
+> !csd$ end parallel do
+421a430
+> !cmeys!csd$ parallel do private(i,j,k,qdt,z0q,pr0,alnpq,ziso,zq,ip,im,jp,jm,lp,lm,ubar,vbar,omega,kp,km,l,ll,zu,zl,omegau,omegal,megan,rho)
+510a520
+> !cmeys!csd$ end parallel do
+===================================================================
+src/module_phys_consts.F
+diff -r3.2 -r3.3
+3c3
+<       REAL,          PARAMETER    :: CP          =  1005.7
+---
+>       REAL,          PARAMETER    :: CP          =  1004.0
+===================================================================
+src/module_util.F
+diff -r3.4 -r3.5
+379a380
+> !csd$ parallel do private(i,j)
+385a387
+> !csd$ end parallel do
+387a390
+> !csd$ parallel do private(i,j,k)
+395a399
+> !csd$ end parallel do
+397a402
+> !csd$ parallel do private(i,j)
+403a409
+> !csd$ end parallel do
+405a412
+> !csd$ parallel do private(i,j)
+411a419
+> !csd$ end parallel do
+413a422
+> !csd$ parallel do private(i,j)
+418a428
+> !csd$ end parallel do
+422a433
+> !csd$ parallel do private(i,j)
+427a439
+> !csd$ end parallel do
+432a445
+> !csd$ parallel do private(i,j)
+437a451
+> !csd$ end parallel do
+439a454
+> !csd$ parallel do private(i,j)
+444a460
+> !csd$ end parallel do
+451a468
+> !csd$ parallel do private(i,j)
+457a475
+> !csd$ end parallel do
+459a478
+> !csd$ parallel do private(i,j,k,weight)
+468a488
+> !csd$ end parallel do
+479c499
+< #ifdef CRAY
+---
+> #ifdef XCRAY 
+512a533
+> !csd$ parallel do private(i,j)
+517a539
+> !csd$ end parallel do
+524a547
+> !csd$ parallel do private(i,j)
+529a553
+> !csd$ end parallel do
+533a558
+> !csd$ parallel do private(i,j)
+539a565
+> !csd$ end parallel do
+543a570
+> !csd$ parallel do private(i,j)
+548a576
+> !csd$ end parallel do

@@ -1,0 +1,20 @@
+C                                                                                SURFSLAB.1
+C SURFSLAB.INCL                                                                  SURFSLAB.2
+C                                                                                SURFSLAB.3
+      COMMON/COMSURFSLAB/GOVRTH, GZ1OZ0,                                         SURFSLAB.4
+     &                   WSPD,   BR,                                             SURFSLAB.5
+     &                   PSIM,   PSIH,                                           SURFSLAB.6
+     &                   FLHC,   FLQC,                                           SURFSLAB.7
+     &                   HFKLMX, QGG,                                            SURFSLAB.8
+     &                   TGDSA,  TGDSB                                           SURFSLAB.9
+C                                                                                SURFSLAB.10
+      REAL      GOVRTH(MIX), GZ1OZ0(MIX),                                        25JAN00.453
+     &          WSPD(MIX),   BR(MIX),                                            SURFSLAB.12
+     &          PSIM(MIX),   PSIH(MIX),                                          SURFSLAB.13
+     &          FLHC(MIX),   FLQC(MIX),                                          SURFSLAB.14
+     &          HFKLMX(MIX), QGG(MIX),                                           SURFSLAB.15
+     &          TGDSA(MIX),  TGDSB(MIX)                                          SURFSLAB.16
+C                                                                                SURFSLAB.17
+c$omp threadprivate (/comsurfslab/)                                              SURFSLAB.19
+C                                                                                SURFSLAB.20
+C END OF SURFSLAB.INCL                                                           SURFSLAB.21

@@ -1,0 +1,7 @@
+      INTEGER KFNT, KFNP
+      REAL TTAB, QSTAB, THE0K, ALU, RDPR, RDTHK, PTTOP
+      parameter(kfnt=250,kfnp=220) 
+      COMMON/KFLUT/ ttab(kfnt,kfnp),qstab(kfnt,kfnp),the0k(kfnp),
+     *              alu(200),rdpr,rdthk,pttop  
+      REAL FRQKFDIAG, TIMKFDIAG
+      COMMON/KF_DIAG/FRQKFDIAG,TIMKFDIAG

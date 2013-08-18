@@ -1,0 +1,188 @@
+# data that must be read in from the namelist and 
+# distributed to the other processors
+# name        type    ndim     dims
+#
+# oparam
+#
+timax           r       0
+tistep          r       0
+ifrest          l       0
+ixtimr          i       0
+ifsave          l       0
+svlast           l      0
+savfrq          r       0
+ntsave          i       0
+iftape          i       0
+tapfrq          r       0
+inctap          i       1       maxnes
+nttape          i       0
+ifskip           l      0
+ifrsfa           l      0
+#
+# this is the only string in the bunch -- handle it special in param.F
+# (actually, in MPP/RSL/mpp_param_30.incl)
+#cdatest         s       1       19
+#
+ifprt           i       0
+prtfrq          r       0
+maschk          i       0
+isfout          i       0
+nproc_lt        i       0
+nproc_ln        i       0
+mpp_io_node     i       0
+icflperiod      i       0
+cflthresh       r       0
+#
+# added for the time series output stuff in v3.4
+#
+iftsout         l       0
+tslat           r       1      itsdim
+tslon           r       1      itsdim
+#
+# lparam
+#
+radfrq          r       0
+imvdif          i       0
+ivqadv          i       0
+ivtadv          i       0
+ithadv          i       0
+itpdif           i      0
+icor3d          i       0
+iexsi           i       0
+ifupr           i       0
+ifdry           i       0
+icustb          i       0
+iboudy          i       1       maxnes
+ifsnow          i       1       maxnes
+isfflx          i       1       maxnes
+itgflg          i       1       maxnes
+isfpar          i       1       maxnes
+icloud          i       1       maxnes
+icdcon          i       1       maxnes
+ivmixm          i       1       maxnes
+hydpre          r       1       maxnes
+ievap           i       1       maxnes
+ismrd           i       0
+nudge           i       0
+ifgrow          i       0
+ifrad           i       0
+icupa           i       1       maxnes
+imphys          i       1       maxnes
+ibltyp          i       1       maxnes
+ishallo         i       1       maxnes
+ipolar          i       0
+isoil            i      0
+imoist          i       1       maxnes
+xmoist          r       1       maxnes
+imoiav          i       1       maxnes
+iexice          i       0
+kxout           i       1       maxnes
+jxsex           i       1       maxnes
+ibmoist         i       0
+istlyr          i       1       mlx
+ismlyr          i       1       mlx
+isstvar         i       0
+iz0topt         i       0
+isfmthd         i       0
+rdmaxalb        l       0
+rdbrdalb        l       0
+## new GZ namelist values - added in version 3.7
+tdkorr          i       0
+levslp          i       0
+oroshaw         i       0
+itadvm          i       1       maxnes
+iqadvm          i       1       maxnes
+#
+# nparam
+#
+numnc           i       1       maxnes
+levidn          i       1       maxnes
+ioverw          i       1       maxnes
+nesti           i       1       maxnes
+nestj           i       1       maxnes
+xstnes          r       1       maxnes
+xennes          r       1       maxnes
+iactiv          i       1       maxnes
+imove           i       1       maxses
+imovet          i       2       maxses maxmv
+imovei          i       2       maxses maxmv
+imovej          i       2       maxses maxmv
+imovco          i       1       maxses
+ifeed           i       0
+nestix          i       1       maxnes
+nestjx          i       1       maxnes
+#
+# pparam
+#
+sigma           r       1       kxp1
+ptop            r       0
+zzlnd           r       0
+zzwtr           r       0
+alblnd          r       0
+thinld          r       0
+xmava           r       0
+conf            r       0
+qcth            r       0
+qck1            r       0
+iabsor          i       0
+ifdtset         l       0
+dtimset         r       0
+pbcmax          r       0
+ifcdz           l       0
+cdminp          r       0
+cdminz          r       0
+edtmin          r       0
+edtmax          r       0
+edtsmx          r       0
+edtsmn          r       0
+tcrit           r       0
+sigcbhi         r       0
+pkdcut          r       0
+cuqmax          r       0
+cuqmin          r       0
+solset          r       0
+czo             r       0
+ozo             r       0
+vconvc          r       0
+rad             r       0
+trel            r       0
+bfac            r       0
+soilfac         r       0
+ckh             r       0
+#
+# fparam
+#
+i4d             i       2       maxnes  2
+diftim          r       2       maxnes  2
+iwind           i       2       maxnes  2
+gv              r       2       maxnes  2
+itemp           i       2       maxnes  2
+gt              r       2       maxnes  2
+imois           i       2       maxnes  2
+gq              r       2       maxnes  2
+irot            i       1       maxnes
+gr              r       1       maxnes
+inonbl          i       2       maxnes  4
+rinblw          r       0
+npfg            i       0
+i4di            i       1       maxnes
+iswind          i       1       maxnes
+giv             r       1       maxnes
+istemp          i       1       maxnes
+git             r       1       maxnes
+ismois          i       1       maxnes
+giq             r       1       maxnes
+rinxy           r       0
+rinsig          r       0
+twindo          r       0
+npfi            i       0
+rinfmn          r       0
+rinfmx          r       0
+pfree           r       0
+dpsmx           r       0
+ionf            i       0
+iwinds          i       2       maxnes  2
+fdasta          r       1       maxnes
+fdaend          r       1       maxnes
+idynin          i       0
+dtramp          r       0

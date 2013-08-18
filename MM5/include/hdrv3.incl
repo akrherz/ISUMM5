@@ -1,0 +1,57 @@
+C     VERSION 3 HEADER                                                           HDRV3.1
+C-----------------------------------------------------------------               HDRV3.2
+C                                                                                HDRV3.3
+C     HEADER INFORMATION FOR MM5 V3 DATA                                         HDRV3.4
+C                                                                                HDRV3.5
+      INTEGER NUMINT,NUMPROGS,NUMREAL                                            HDRV3.6
+      PARAMETER (NUMINT=50,NUMREAL=20,NUMPROGS=20)                               HDRV3.7
+C A STANDARD FLAG VALUE FOR WHEN A FILE IS AT EOF                                25JAN00.442
+      INTEGER FILEDONE                                                           25JAN00.443
+      PARAMETER (FILEDONE = 919 )                                                25JAN00.444
+                                                                                 HDRV3.8
+      INTEGER       BHI (NUMINT,NUMPROGS),JBHI (NUMINT,NUMPROGS)                 HDRV3.9
+      REAL          BHR (NUMREAL,NUMPROGS),JBHR (NUMREAL,NUMPROGS)               HDRV3.10
+      CHARACTER *80 BHIC(NUMINT,NUMPROGS),JBHIC(NUMINT,NUMPROGS)                 HDRV3.11
+      CHARACTER *80 BHRC(NUMREAL,NUMPROGS),JBHRC(NUMREAL,NUMPROGS)               HDRV3.12
+      COMMON /HEADER / BHI ,BHR                                                  HDRV3.13
+      COMMON /HEADERC/ BHIC,BHRC                                                 HDRV3.14
+      COMMON /JBH / JBHI, JBHR                                                   HDRV3.15
+      COMMON /JBHC/ JBHIC, JBHRC                                                 HDRV3.16
+C                                                                                HDRV3.17
+C NOTE THAT IF YOU CHANGE THE HARD CODED FIELD LENGTHS BELOW PLEASE              HDRV3.18
+C ALSO MAKE THE CHANGE IN THE DEFINITIONS OF THE ASSOCIATED INTEGER              HDRV3.19
+C PARAMETERS IN THIS FILE.                                                       HDRV3.20
+C                                                                                HDRV3.21
+      INTEGER FLAG                                                               HDRV3.22
+      INTEGER START_INDEX(4)                                                     HDRV3.23
+      INTEGER END_INDEX(4)                                                       HDRV3.24
+      REAL RTIME                                                                 HDRV3.25
+      CHARACTER*  4    STAGGERING                                                HDRV3.26
+      CHARACTER*  4      ORDERING                                                HDRV3.27
+      CHARACTER* 24    START_DATE                                                HDRV3.28
+      CHARACTER* 24  CURRENT_DATE                                                HDRV3.29
+      CHARACTER*  9          NAME                                                HDRV3.30
+      CHARACTER* 25         UNITS                                                HDRV3.31
+      CHARACTER* 46   DESCRIPTION                                                HDRV3.32
+C                                                                                HDRV3.33
+C INTEGER PARAMETERS OF THE SMALL HEADER FIELD LENGTHS ABOVE                     HDRV3.34
+C                                                                                HDRV3.35
+      INTEGER LEN_START_INDEX                                                    HDRV3.36
+      INTEGER LEN_END_INDEX                                                      HDRV3.37
+      INTEGER LEN_STAGGERING                                                     HDRV3.38
+      INTEGER LEN_ORDERING                                                       HDRV3.39
+      INTEGER LEN_START_DATE                                                     HDRV3.40
+      INTEGER LEN_CURRENT_DATE                                                   HDRV3.41
+      INTEGER LEN_NAME                                                           HDRV3.42
+      INTEGER LEN_UNITS                                                          HDRV3.43
+      INTEGER LEN_DESCRIPTION                                                    HDRV3.44
+      PARAMETER ( LEN_START_INDEX  =  4)                                         HDRV3.45
+      PARAMETER ( LEN_END_INDEX    =  4)                                         HDRV3.46
+      PARAMETER ( LEN_STAGGERING   =  4)                                         HDRV3.47
+      PARAMETER ( LEN_ORDERING     =  4)                                         HDRV3.48
+      PARAMETER ( LEN_START_DATE   = 24)                                         HDRV3.49
+      PARAMETER ( LEN_CURRENT_DATE = 24)                                         HDRV3.50
+      PARAMETER ( LEN_NAME         =  9)                                         HDRV3.51
+      PARAMETER ( LEN_UNITS        = 25)                                         HDRV3.52
+      PARAMETER ( LEN_DESCRIPTION  = 46)                                         HDRV3.53
+                                                                                 HDRV3.54

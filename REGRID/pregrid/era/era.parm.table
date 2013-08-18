@@ -1,0 +1,35 @@
+CODE  ID                     FIELD NAME                        UNITS
+(I3) (A8)
+129  Z             Geopotential (orography at sfc)          m2 s-2
+130  T             Temperature                                 K
+131  U             U-component of Wind                       ms-1
+132  V             V-component of Wind                       ms-1
+133                Specific Humidity                         kg/kg
+135                Vertical Velocity                         Pa s-1
+136                Total Column water                        kg m-2
+137                Total column water vapor                  kg m-2    
+139                Soil Temperature level 1                    K
+140                Soil wetness level 1                    m (of water)
+141  SNOWCOVR      Snow Depth                                  m
+151  PRESSURE      Mean Sea Level (MSL) Pressure               Pa
+157  RH            Relative Humidity                            %
+164                Total Cloud Cover                         (0 - 1)
+165  U             U-wind at 10 m                            m s-1
+166  V             V-wind at 10 m                            m s-1
+167  T             Temperature at 2 m                          K
+168  DEWPOINT      Dewpoint at 2 m                             K
+170                Soil temperature level 2                    K
+171                Soil wetness level 2                     m (of water)
+172                Land-Sea Mask                            (0, 1)
+173                Surface Roughness                           m
+174                Albedo                                      -
+183                Soil temperature level 3                    K
+184                Soil wetness level 3                     m (of water)
+186                Low Cloud Cover                           (0 - 1)
+187                Medium Cloud Cover                        (0 - 1)
+188                High Cloud Cover                          (0 - 1)
+198                Skin reservoir content                   m (of water)
+235                Skin temperature                            K
+236                Soil temperature level 4                    K
+237                Soil wetness level 4                     m (of water)
+

@@ -1,0 +1,890 @@
+===================================================================
+CHANGES
+diff -r3.8 -r3.11
+11c11
+< The current release is 3.4 (November 6, 2000)
+---
+> The current release is 3.5 (December 5, 2001)
+13a14,133
+> 
+> 1. Bug fixes:
+> 
+> - Correct a problem with Makefile for Linux (Thanks to Matthew Johnson
+>   of Air Quality Bureau, Iowa). (This change has been in TERRAIN.TAR file
+>   since 11/28/00.)
+> 
+>   Affected file:
+>   Makefile
+> 
+> - Add missing script variable (Where30sTer) in terrain deck for Cray.
+>   Note, if you run Terrain job on Cray using 30 sec data, set time
+>   limit to be very large, as gunzip files will take a very long time.
+>   (This change has been in TERRAIN.TAR file since 11/28/00.)
+> 
+>   Affected file:
+>   Templates/terrain.deck.cray
+> 
+> - Minor correction in ftp script that gets the 30 sec elevation data.
+>   
+>   Affected file:
+>   Data/ftp30s.csh
+> 
+> - Remove &END in Data/namelist.usgsdata and namelist.sigdata.
+> 
+> - Remove data coverage check for global datasets. Prevents occational
+>   STOP in terrain program.
+> 
+>   Affected file:
+>   src/terdrv.F, crlwmsk.F, crsoil.F
+> 
+> - Change print format so that it can print grid numbers greater than 99.
+> 
+>   Affected file:
+>   src/outpt.F
+> 
+> - Correct an error in calculating deep soil T over island.
+> 
+>   Affected file:
+>   src/patch.F 
+> 
+> - Correct a problem with TERRAIN plotting when terrain output files
+>   with 100x90 dimensions.
+> 
+>   Affected file:
+>   src/plots.F
+> 
+> - Correct a problem with landwater masking plot: it will now place
+>   the landwater mask value in correct location on the map.
+> 
+>   Affected file:
+>   src/pltter.F
+> 
+> - Correct a problem with using 2 min TERRAIN input data - the data
+>   should be located at the center of a grid box.
+> 
+>   Affected file:
+>   src/rdldtr.F
+> 
+> - Correction to domain checks - it will stop TERRAIN if the check fails.
+> 
+>   Affected file:
+>   src/setup.F 
+> 
+> - Check data dimensions separately.
+> 
+>   Affected file:
+>   src/terdrv.F
+> 
+> - Subroutine crlnd must be called if IFEZFUG is true.
+> 
+>   Affected file:
+>   src/terdrv.F
+> 
+> - Correction to Mercator map projection near dateline.
+>   (Thanks to AFWA.)
+> 
+>   Affected file:
+>   src/terrestial_info.F
+> 
+> - Remove namelist variable DATASW from all decks. The option of allowing
+>   the model to choose a resolution isn't always working. 
+> 
+> 
+> 2. Changes and improvements:
+> 
+> - README files in top directory and Data/ directory are updated to 
+>   reflect the new available data.
+> 
+> - Global soil category data are updated from 1 degree resolution to
+>   5 minutes resolution from USGS FAO dataset. Over the continental
+>   US (CONUS), the data resolution is still 30 seconds.
+> 
+>   In addition, two layers of soil data are provided: 0 - 30 cm top soil 
+>   layer, 30-100 cm bottom soil layer.
+> 
+>   The new input data are in ftp://ftp.ucar.edu/mesouser/MM5V3/TERRAIN_DATA
+> 
+> - USGS 30-seconda, 24-categroy vegetation data are updated with the 
+>   USGS Version 2 data. The landwater mask data are recreated using
+>   the new vegetation data. All lower resolution data (2, 5, 10, 30
+>   and 60 min) are recreated. The new data are located at the center
+>   of a grid box. This means that the old TERRAIN tar file cannot be
+>   used to read the new data files.
+> 
+> - All decks are updated to use ./terrain.exe, instead of terrain.exe.
+> 
+>   Decks are also modified to allow a user to choose different soil data.
+> 
+> - ftp.csh is modified to access new data in new directory. A new ftp2.csh 
+>   is included to access different soil data.
+> 
+> - Add minor version number in TERRAIN's header.
+> 
+> - vs_data1.incl is removed since it is no longer used.
+> 
+> 
+> ========================================================
+> 
+> Bug fixes and changes in V.34:
+===================================================================
+Makefile
+diff -r3.12 -r3.13
+98c98
+< 		"LOCAL_LIBRARIES= -L$NCARG_ROOT/lib -L/usr/X11R6/lib -lncarg -lncarg_gks -lncarg_c -lX11 -L$PGI/linux86/lib -L/usr/lib -lf2c" ) ; \
+---
+> 		"LOCAL_LIBRARIES= -L$(NCARG_ROOT)/lib -L/usr/X11R6/lib -lncarg -lncarg_gks -lncarg_c -lX11 -L$(PGI)/linux86/lib -L/usr/lib -lf2c" ) ; \
+===================================================================
+README
+diff -r3.8 -r3.11
+2,3c2,3
+< VERSION 3 TERRAIN PROGRAM (release-3-4)
+< (Updated November 6, 2000)
+---
+> VERSION 3 TERRAIN PROGRAM (release-3-5)
+> (Updated December 5, 2001)
+49c49
+< ******* IMPORTANT FOR 3.1 RELEASE *******
+---
+> ******* IMPORTANT CHANGES FOR 3.5 RELEASE *******
+51,54c51,77
+< Starting from 3-1 release, all TERRAIN input data files are reprocessed
+< and now are in direct access format. You must use the new deck to run
+< 3-1 or newer program and the new deck will go to NCAR ftp site to 
+< download new data.
+---
+> Starting from 3-5 release, the vegetation, landwater mask, and soil data
+> have been updated. The vegetation data are updated based on the 30-second
+> resolution USGS Version 2 data. For data information, please see
+> http://edcdaac.usgs.gov/glcc/glcc.html.
+> The landwater mask data are recreated using the vegetation data. 
+> These two types of data are now located at the center of a grid box.
+> 
+> The soil data are updated with 5-minute global United Nation
+> FAO (Food and Agriculture Organization) dataset and 30-second STATSGO 
+> US dataset. (For more information, please
+> see: http://www.fao.org/ag/AGL/agll/dsmw.htm)
+> Over the Antarctic, soil type is assumed to be glacier (the FAO dataset
+> didn't provide data over Antarctic).
+> This is a great improvement over the 1-degree global dataset we had prior 
+> to this release. Two layers of soil
+> category data are provided in this release: one from 0 - 30 cm layer, and
+> the other from 30 - 100 cm layer. User may choose to use either by setting
+> a script variable in the new deck (BotSoil). A view of the two layer soil
+> data over US can been seen at http://www.mmm.ucar.edu/mm5/mm5v3/v3prep.html.
+> 
+> The new data are available from ftp://ftp.ucar.edu/mesouser/MM5V3/TERRAIN_DATA.
+> 
+> NOTE that you must use the new terrain.deck and new TERRAIN.TAR file in
+> V3.5 release to access the new vegetation and landwater mask data. You may
+> download the new soil data and use the old TERRAIN program.
+> 
+> The complete list of data files provided by mesouser is in Data/README file.
+56c79
+< ******* IMPORTANT FOR 3.4 RELEASE *******
+---
+> ******* IMPORTANT CHANGES FOR 3.4 RELEASE *******
+74a98,104
+> ******* IMPORTANT FOR 3.1 RELEASE *******
+> 
+> Starting from 3-1 release, all TERRAIN input data files are reprocessed
+> and now are in direct access format. You must use the new deck to run
+> 3-1 or newer program and the new deck will go to NCAR ftp site to 
+> download new data.
+> 
+105a136,140
+> ***************************************************************
+> Also see the online self-tutorial at
+> http://www.mmm.ucar.edu/mm5/mm5v3/tutorial/teachyourself.html
+> ***************************************************************
+> 
+110c145
+<    namelist options. Type 'terrain.deck' to compile and run the program.
+---
+>    namelist options. Type './terrain.deck' to compile and run the program.
+145c180
+<    for your machine, edit options in the deck, and type 'terrain.deck' to
+---
+>    for your machine, edit options in the deck, and type './terrain.deck' to
+202c237
+<    in the deck, do a 'make clean', and type 'terrain.deck' to start
+---
+>    in the deck, do a 'make clean', and type './terrain.deck' to start
+224c259
+<    ftp://ftp.ucar.edu/mesouser/MM5V3/DATA
+---
+>    ftp://ftp.ucar.edu/mesouser/MM5V3/TERRAIN_DATA
+257a293
+>      (The USGS data are updated in V3.5)
+279c315
+<    LSM data:
+---
+>    LSM data: 
+283a320
+>      (soil category data are updated for V3.5, and they are now for top 0 - 30 cm layer)
+287,289c324,352
+< Note that soil category data over much of the world only have 1 degree resolution. It
+< is 30 sec resolution over the US. Hence data at other resolution are created
+< from either the 1 degree or 30 sec datasets.
+---
+>      (30 - 100 cm layer soil category data)
+>      SOILCATB.TAR.gz   - soil category data at 1 deg, 30, 10, 5 min resolution
+>      SOILCATB.02.gz    - soil category data at 2 min resolution
+>      SOILCATB.30s.gz   - soil category data at 30 sec resolution
+> 
+> 
+> Note that soil category data over much of the world have 5 minute resolution since
+> V3.5 release. It is 30 sec resolution over the US. Hence data at other resolutions 
+> are created from either the 5 minute or 30 sec datasets.
+> 
+> A special note about data over Hawaii Islands:
+> 
+> - The new 5-min soil data show improvement over previous 1-degree dataset.
+> 
+> - The new vegetation data have only urban category over the islands, but none others.
+>   So we filled the rest of the islands with dominant landuse categories around 
+>   similar latitude circles - this turns up to be mixed forest (category 15). This
+>   is different from what is over the islands before which was savanna (category 10).
+> 
+> 
+> ---------------------------------------------------------
+> 
+> Known problem with TERRAIN:
+> 
+> - Over the poles, terrain may produce errorous terrain and other
+>   terrestrial fields at the pole and along dateline if even grid 
+>   dimensions are used. Using odd grid dimensions will work, at
+>   least for a single domain.
+>   
+===================================================================
+Data/README
+diff -r3.1 -r3.2
+6,7c6,7
+< directory. The complete data sets and their sizes are
+< listed below:
+---
+> directory. The complete data sets for TERRAIN Version 3.5 
+> and their sizes are listed below:
+21,33c21,33
+< USGS 24-category land-water mask and landuse/vegetaion data:
+<    933249604  LWMASK-USGS.30s
+<     58341600  LWMASK-USGS.02
+<      9339840  LWMASK-USGS.05
+<      2337120  LWMASK-USGS.10
+<       260640  LWMASK-USGS.30
+<        65520  LWMASK-USGS.60
+<    933249604  VEG-USGS.30s
+<   1458151200  VEG-USGS.02
+<    233340480  VEG-USGS.05
+<     58350240  VEG-USGS.10
+<      6490080  VEG-USGS.30
+<      1625040  VEG-USGS.60
+---
+> USGS (Version 2) 24-category land-water mask and landuse/vegetaion data:
+>    933120000  LWMASK-USGS.30s
+>     58320000  LWMASK-USGS.02
+>      9331200  LWMASK-USGS.05
+>      2332800  LWMASK-USGS.10
+>       259200  LWMASK-USGS.30
+>        64800  LWMASK-USGS.60
+>    933120000  VEG-USGS.30s
+>   1458000000  VEG-USGS.02
+>    233280000  VEG-USGS.05
+>     58320000  VEG-USGS.10
+>      6480000  VEG-USGS.30
+>      1620000  VEG-USGS.60
+35c35
+< Soil category (17), deep soil temp and vegetation fraction data:
+---
+> Top (0-30 cm) soil category (17), deep soil temp and vegetation fraction data:
+43a44,51
+> 
+> Bottom (30-100 cm) soil category (17):
+>    933120000  SOILCATB.30s
+>    991440000  SOILCATB.02
+>    158630400  SOILCATB.05
+>     39657600  SOILCATB.10
+>      4406400  SOILCATB.30
+>      1101600  SOILCATB.60
+===================================================================
+Data/ftp.csh
+diff -r3.1 -r3.3
+69c69
+<    cd mesouser/MM5V3/DATA
+---
+>    cd mesouser/MM5V3/TERRAIN_DATA
+103c103
+<          cat >! ftp_lw1 <<
+---
+>          cat >! ftp_lw1 << EOF
+125c125
+<          cat >! ftp_veg1 <<
+---
+>          cat >! ftp_veg1 << EOF
+200c200
+<          cd mesouser/MM5V3/DATA
+---
+>          cd mesouser/MM5V3/TERRAIN_DATA
+311c311
+<          cd mesouser/MM5V3/DATA
+---
+>          cd mesouser/MM5V3/TERRAIN_DATA
+===================================================================
+Data/ftp30s.csh
+diff -r3.1 -r3.2
+75a76
+>                   cat ftp$Num0 >> ftp.tmp
+77,79c78
+< 
+<                  cat ftp$Num0 >> ftp.tmp
+<                  @ Num0 = $Num0 + 4
+---
+>                   @ Num0 = $Num0 + 4
+113,114d111
+<               if ( -e ${ForUnit}$File30s[$Num3] ) rm ${ForUnit}$File30s[$Num3]
+<               ln -s $File30s[$Num0]  ${ForUnit}$File30s[$Num3]
+115a113,115
+> 
+>            if ( -e ${ForUnit}$File30s[$Num3] ) rm ${ForUnit}$File30s[$Num3]
+>            ln -s $File30s[$Num0]  ${ForUnit}$File30s[$Num3]
+===================================================================
+Data/namelist.sibdata
+diff -r3.1 -r3.2
+34d33
+<  &END
+===================================================================
+Data/namelist.usgsdata
+diff -r3.1 -r3.2
+34d33
+<  &END
+===================================================================
+Templates/terrain.deck.cray
+diff -r3.9 -r3.14
+45a46,55
+> #   Set the following for ftp'ing 30 sec elevation data from USGS ftp site
+> #     or specify the directory where the 30 sec data are
+> #
+>     set Where30sTer = ftp
+> #   set Where30sTer = /your-data-directory
+> #
+> #  Uncomment the following line if using the 30 - 100 cm layer soil file
+> #
+> #   set BotSoil
+> #
+136,137d145
+<  DATASW  = .T.,       ; .T. user specify terrain and landuse resolution (ntype)
+<                       ; .F. terrain program choose the data resolution
+229a238,241
+> # define users (do not change) - required for ftp
+> #
+>    set users = MMM
+> #
+253a266,270
+> #      reset LandUse if $BotSoil is set
+> #            -- use bottom soil files
+> #
+> if ( $?BotSoil ) set LandUse = USGS2
+> #
+259c276,278
+< if ( ${LandUse} != SiB ) cat Data/namelist.usgsdata >> terrain.namelist
+---
+> if ( $LandUse == OLD )   cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS )  cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS2 ) cat Data/namelist.usgsdata2 >> terrain.namelist
+288c307,315
+< if ( $?IfProcData ) then
+---
+> if ( $?IfProcData && $?BotSoil ) then
+> #  ftp other data plus top soil data
+>    echo 'about to start ftping'
+>    cp Data/ftp2.csh ftp.csh
+>    chmod +x ftp.csh
+>    ftp.csh >& ftp.out
+>    rm ftp.csh ftp.out
+> else
+> #  ftp other data plus bottom soil data
+290c317
+<    cp Data/ftp.csh .
+---
+>    cp Data/ftp.csh ftp.csh
+310c337
+< terrain.exe >&! terrain.print.out
+---
+> ./terrain.exe >&! terrain.print.out
+===================================================================
+Templates/terrain.deck.cray-ia
+diff -r3.11 -r3.13
+27a28,31
+> #   Uncomment the following line if using the 30 - 100 cm layer soil file
+> #
+> # set BotSoil
+> #
+92,93d95
+<  DATASW  = .T.,       ; .T. user specify terrain and landuse resolution (ntype)
+<                       ; .F. terrain program choose the data resolution
+196a199,203
+> #      reset LandUse if $BotSoil is set
+> #            -- use bottom soil files
+> #
+> if ( $?BotSoil ) set LandUse = USGS2
+> #
+202,203c209,212
+< if ( $LandUse != SiB ) cat Data/namelist.usgsdata >> terrain.namelist
+< if ( $LandUse == SiB ) cat Data/namelist.sibdata  >> terrain.namelist
+---
+> if ( $LandUse == OLD )   cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS )  cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS2 ) cat Data/namelist.usgsdata2 >> terrain.namelist
+> if ( $LandUse == SiB )   cat Data/namelist.sibdata  >> terrain.namelist
+231c240,248
+< if ( $ftpdata == true ) then
+---
+> if ( $ftpdata == true && $?BotSoil ) then
+> #  ftp other data plus top soil data
+>    echo 'about to start ftping'
+>    cp Data/ftp2.csh ftp.csh
+>    chmod +x ftp.csh
+>    ftp.csh >& ftp.out
+>    rm ftp.csh ftp.out
+> else
+> #  ftp other data plus bottom soil data
+233c250
+<    cp Data/ftp.csh .
+---
+>    cp Data/ftp.csh ftp.csh
+252c269
+< terrain.exe >&! terrain.print.out
+---
+> ./terrain.exe >&! terrain.print.out
+===================================================================
+Templates/terrain.deck.dec
+diff -r3.11 -r3.13
+27a28,31
+> #   Uncomment the following line if using the 30 - 100 cm layer soil file
+> #
+> # set BotSoil
+> #
+92,93d95
+<  DATASW  = .T.,       ; .T. user specify terrain and landuse resolution (ntype)
+<                       ; .F. terrain program choose the data resolution
+196a199,203
+> #      reset LandUse if $BotSoil is set
+> #            -- use bottom soil files
+> #
+> if ( $?BotSoil ) set LandUse = USGS2
+> #
+202,203c209,212
+< if ( $LandUse != SiB ) cat Data/namelist.usgsdata >> terrain.namelist
+< if ( $LandUse == SiB ) cat Data/namelist.sibdata  >> terrain.namelist
+---
+> if ( $LandUse == OLD )   cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS )  cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS2 ) cat Data/namelist.usgsdata2 >> terrain.namelist
+> if ( $LandUse == SiB )   cat Data/namelist.sibdata  >> terrain.namelist
+231c240,248
+< if ( $ftpdata == true ) then
+---
+> if ( $ftpdata == true && $?BotSoil ) then
+> #  ftp other data plus top soil data
+>    echo 'about to start ftping'
+>    cp Data/ftp2.csh ftp.csh
+>    chmod +x ftp.csh
+>    ftp.csh >& ftp.out
+>    rm ftp.csh ftp.out
+> else
+> #  ftp other data plus bottom soil data
+233c250
+<    cp Data/ftp.csh .
+---
+>    cp Data/ftp.csh ftp.csh
+252c269
+< terrain.exe >&! terrain.print.out
+---
+> ./terrain.exe >&! terrain.print.out
+===================================================================
+Templates/terrain.deck.hp
+diff -r3.10 -r3.13
+27a28,31
+> #   Uncomment the following line if using the 30 - 100 cm layer soil file
+> #
+> # set BotSoil
+> #
+92,93d95
+<  DATASW  = .T.,       ; .T. user specify terrain and landuse resolution (ntype)
+<                       ; .F. terrain program choose the data resolution
+196a199,203
+> #      reset LandUse if $BotSoil is set
+> #            -- use bottom soil files
+> #
+> if ( $?BotSoil ) set LandUse = USGS2
+> #
+199c206
+< set ForUnit = fort.
+---
+> set ForUnit = ftn
+202,203c209,212
+< if ( $LandUse != SiB ) cat Data/namelist.usgsdata >> terrain.namelist
+< if ( $LandUse == SiB ) cat Data/namelist.sibdata  >> terrain.namelist
+---
+> if ( $LandUse == OLD )   cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS )  cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS2 ) cat Data/namelist.usgsdata2 >> terrain.namelist
+> if ( $LandUse == SiB )   cat Data/namelist.sibdata  >> terrain.namelist
+231c240,248
+< if ( $ftpdata == true ) then
+---
+> if ( $ftpdata == true && $?BotSoil ) then
+> #  ftp other data plus top soil data
+>    echo 'about to start ftping'
+>    cp Data/ftp2.csh ftp.csh
+>    chmod +x ftp.csh
+>    ftp.csh >& ftp.out
+>    rm ftp.csh ftp.out
+> else
+> #  ftp other data plus bottom soil data
+233c250
+<    cp Data/ftp.csh .
+---
+>    cp Data/ftp.csh ftp.csh
+252c269
+< terrain.exe >&! terrain.print.out
+---
+> ./terrain.exe >&! terrain.print.out
+===================================================================
+Templates/terrain.deck.ibm
+diff -r3.10 -r3.12
+27a28,31
+> #   Uncomment the following line if using the 30 - 100 cm layer soil file
+> #
+> # set BotSoil
+> #
+92,93d95
+<  DATASW  = .T.,       ; .T. user specify terrain and landuse resolution (ntype)
+<                       ; .F. terrain program choose the data resolution
+196a199,203
+> #      reset LandUse if $BotSoil is set
+> #            -- use bottom soil files
+> #
+> if ( $?BotSoil ) set LandUse = USGS2
+> #
+202,203c209,212
+< if ( $LandUse != SiB ) cat Data/namelist.usgsdata >> terrain.namelist
+< if ( $LandUse == SiB ) cat Data/namelist.sibdata  >> terrain.namelist
+---
+> if ( $LandUse == OLD )   cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS )  cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS2 ) cat Data/namelist.usgsdata2 >> terrain.namelist
+> if ( $LandUse == SiB )   cat Data/namelist.sibdata  >> terrain.namelist
+231c240,248
+< if ( $ftpdata == true ) then
+---
+> if ( $ftpdata == true && $?BotSoil ) then
+> #  ftp other data plus top soil data
+>    echo 'about to start ftping'
+>    cp Data/ftp2.csh ftp.csh
+>    chmod +x ftp.csh
+>    ftp.csh >& ftp.out
+>    rm ftp.csh ftp.out
+> else
+> #  ftp other data plus bottom soil data
+233c250
+<    cp Data/ftp.csh .
+---
+>    cp Data/ftp.csh ftp.csh
+252c269
+< terrain.exe >&! terrain.print.out
+---
+> ./terrain.exe >&! terrain.print.out
+===================================================================
+Templates/terrain.deck.sgi
+diff -r3.12 -r3.14
+27a28,31
+> #   Uncomment the following line if using the 30 - 100 cm layer soil file
+> #
+> # set BotSoil
+> #
+92,93d95
+<  DATASW  = .T.,       ; .T. user specify terrain and landuse resolution (ntype)
+<                       ; .F. terrain program choose the data resolution
+196a199,203
+> #      reset LandUse if $BotSoil is set
+> #            -- use bottom soil files
+> #
+> if ( $?BotSoil ) set LandUse = USGS2
+> #
+202,203c209,212
+< if ( $LandUse != SiB ) cat Data/namelist.usgsdata >> terrain.namelist
+< if ( $LandUse == SiB ) cat Data/namelist.sibdata  >> terrain.namelist
+---
+> if ( $LandUse == OLD )   cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS )  cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS2 ) cat Data/namelist.usgsdata2 >> terrain.namelist
+> if ( $LandUse == SiB )   cat Data/namelist.sibdata  >> terrain.namelist
+231c240,248
+< if ( $ftpdata == true ) then
+---
+> if ( $ftpdata == true && $?BotSoil ) then
+> #  ftp other data plus top soil data
+>    echo 'about to start ftping'
+>    cp Data/ftp2.csh ftp.csh
+>    chmod +x ftp.csh
+>    ftp.csh >& ftp.out
+>    rm ftp.csh ftp.out
+> else
+> #  ftp other data plus bottom soil data
+233c250
+<    cp Data/ftp.csh .
+---
+>    cp Data/ftp.csh ftp.csh
+252c269
+< terrain.exe >&! terrain.print.out
+---
+> ./terrain.exe >&! terrain.print.out
+===================================================================
+Templates/terrain.deck.sun
+diff -r3.10 -r3.12
+27a28,31
+> #   Uncomment the following line if using the 30 - 100 cm layer soil file
+> #
+> # set BotSoil
+> #
+92,93d95
+<  DATASW  = .T.,       ; .T. user specify terrain and landuse resolution (ntype)
+<                       ; .F. terrain program choose the data resolution
+196a199,203
+> #      reset LandUse if $BotSoil is set
+> #            -- use bottom soil files
+> #
+> if ( $?BotSoil ) set LandUse = USGS2
+> #
+202,203c209,212
+< if ( $LandUse != SiB ) cat Data/namelist.usgsdata >> terrain.namelist
+< if ( $LandUse == SiB ) cat Data/namelist.sibdata  >> terrain.namelist
+---
+> if ( $LandUse == OLD )   cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS )  cat Data/namelist.usgsdata >> terrain.namelist
+> if ( $LandUse == USGS2 ) cat Data/namelist.usgsdata2 >> terrain.namelist
+> if ( $LandUse == SiB )   cat Data/namelist.sibdata  >> terrain.namelist
+231c240,248
+< if ( $ftpdata == true ) then
+---
+> if ( $ftpdata == true && $?BotSoil ) then
+> #  ftp other data plus top soil data
+>    echo 'about to start ftping'
+>    cp Data/ftp2.csh ftp.csh
+>    chmod +x ftp.csh
+>    ftp.csh >& ftp.out
+>    rm ftp.csh ftp.out
+> else
+> #  ftp other data plus bottom soil data
+233c250
+<    cp Data/ftp.csh .
+---
+>    cp Data/ftp.csh ftp.csh
+252c269
+< terrain.exe >&! terrain.print.out
+---
+> ./terrain.exe >&! terrain.print.out
+===================================================================
+src/crlwmsk.F
+diff -r3.4 crlwmsk.F
+4c4
+<      -                  GRDLNMN, GRDLTMN, FORCETER,YYY,NAME,IP)                  06NOV00.9
+---
+>      -                  GRDLNMN, GRDLTMN, FORCETER,YYY,NAME,IDW,IP)              05DEC01.1
+45c45,47
+<       CALL CHECK_DATA(XMINLAT,XMAXLAT,XMINLON,XMAXLON,                           CRLWMSK.45
+---
+> C calls check data only for SiB dataset: water cat = 15                          05DEC01.2
+>       IF (IDW.EQ.15)                                                             05DEC01.3
+>      -CALL CHECK_DATA(XMINLAT,XMAXLAT,XMINLON,XMAXLON,                           05DEC01.4
+59c61
+<         DO I = 1,LREC                                                            CRLWMSK.59
+---
+> C       DO I = 1,LREC                                                            05DEC01.5
+62c64
+<         END DO                                                                   CRLWMSK.62
+---
+> C       END DO                                                                   05DEC01.6
+===================================================================
+src/crsoil.F
+diff -r3.4 crsoil.F
+54c54
+<       IF (NAME.EQ.'VEGE_CAT' .OR. NAME.EQ.'SOIL_CAT')                            CRSOIL.56
+---
+>       IF ((NAME.EQ.'VEGE_CAT' .OR. NAME.EQ.'SOIL_CAT') .AND. IDW.EQ.15)          05DEC01.7
+===================================================================
+src/crvst30s.F
+diff -r3.3 -r3.4
+175,182d174
+<                                                                                  CRVST30S.174
+<                                                                                  CRVST30S.175
+<                                                                                  CRVST30S.176
+<                                                                                  CRVST30S.177
+<                                                                                  CRVST30S.178
+<                                                                                  CRVST30S.179
+<                                                                                  CRVST30S.180
+<                                                                                  CRVST30S.181
+===================================================================
+src/outpt.F
+diff -r3.0 outpt.F
+84,85c84,85
+<          WRITE (JFMT1(1:21),FMT=70)JTN,K4,K3                                     OUTPT.84
+<    70    FORMAT(5H(/4X,,I2,1H(,I2,5HX,I2,,I2,4HX)/))                             OUTPT.85
+---
+>          WRITE (JFMT1(1:21),FMT=70)JTN,K4-1,K3                                   05DEC01.8
+>    70    FORMAT(5H(/4X,,I2,1H(,I2,5HX,I3,,I2,4HX)/))                             05DEC01.9
+89c89
+<    80    FORMAT(7H(1X,I2,,I2,1HF,I2,9H.0,2X,I2))                                 OUTPT.89
+---
+>    80    FORMAT(4H(I3,,I2,1HF,I2,9H.0,2X,I3))                                 O  05DEC01.10
+===================================================================
+src/output.F
+diff -r3.10 output.F
+76c76
+<       BHI (4,1) = 0                                                              OUTPUT.73
+---
+>       BHI (4,1) = 5                                                              05DEC01.11
+===================================================================
+src/patch.F
+diff -r3.0 patch.F
+19c19
+<         IF (A(I,J).NE.SPVAL) THEN                                                PATCH.19
+---
+>         IF (A(I,J).NE.SPVAL.AND.A(I,J).GE.0.) THEN                               05DEC01.12
+===================================================================
+src/plots.F
+diff -r3.7 plots.F
+10903c10903
+<         if (temp .ge. dumy) then                                                 PLOTS.10902
+---
+>         if (temp .ge. dumy-0.1) then                                             05DEC01.13
+===================================================================
+src/pltter.F
+diff -r3.7 pltter.F
+755a756
+>          PRINT *,'8, -----> DEEP SOIL TEMP PLOTTED'                              05DEC01.14
+987c988
+<             CALL PLCHLQ(FLOAT(J),FLOAT(I),LANDCHAR,7.,0.,0.)                     PLTTER.909
+---
+>             CALL PLCHLQ(FLOAT(J),FLOAT(I),LANDCHAR(2:2),7.,0.,0.)                05DEC01.15
+===================================================================
+src/rdldtr.F
+diff -r3.5 rdldtr.F
+115c115
+<       CHARACTER ACS*10, NAMEC*24                                                 06NOV00.248
+---
+>       CHARACTER ACS*10, NAMEC*50                                                 05DEC01.16
+120,125c120,125
+< C .. LND=0 FOR 5 MIN. AND 30 SEC. ELEVATION DATA WITH SHIFT=0,                   RDLDTR.139
+< C    NO LAND-USE DATA AVAILABLE:                                                 RDLDTR.140
+<       IF (NI.GT.4 .AND. LND.EQ.0) CSHIFT = 0.0                                   06NOV00.249
+< C .. NI < 0 AND NI >= -3 FOR VEGETATION, SOIL, AND VEGETATION                    RDLDTR.142
+< C    FRACTION DATA WITH SHIFT=0:                                                 RDLDTR.143
+<       IF (NI.LE.-1 .AND. NI.GE.-3) CSHIFT = 0.0                                  RDLDTR.144
+---
+> C .. LND=0 FOR 5 MIN. OLD 13-CAT LANDUSE (NOT AVAIL FOR RESOL > 10MIN)           05DEC01.17
+> C    AND 30 SEC. ELEVATION DATA, SET SHIFT=0,                                    05DEC01.18
+>       IF (NI.GT.5 .AND. LND.EQ.0) CSHIFT = 0.0                                   05DEC01.19
+> C .. NI < 0 AND NI >= -4: FOR VEGETATION, SOIL, VEGETATION                       05DEC01.20
+> C    FRACTION, AND DEEP SOIL TEMP DATA, SHIFT .NE. 0:                            05DEC01.21
+> C     IF (NI.LE.-1 .AND. NI.GE.-3) CSHIFT = 0.0                                  05DEC01.22
+145a146
+>       IF(TER.EQ.0) THEN                                                          05DEC01.23
+147d147
+<  18   FORMAT('<DATA FILE> fort.',I2.2,2X,A24,' ACCESS=',A10,' RECL=',I8)         06NOV00.254
+148a149,153
+>       ELSE                                                                       05DEC01.24
+>       INQUIRE(UNIT=IUNIT,ACCESS= ACS,NAME=NAMEC,RECL=LENRC)                      05DEC01.25
+>       IF (IP.EQ.1) PRINT 18, IUNIT,NAMEC,ACS,LENRC                               05DEC01.26
+>       END IF                                                                     05DEC01.27
+>  18   FORMAT('<DATA FILE> fort.',I2.2,2X,A50,' ACCESS=',A10,' RECL=',I8)         05DEC01.28
+215c220
+< C  ... 5 MIN. VEGETATION DATA:                                                   RDLDTR.229
+---
+> C  ... VEGETATION DATA:                                                          05DEC01.29
+225c230
+< C  ... 5 MIN. SOIL DATA:                                                         RDLDTR.239
+---
+> C  ... SOIL DATA:                                                                05DEC01.30
+===================================================================
+src/setup.F
+diff -r3.10 setup.F
+130c130
+<       DATASW  = .FALSE.                                                          SETUP.104
+---
+>       DATASW  = .TRUE.                                                           05DEC01.31
+558,565d557
+<                                                                                  06NOV00.406
+<       IF (MISMATCH.GT.0) THEN                                                    06NOV00.407
+<         MISMATCH1 = MISMATCH1 + MISMATCH                                         06NOV00.408
+<         PRINT 39, MISMATCH1,NM-1,NM-2,MISMATCH                                   06NOV00.409
+<  39     FORMAT(/1X,'?? DOMAIN MISMATCH: MISMATCH1(ALL)=',I2,                     06NOV00.410
+<      1         ',',2X,'MISMATCH(DOMAINS',I3,' AND ',I3,')=',I2//)                06NOV00.411
+<       MISMATCH = 0                                                               06NOV00.412
+<       ENDIF                                                                      06NOV00.413
+686a679,686
+>                                                                                  05DEC01.32
+>       IF (MISMATCH.GT.0) THEN                                                    05DEC01.33
+>         MISMATCH1 = MISMATCH1 + MISMATCH                                         05DEC01.34
+>         PRINT 39, MISMATCH1,NM-1,NM-2,MISMATCH                                   05DEC01.35
+>  39     FORMAT(/1X,'?? DOMAIN MISMATCH: MISMATCH1(ALL)=',I2,                     05DEC01.36
+>      1         ',',2X,'MISMATCH(DOMAINS',I3,' AND ',I3,')=',I2//)                05DEC01.37
+>       MISMATCH = 0                                                               05DEC01.38
+>       ENDIF                                                                      05DEC01.39
+===================================================================
+src/soil_tg.F
+diff -r3.2 soil_tg.F
+21c21,22
+<             IF (FORCETER(I,J).EQ.9E9 .AND. TEMPG(I,J).EQ.TSPVAL) THEN            SOIL_TG.21
+---
+>             IF (FORCETER(I,J).EQ.9E9 .AND. (TEMPG(I,J).EQ.TSPVAL                 05DEC01.40
+>      -          .OR. TEMPG(i,j).EQ.-999.9)) THEN                                 05DEC01.41
+===================================================================
+src/terdrv.F
+diff -r3.11 terdrv.F
+112c112
+<         IF (IBLOCK.GT.NOBT) THEN                                                 06NOV00.466
+---
+>         IF (IBLOCK.GT.NOBT.OR.IHMAX.GT.ITRH.OR.JHMAX.GT.JTRH) THEN               05DEC01.42
+136a137
+>           IVWATER  = IVW(NI)                                                     05DEC01.43
+142c143
+<      -                   IPRINT)                                                 06NOV00.484
+---
+>      -                  IVWATER, IPRINT)                                         05DEC01.44
+205c206
+<       IF (.NOT.VEGESOIL) THEN
+---
+>       IF (IFEZFUG .OR. .NOT.VEGESOIL) THEN                                       05DEC01.45
+207a209
+> C     OR REDEFINE FORCETER USING NCAR GRAPHICS INFO                              05DEC01.46
+323,324c325,326
+<       XLAT_VF0  =   90.-RESOL                                                    TERDRV.347
+<       XLON_VF0  = -180.+RESOL                                                    TERDRV.348
+---
+>       XLAT_VF0  =   90.                                                          05DEC01.47
+>       XLON_VF0  = -180.                                                          05DEC01.48
+===================================================================
+src/terrestial_info.F
+diff -r3.2 terrestial_info.F
+106a107,108
+>                IF(XLON(I,J).GT. 180) XLON(I,J)=XLON(I,J)-360                     05DEC01.49
+>                IF(XLON(I,J).LT.-180) XLON(I,J)=XLON(I,J)+360                     05DEC01.50
+===================================================================
+src/vs_data.incl
+diff -r3.3 vs_data.incl
+7,8c7,8
+<      >    NLATVEG /   180,   360,   1080,   2160,   5400,   21601/,              06NOV00.645
+<      >    NLONVEG /   361,   721,   2161,   4321,  10801,   43201/               06NOV00.646
+---
+>      >    NLATVEG /   180,   360,   1080,   2160,   5400,   21600/,              05DEC01.53
+>      >    NLONVEG /   360,   720,   2160,   4320,  10800,   43200/               05DEC01.54
+===================================================================
+src/vs_data2.incl
+diff -r3.3 vs_data2.incl
+7,8c7,8
+<      >    NLATVEG /   180,   360,   1080,   2160,   5400,   21601/,              06NOV00.788
+<      >    NLONVEG /   361,   721,   2161,   4321,  10801,   43201/               06NOV00.789
+---
+>      >    NLATVEG /   180,   360,   1080,   2160,   5400,   21600/,              05DEC01.51
+>      >    NLONVEG /   360,   720,   2160,   4320,  10800,   43200/               05DEC01.52

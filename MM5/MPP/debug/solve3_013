@@ -1,0 +1,32 @@
+c  330     CONTINUE                                                               SOLVE3.591
+c                                                                                 SOLVE3.592
+c
+c#ifdef DEBUGGAL
+c#  include <solve3_013>
+c#endif
+cC                                                                                SOLVE3.593
+cC-----COMPUTE THE HORIZONTAL DIFFUSION COEFFICIENT AND STORED IN XKC:            SOLVE3.594
+
+
+      if ( j.eq.JDEBUG.and.inest.eq.NESTDEBUG ) then
+      i = IDEBUG
+      k = KDEBUG
+      print *,'solve3_013: After calc of divx: inest ',inest
+      do k = 1, mkx
+      print *,' divx',k,divx(i,k),' qdot',QDOT(I,J,K),QDOT(I,J,K+1),
+     $        ' dsigma ',dsigma(k)
+      enddo
+      print*,'ta   ',ta(i,j,k)
+      print*,'tc   ',tc(i,j,k)
+      print*,'UA(I+1,J+1,K) ',UA(I+1,J+1,K)
+      print*,'UA(I,J+1,K)   ',UA(I,J+1,K)
+      print*,'UA(I+1,J,K)   ',UA(I+1,J,K)
+      print*,'UA(I,J,K)     ',UA(I,J,K)
+      print*,'VA(I+1,J+1,K) ',VA(I+1,J+1,K)
+      print*,'VA(I+1,J,K)   ',VA(I+1,J,K)
+      print*,'VA(I,J+1,K)   ',VA(I,J+1,K)
+      print*,'VA(I,J,K)     ',VA(I,J,K)
+      print*,'MSFX(I,J)     ',MSFX(I,J)
+      print*,'PSA(I,J)      ',PSA(I,J)
+      print*,'DX2           ',DX2
+      endif

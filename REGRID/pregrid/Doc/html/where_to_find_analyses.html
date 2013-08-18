@@ -1,0 +1,267 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; OSF1 V4.0 alpha) [Netscape]">
+</head>
+<body text="#000000" bgcolor="#CCFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<h1>
+Where can I find analyses for input to REGRID?</h1>
+Users with NCAR computing accounts have ready access to a variety of gridded
+meteorological analyses and forecast products.&nbsp; Some of the more commonly-used
+analyses archived at NCAR include:
+<ul>
+<li>
+<a href="#NCEP GDAS">NCEP GDAS</a></li>
+
+<li>
+<a href="#NCEP/NCAR Reanalysis">NCEP/NCAR Reanalysis</a></li>
+
+<li>
+<a href="#NCEP EDAS">NCEP Eta analyses and forecasts</a></li>
+
+<li>
+<a href="#ECMWF TOGA">ECMWF TOGA Global Analysis</a></li>
+
+<li>
+<a href="#ECMWF Reanalysis">ECMWF Reanalysis</a></li>
+</ul>
+Users who do not have NCAR computing accounts must find their own ways
+to get gridded analyses or forecasts.&nbsp; Various real-time analyses
+and forecasts may be available via anonymous ftp, for example.
+<p>Real-time analyses and forecasts that have been found useful include:
+<ul>
+<li>
+<a href="#NCEP EDAS">NCEP ETA analysis and forecast</a></li>
+
+<li>
+NCEP MRF analysis and forecast</li>
+
+<li>
+NCEP AVN analysis and forecast</li>
+</ul>
+
+<p><br><a NAME="NCEP GDAS"></a>
+<br>
+<hr WIDTH="100%">
+<br>&nbsp;
+<h3>
+NCEP GDAS</h3>
+
+<p><br>The NCEP GDAS&nbsp; (Global Data Assimilation System) analysis as
+archived at NCAR is the traditional option for analyses.&nbsp; Analyses
+are available every 12 hours.&nbsp; Data are archived on a 2.5 degree x
+2.5 degree lat/lon grid.&nbsp; Data are available from the mid 1970's to
+recent months (updated periodically).&nbsp; Through March 1997, data are
+in ON84 format.&nbsp; Beginnning in April 1997, data are in GRIB format.&nbsp;
+For more information see <i><a href="http://www.scd.ucar.edu/dss/datasets/ds082.0.html">www.scd.ucar.edu/dss/datasets/ds082.0.html</a></i>
+(for the ON84-formatted data through March 1997) or <i><a href="http://www.scd.ucar.edu/dss/datasets/ds083.0.html">www.scd.ucar.edu/dss/datasets/ds083.0</a></i>
+(for the GRIB-formatted data beginning April 1997).
+<ul>
+<li>
+Peculiarities/Caveats:</li>
+
+<ul>
+<li>
+Northern and southern hemispheres of a given global field are archived
+as separate fields.</li>
+
+<li>
+Snow-cover data are archived sporadically in the ON84 dataset.</li>
+
+<li>
+SST are archived once per day in the ON84 dataset.</li>
+</ul>
+
+<li>
+The Vtables are set up automatically for the ON84 GDAS data set, but if
+you really want to see what they look like, see:&nbsp; <a href="Vtables/gdas.on84">Sample
+Vtable for NCEP GDAS (ON84)</a>.</li>
+
+<li>
+The Vtables are set up automatically for the GRIB GDAS data set, but if
+you really want to see what they look like, see:&nbsp; <a href="Vtables/gdas.grib">Sample
+Vtable for NCEP GDAS (GRIB)</a>.</li>
+</ul>
+
+<br>&nbsp;
+<p><a NAME="NCEP/NCAR Reanalysis"></a>
+<br>
+<hr WIDTH="100%">
+<br>&nbsp;
+<h3>
+NCEP/NCAR Reanalysis</h3>
+
+<p><br>The NCEP/NCAR Reanalysis has become a popular data source.&nbsp;
+This data set is a global analysis beginning in 1948 using a single analysis
+system for the entire dataset.&nbsp; Analyses are available every six hours.&nbsp;
+Data are archived on a 2.5 x 2.5 degree lat/lon grid and a gaussian grid
+(~1.9 degrees lat, 2.5 degrees lon).&nbsp; The data REGRID accesses are
+in GRIB format.&nbsp; For more information, see <i><a href="http://www.scd.ucar.edu/dss/pub/reanalysis/index.html">www.scd.ucar.edu/dss/pub/reanalysis/index.html</a></i>.
+<ul>
+<li>
+Peculiarities/Caveats:</li>
+
+<ul>
+<li>
+Much of the surface data are actually six-hour forecasts.</li>
+
+<li>
+Sea-surface temperature is not archived.&nbsp; Skin temperature may be
+used with some caution.&nbsp; Be aware that ground temperatures and sea-surface
+temperatures at coastlines may be unrealistic.</li>
+</ul>
+
+<li>
+<a href="Vtables/nnrp">Sample Vtable for using the NCEP/NCAR Reanalysis
+in REGRID</a>.</li>
+</ul>
+
+<br>&nbsp;
+<p><a NAME="NCEP EDAS"></a>
+<br>
+<hr WIDTH="100%">
+<h3>
+NCEP Eta</h3>
+
+<p><br>The NCEP Eta is a regional analysis and forecast for North America
+based on the Eta model.
+<ul>
+<li>
+Peculiarities/Caveats:</li>
+
+<ul>
+<li>
+Sea-surface temperature is not archived.&nbsp; Skin temperature may be
+used with some caution.&nbsp; Be aware that ground temperatures and sea-surface
+temperatures at coastlines may be unrealistic.</li>
+
+<li>
+The archived specific humidity is converted to relative humidity by <i>pregrid</i>.</li>
+</ul>
+</ul>
+For further information about the Eta archives at NCAR, see <i><a href="http://www.scd.ucar.edu/dss/pub/gcip">www.scd.ucar.edu/dss/pub/gcip</a></i>.
+<p>Information about NCEP model products, including where to find the
+      real-time products, may be found at
+      <i> <a href="http://www.emc.ncep.noaa.gov/index.html">
+	  http://www.emc.ncep.noaa.gov/index.html</a></i>,
+      in pages such as <br>
+<li><i><a href="http://www.emc.ncep.noaa.gov/mmb/research/meso.products.html">
+http://www.emc.ncep.noaa.gov/mmb/research/meso.products.html</a></i> <br></li>
+and <br>
+<li><i><a href="http://www.emc.ncep.noaa.gov/modelinfo/index.html">
+http://www.emc.ncep.noaa.gov/modelinfo/index.html</a></i></li>
+<ul>
+<li>
+<a href="Vtables/edas">Sample Vtable for using the NCEP Eta archives</a>.</li>
+</ul>
+<a NAME="ECMWF TOGA"></a>
+<hr WIDTH="100%">
+<br>&nbsp;
+<h3>
+ECMWF TOGA Global analysis</h3>
+
+<p><br>The archives at NCAR begin January 1985.&nbsp; Data are archived
+at 2.5 x 2.5 degree lat/lon grid.&nbsp; Times are 00 UTC and 12 UTC.
+<br>&nbsp;
+<ul>
+<li>
+Peculiarities/Caveats:</li>
+
+<ul>
+<li>
+Sea-surface temperature is not archived.&nbsp; Skin temperature may be
+used with some caution.&nbsp; Be aware that ground temperatures and sea-surface
+temperatures at coastlines may be unrealistic.</li>
+
+<li>
+Geopotential must be converted to geopotential height by REGRID.&nbsp;
+Thus, both geopotential and geopotential height must be specified in the
+Vtable.&nbsp; See the sample Vtable linked below.</li>
+
+<li>
+ECMWF uses different parameter tables (i.e., GRIB code numbers) than NCEP
+for many variables.</li>
+</ul>
+</ul>
+
+<ul>
+<li>
+Usage of this dataset is restricted: [NCAR/DSS] may distribute this data
+to US scientists, scientists visiting US organizations, and Canadian scientists
+affiliated with UCAR member organizations only. This data must not be used
+for commercial purposes.&nbsp; ECMWF must be given credit in any publications
+in which this data is used. A <i><a href="ftp://ncardata.ucar.edu/datasets/ds111.2/permission_form">permission
+form</a></i> must be signed and returned to DSS for use of this data.</li>
+</ul>
+
+<p><br>For further information about the ECMWF TOGA analysis archives at
+NCAR, see <i><a href="http://www.scd.ucar.edu/dss/datasets/ds111.2.html">www.scd.ucar.edu/dss/datasets/ds111.2.html</a></i>.
+<br>&nbsp;
+<ul>
+<li>
+<a href="Vtables/toga">Sample Vtable for using this dataset</a>.</li>
+</ul>
+
+<p><br><a NAME="ECMWF Reanalysis"></a>
+<br>
+<hr WIDTH="100%">
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+ECMWF Reanalysis</h3>
+
+<p><br>The ECMWF Reanalysis is a global analysis of 15 years' worth of
+data.&nbsp; Archives are from Jan 1979 through Dec 1993.&nbsp; Data are
+archived on a 2.5 x 2.5 degree lat/lon grid, in GRIB format.
+<br>&nbsp;
+<ul>
+<li>
+Peculiarities/Caveats:</li>
+
+<ul>
+<li>
+Sea-surface temperature is not archived.&nbsp; Skin temperature may be
+used with some caution.&nbsp; Be aware that ground temperatures and sea-surface
+temperatures at coastlines may be unrealistic.</li>
+
+<li>
+Geopotential must be converted to geopotential height by REGRID.&nbsp;
+Thus, both geopotential and geopotential height must be specified in the
+Vtable.&nbsp; See the sample Vtable linked below.</li>
+
+<li>
+ECMWF uses different parameter tables (i.e., GRIB code numbers) than NCEP
+for many variables.</li>
+</ul>
+</ul>
+
+<ul>
+<li>
+Usage of this dataset is restricted: [NCAR] may distribute this data to
+US scientists, scientists visiting US organizations, and Canadian scientists
+affiliated with UCAR member organizations only. This data must not be used
+for commercial purposes.&nbsp; ECMWF must be given credit in any publications
+in which this data is used. A <i><a href="ftp://ncardata.ucar.edu/datasets/ds115.0/permission_form">permission
+form</a></i> must be signed and returned to DSS for use of this data.</li>
+</ul>
+
+<p><br>For further information about the ECMWF Reanalysis archives at NCAR,
+see <i><a href="http://www.scd.ucar.edu/dss/pub/ec-reanalysis.html">www.scd.ucar.edu/dss/pub/ec-reanalysis.html</a></i>.
+<br>&nbsp;
+<ul>
+<li>
+<a href="Vtables/era">Sample Vtable for the ECMWF Reanalysis archives</a>.</li>
+</ul>
+
+<p><br>
+<hr WIDTH="100%">
+<br>&nbsp;
+<p><a href="Documentation_Home.html">Documentation HOME</a>
+<p>
+<!-- hhmts start -->
+Last modified: Tue May 16 17:24:36 MDT 2000
+<!-- hhmts end -->
+</body>
+</html>

@@ -1,0 +1,18 @@
+{ if (toupper(substr($1,1,10)) == "START_YEAR")
+    {print "set", toupper($0)} 
+}
+{ if (toupper(substr($1,1,11)) == "START_MONTH")
+    {print "set", toupper($0)} 
+}
+{ if (toupper(substr($1,1,9)) == "START_DAY")
+    {print "set", toupper($0)} 
+}
+{ if (toupper(substr($1,1,10)) == "START_HOUR")
+    {print "set", toupper($0)} 
+}
+{ if (toupper(substr($1,1,6)) == "NTIMES")
+    {print "set", toupper($0)} 
+}
+{ if (toupper(substr($1,1,10)) == "DELTA_TIME")
+    {print "set", toupper($0)} 
+}

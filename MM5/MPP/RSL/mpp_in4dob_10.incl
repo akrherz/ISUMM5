@@ -1,0 +1,11 @@
+CSTART   mpp_in4dob_10.incl
+      IF ( RSL_IAMMONITOR() ) THEN
+        READ(NVOLA+INEST-1,END=12)RTIMOB,RIO(1),RJO(1),RKO(1),                   02DEC96.347
+     1      (VAROBS(IVAR,1),IVAR=1,5)                                            21APR97.162
+      ENDIF
+      CALL RSL_MON_BCAST(RTIMOB,RWORDSIZE)
+      CALL RSL_MON_BCAST(RIO(1),RWORDSIZE)
+      CALL RSL_MON_BCAST(RJO(1),RWORDSIZE)
+      CALL RSL_MON_BCAST(RKO(1),RWORDSIZE)
+      CALL RSL_MON_BCAST(VAROBS(1,1),5*RWORDSIZE)
+CEND   mpp_in4dob_10.incl

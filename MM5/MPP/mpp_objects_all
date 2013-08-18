@@ -1,0 +1,289 @@
+#include <defines.incl>
+
+BASE_OBJ = \
+addall.o \
+addrx1c.o \
+addrx1n.o \
+bdyin.o \
+bdyrst.o \
+bdyten.o \
+bdyval.o \
+cadjmx.o \
+coef_diffu.o \
+condload.o \
+consat.o \
+convad.o \
+couple.o \
+date.o \
+dcpl3d.o \
+dcpl3dwnd.o \
+decouple.o \
+define_comms.o \
+diffu.o \
+diffth.o \
+diffthd.o \
+diffmoi.o \
+diffintp.o \
+dm_io.o \
+dots.o \
+dtfrz.o \
+fillcrs.o \
+fkill_model.o \
+gamma.o \
+gauss.o \
+hadv.o \
+init.o \
+initsav.o \
+initts.o \
+kfbmdata.o \
+kill_model.o \
+lb_alg.o \
+lbdyin.o \
+mhz.o \
+mm5.o \
+mp_equate.o \
+mp_initdomain.o \
+mp_shemi.o \
+mparrcopy.o \
+mpaspect.o \
+nconvp.o \
+nudge.o \
+output.o \
+outsav.o \
+outtap.o \
+outts.o \
+outts_c.o \
+param.o \
+paramr.o \
+rdinit.o \
+rho_mlt.o \
+savread.o \
+settbl.o \
+setvegfr.o \
+sfcrad.o \
+shutdo.o \
+slab.o \
+solar1.o \
+solve.o \
+sound.o \
+subch.o \
+trans.o \
+transm.o \
+upshot_mm5.o \
+vadv.o \
+vadv2.o \
+vecgath.o \
+write_big_header.o \
+write_fieldrec.o \
+write_flag.o
+
+#ifdef IMPHYS2
+  NONCONV_OBJ=
+#endif
+#if defined(IMPHYS3) || defined(IMPHYS4)
+#  ifndef MPHYSTBL1
+  REISNER_S_OBJ= exmoiss.o
+#  else
+  LREISNER_S_OBJ= lexmoiss.o
+#  endif
+#endif
+#ifdef IMPHYS5
+#  ifdef MPHYSTBL0
+  REISNER_OBJ= exmoisr.o
+#  endif
+#  ifdef MPHYSTBL1
+  LREISNER_OBJ= lexmoisr.o
+#  endif
+#  ifdef MPHYSTBL2
+  ZREISNER_OBJ= zexmoisr.o
+#  endif
+#endif
+#ifdef IMPHYS6
+  GSFC_OBJ= falflux.o godmic.o satice.o
+#endif
+#ifdef IMPHYS7
+  REISNER2_OBJ= exmoisg.o rslf.o
+#endif
+#ifdef IMPHYS8
+  SCHULTZ_OBJ =   schultz.o schultz_mic.o
+#endif
+
+#ifdef FRAD1
+  RAD_OBJ1 = radcool.o
+#endif
+#if defined (FRAD2) || defined (FRAD4) 
+  RAD_OBJ2 = lwrad.o swrad.o
+#endif
+#ifdef FRAD3
+  RAD_OBJ3 =  \
+   cldems.o \
+   o3data.o \
+   radclr.o \
+   radctl.o \
+   radini.o \
+   radtpl.o \
+   wheneq.o \
+   colmod.o \
+   getdat.o \
+   radclw.o \
+   radded.o \
+   radinp.o \
+   resetr.o \
+   whenfgt.o \
+   fetchd.o \
+   inirad.o \
+   radabs.o \
+   radcsw.o \
+   radems.o \
+   radout.o \
+   stored.o \
+   zenitm.o
+#endif
+#ifdef FRAD4
+  RAD_OBJ4 = \
+   inirad.o o3data.o \
+   mm5atm.o       \
+   rrtm.o         \
+   rrtm_gasabs.o  \
+   rrtm_init.o    \
+   rrtm_k_g.o     \
+   rrtm_rtrn.o    \
+   rrtm_setcoef.o \
+   rrtm_taumol.o
+#endif
+
+
+MOIST_OBJ = $(NONCONV_OBJ) $(SIMPLE_OBJ) $(LSIMPLE_OBJ) \
+             $(SCHULTZ_OBJ) \
+             $(REISNER_OBJ) $(REISNER_S_OBJ) \
+             $(LREISNER_OBJ) $(LREISNER_S_OBJ) \
+             $(ZREISNER_OBJ) \
+             $(GSFC_OBJ) $(REISNER2_OBJ)
+
+#ifdef ICUPA2
+  KUO_OBJ =     cupara2.o
+#endif
+#ifdef ICUPA3
+  GRELL_OBJ =   cup.o cupara3.o maximi.o minimi.o
+#endif
+#ifdef ICUPA4
+  AS_OBJ =      kerhel.o entr.o cupara4.o cloudw.o clodwd.o \
+        	 arasch.o araout.o aramb.o soundd.o zx4lp.o
+  AS_SHALLOW_OBJ = heipre.o maxim.o minim.o moiene.o precip.o zunc.o
+#endif
+#ifdef ICUPA5
+  FC_OBJ =      cupara5.o fcpara.o tp.o
+#endif
+#ifdef ICUPA6
+  KF_OBJ =      cupara6.o dtfrznew.o envirtht.o \
+                 kfpara.o prof5.o tpdd.o tpmix.o
+#endif
+#ifdef ICUPA7
+  BM_OBJ =      bmpara.o cupara7.o lutbl.o spline.o tpfc.o
+#endif
+#ifdef ICUPA8
+  KF2_OBJ =     cupara8.o kfdrive.o dtfrz2.o envirtht.o lutab.o \
+                 kfpara2.o prof5.o tpmix2dd.o tpmix2.o tp_cape.o
+#endif
+#if defined(ICUPA6)||defined(ICUPA7)
+  KF_BM_OBJ =   
+#endif
+#if (ISHALLO1==1)
+  SHALLOW_OBJ =    cloudws.o entrs.o kerhels.o shallcu.o shallow.o araouts.o
+  AS_SHALLOW_OBJ = heipre.o maxim.o minim.o moiene.o precip.o zunc.o
+#endif
+
+CUMULUS_OBJ = $(KUO_OBJ) $(GRELL_OBJ) $(AS_OBJ) $(FC_OBJ) $(KF_OBJ) $(KF2_OBJ) \
+	      $(AS_SHALLOW_OBJ) $(BM_OBJ) $(KF_BM_OBJ) $(SHALLOW_OBJ) 
+
+#ifdef IBLT1
+  BULK_OBJ =    blkpbl.o
+#endif
+#ifdef IBLT2
+  HIRPBL_OBJ =  hirpbl.o
+#endif
+#ifdef IBLT3
+  BTPBL_OBJ =   bound.o erase.o esatpb.o hoskeep.o initpb.o \
+                 navypb.o outpb.o uvcomp.o
+#endif
+#ifdef IBLT4
+  MYEBL_OBJ =   myepbl.o sfcdif.o vdifh.o vdifq.o vdifv.o difcof.o mixlen.o \
+                prodq2.o
+#endif
+#ifdef IBLT5
+  MRFPBL_OBJ =  mrfpbl.o tridi2.o
+#endif
+#ifdef IBLT6
+  GSPBL_OBJ =   gspbl.o
+#endif
+
+#if defined (IBLT2) || defined (IBLT6) 
+  PBL_OBJX =  slab_col.o sfcrad_col.o transm_col.o
+#endif
+
+PBL_OBJ = $(BULK_OBJ) $(HIRPBL_OBJ) $(BTPBL_OBJ) $(MYEBL_OBJ) $(MRFPBL_OBJ) \
+          $(GSPBL_OBJ) $(PBL_OBJX)
+
+#if !(defined(vpp)||defined(vpp2))
+  MP_STOTNDT = mp_stotndt.o
+#else
+  MP_STOTNDT = vpp_stotndt.o
+#endif
+
+#if defined(crayx1)
+  MP_FEEDBK = x1_feedbk.o
+#else
+  MP_FEEDBK = mp_feedbk.o
+#endif
+
+#ifdef NESTED
+  NEST_OBJ =    initnest.o chknst.o \
+                 nstlev1.o nstlev2.o nstlev3.o nstlev4.o nstlev5.o \
+                 $(MP_STOTNDT) smt2.o bcast_size.o \
+                 merge_size.o $(MP_FEEDBK) \
+                 rdter.o
+#endif
+
+#ifdef FDDAGD1
+  FDDAGD_OBJ =   in4dgd.o mpblw.o conv3.o smther.o unity.o mpmapsmp.o \
+                 qsatgd.o nopro.o bufslgd.o nudgd.o blnudgd.o \
+                 intpsgd.o setupgd.o bufvdgd.o blbrgd.o julgmt.o
+#endif
+
+#ifdef FDDAOBS1
+  FDDAOBS_OBJ =  in4dob.o errob.o nudob.o
+#endif
+
+#if defined(FDDAGD1) || defined(FDDAOBS1)
+  FDDA_SHARE = setfd.o fdaoff.o
+#endif
+
+#if defined (SOIL2)
+  SOIL2_OBJ = sflx.o surfce.o 
+#ifdef NESTED
+  SOIL2_OBJ2 = nestlsm.o 
+#endif
+#endif
+
+OBJS = $(BASE_OBJ) $(MOIST_OBJ) $(CUMULUS_OBJ) $(PBL_OBJ) \
+       $(NEST_OBJ) $(FDDAGD_OBJ) $(FDDAOBS_OBJ) $(FDDA_SHARE) \
+       $(RAD_OBJ1) $(RAD_OBJ2) $(RAD_OBJ3) $(RAD_OBJ4) $(SOIL2_OBJ) \
+       $(SOIL2_OBJ2)
+
+#ifdef VECTOR
+
+allall : all
+
+VECTOR_OBJS = $(MOIST_OBJ) cupara3.o cup.o maximi.o minimi.o mrfpbl.o slab.o \
+              tridi2.o sfcrad.o
+
+$(VECTOR_OBJS) :
+	$(CUT) -c1-72 $*.F | $(SED) -e 's/`//' -e 's/  *$$//' |\
+           $(EXPAND) | $(CPP) $(INCLUDES) $(CPP_FLAGS) | $(M4) - > $*.b
+	$(FLIC) -AA2 -H='integeridum_dum' $*.b > $*.dm
+	$(M4_FLIC) $(MPPTOP)/$(MPP_LAYER)/LM_VECTOR_MACROS.m4 $*.dm | \
+           sed '/^$$/d' | $(CPP) $(INCLUDES) | $(CUTTER) >$*.f
+	$(MFC) -c $(FCVFLAGS) $*.f 2> $*.lis
+	$(RM) $*.b $*.dm $*.f
+
+#endif

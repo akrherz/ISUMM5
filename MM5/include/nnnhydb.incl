@@ -1,0 +1,23 @@
+C                                                                                NNNHYDB.1
+      REAL PPEBN,PPEBTN,PPNBN,PPNBTN,PPSBN,PPSBTN,PPWBN,PPWBTN,WEBN,             NNNHYDB.2
+     1     WEBTN,WNBN,WNBTN,WSBN,WSBTN,WWBN,WWBTN                                NNNHYDB.3
+      POINTER (INNWE,WEBN(MIXNH,KXP1NH,NSPGX)),                                  NNNHYDB.4
+     1        (INNWW,WWBN(MIXNH,KXP1NH,NSPGX)),                                  NNNHYDB.5
+     4        (INNWET,WEBTN(MIXNH,KXP1NH,NSPGX)),                                NNNHYDB.6
+     5        (INNWWT,WWBTN(MIXNH,KXP1NH,NSPGX)),                                NNNHYDB.7
+     7        (INNPPE,PPEBN(MIXNH,MKXNH,NSPGX)),                                 NNNHYDB.8
+     8        (INNPPW,PPWBN(MIXNH,MKXNH,NSPGX)),                                 NNNHYDB.9
+     1        (INNPPET,PPEBTN(MIXNH,MKXNH,NSPGX)),                               NNNHYDB.10
+     2        (INNPPWT,PPWBTN(MIXNH,MKXNH,NSPGX)),                               NNNHYDB.11
+     2        (INNWN,WNBN(MJXNH,KXP1NH,NSPGX)),                                  NNNHYDB.12
+     3        (INNWS,WSBN(MJXNH,KXP1NH,NSPGX)),                                  NNNHYDB.13
+     5        (INNWNT,WNBTN(MJXNH,KXP1NH,NSPGX)),                                NNNHYDB.14
+     6        (INNWST,WSBTN(MJXNH,KXP1NH,NSPGX)),                                NNNHYDB.15
+     9        (INNPPN,PPNBN(MJXNH,MKXNH,NSPGX)),                                 NNNHYDB.16
+     1        (INNPPS,PPSBN(MJXNH,MKXNH,NSPGX)),                                 NNNHYDB.17
+     3        (INNPPST,PPSBTN(MJXNH,MKXNH,NSPGX)),                               NNNHYDB.18
+     4        (INNPPNT,PPNBTN(MJXNH,MKXNH,NSPGX))                                NNNHYDB.19
+C                                                                                NNNHYDB.20
+      COMMON /NNNHYDB/ INNWE,INNWW,INNWET,INNWWT,INNPPE,INNPPW,                  NNNHYDB.21
+     1  INNPPET,INNPPWT,INNWN,INNWS,INNWNT,INNWST,INNPPN,INNPPS,                 NNNHYDB.22
+     2  INNPPST,INNPPNT                                                          NNNHYDB.23

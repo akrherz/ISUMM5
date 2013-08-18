@@ -1,0 +1,374 @@
+       LOGICAL FUNCTION DM_IONODE()
+       IMPLICIT NONE
+#include <rsl.inc>
+       DM_IONODE = RSL_IAMMONITOR()
+       RETURN
+       END
+
+       SUBROUTINE DM_BCAST_INTEGERS( BUF, N )
+       IMPLICIT NONE
+       INTEGER BUF(*)
+       INTEGER N
+       CALL RSL_MON_BCAST( BUF, N*IWORDSIZE )
+       RETURN
+       END
+       
+       SUBROUTINE DM_BCAST_REALS( BUF, N )
+       IMPLICIT NONE
+       REAL BUF(*)
+       INTEGER N
+       CALL RSL_MON_BCAST( BUF, N*RWORDSIZE )
+       RETURN
+       END
+
+       SUBROUTINE DM_BCAST_LOGICALS( BUF, N )
+       IMPLICIT NONE
+       LOGICAL BUF(*)
+       INTEGER N
+       CALL RSL_MON_BCAST( BUF, N*LWORDSIZE )
+       RETURN
+       END
+       
+       SUBROUTINE DM_BCAST_BYTES( BUF, N )
+       IMPLICIT NONE
+       CHARACTER BUF(*)
+       INTEGER N
+       CALL RSL_MON_BCAST( BUF, N )
+       RETURN
+       END
+
+       SUBROUTINE DM_BCAST_STRING( BUF, N1 )
+       IMPLICIT NONE
+       INTEGER N1
+       CHARACTER*(*) BUF
+       INTEGER IBUF(256),I,N
+       N = N1
+       IF (N .GT. 256) N = 256
+       IF (N .GT. 0 ) THEN
+         DO I = 1, N
+           IBUF(I) = ICHAR(BUF(I:I))
+         ENDDO
+         CALL RSL_MON_BCAST( IBUF, N*IWORDSIZE )
+         DO I = 1, N
+           BUF(I:I) = CHAR(IBUF(I))
+         ENDDO
+       ENDIF
+       RETURN
+       END
+
+       SUBROUTINE DM_DIST_BDY( ORDERING,NAME,
+     &     IUNIT,INEST,BUF,NDIM,LENDIM1,LENDIM2,LENDIM3,
+     &     IX,JX,MKX)
+       IMPLICIT NONE
+#include <rsl.inc>
+#include <rslcom.inc>
+C ordering is not used because it does not have enough information
+C need to know which specific border.
+       CHARACTER*(*) ORDERING
+       CHARACTER*(*) NAME
+       CHARACTER*1 BDY
+       INTEGER IUNIT,INEST,NDIM,LENDIM1,LENDIM2,LENDIM3,
+     &         IX,JX,MKX
+       REAL BUF(*)
+       INTEGER IOTAG, BDY_WIDTH, BDY_HEIGHT
+       INTEGER BDY_G_LENGTH, BDY_L_LENGTH
+       INTEGER IORDER
+
+       IF      ( NDIM .EQ. 2 ) THEN
+         IOTAG = IO2D
+         BDY_G_LENGTH = LENDIM1
+         BDY_HEIGHT = 1
+         BDY_WIDTH = LENDIM2
+       ELSE IF (NDIM .EQ. 3 ) THEN
+         IOTAG = IO3D
+         BDY_G_LENGTH = LENDIM1
+         BDY_HEIGHT = LENDIM2
+         BDY_WIDTH = LENDIM3
+       ELSE
+         STOP 'DM_DIST_BDY IOTAG'
+       ENDIF
+
+       BDY = 'U'
+       IF (NAME(1:4).EQ.'PEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'PWW ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'PNB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'PSS ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:4).EQ.'PEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'PWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'PNBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'PSBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:4).EQ.'UEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'UWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'UNB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'USB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:4).EQ.'UEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'UWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'UNBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'USBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:4).EQ.'VEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'VWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'VNB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'VSB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:4).EQ.'VEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'VWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'VNBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'VSBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:4).EQ.'TEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'TWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'TNB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'TSB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:4).EQ.'TEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'TWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'TNBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'TSBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:4).EQ.'QEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'QWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'QNB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'QSB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:4).EQ.'QEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'QWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'QNBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'QSBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:4).EQ.'WEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'WWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'WNB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'WSB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:4).EQ.'WEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:4).EQ.'WWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:4).EQ.'WNBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:4).EQ.'WSBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:5).EQ.'PPEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:5).EQ.'PPWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:5).EQ.'PPNB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:5).EQ.'PPSB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:5).EQ.'PPEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:5).EQ.'PPWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:5).EQ.'PPNBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:5).EQ.'PPSBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:5).EQ.'QCEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:5).EQ.'QCWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:5).EQ.'QCNB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:5).EQ.'QCSB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:5).EQ.'QCEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:5).EQ.'QCWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:5).EQ.'QCNBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:5).EQ.'QCSBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:5).EQ.'QREB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:5).EQ.'QRWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:5).EQ.'QRNB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:5).EQ.'QRSB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:5).EQ.'QREBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:5).EQ.'QRWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:5).EQ.'QRNBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:5).EQ.'QRSBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:5).EQ.'QIEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:5).EQ.'QIWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:5).EQ.'QINB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:5).EQ.'QISB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:5).EQ.'QIEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:5).EQ.'QIWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:5).EQ.'QINBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:5).EQ.'QISBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:6).EQ.'QNIEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:6).EQ.'QNIWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:6).EQ.'QNINB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:6).EQ.'QNISB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:6).EQ.'QNIEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:6).EQ.'QNIWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:6).EQ.'QNINBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:6).EQ.'QNISBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:5).EQ.'QGEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:5).EQ.'QGWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:5).EQ.'QGNB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:5).EQ.'QGSB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:5).EQ.'QGEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:5).EQ.'QGWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:5).EQ.'QGNBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:5).EQ.'QGSBT') THEN
+          BDY='S'
+       ELSE IF (NAME(1:6).EQ.'QNCEB ') THEN
+          BDY='E'
+       ELSE IF (NAME(1:6).EQ.'QNCWB ') THEN
+          BDY='W'
+       ELSE IF (NAME(1:6).EQ.'QNCNB ') THEN
+          BDY='N'
+       ELSE IF (NAME(1:6).EQ.'QNCSB ') THEN
+          BDY='S'
+       ELSE IF (NAME(1:6).EQ.'QNCEBT') THEN
+          BDY='E'
+       ELSE IF (NAME(1:6).EQ.'QNCWBT') THEN
+          BDY='W'
+       ELSE IF (NAME(1:6).EQ.'QNCNBT') THEN
+          BDY='N'
+       ELSE IF (NAME(1:6).EQ.'QNCSBT') THEN
+          BDY='S'
+       END IF
+
+       IF      ( BDY .EQ. 'N' ) THEN
+         IORDER = RSL_MHIGH
+         BDY_L_LENGTH = JX
+       ELSE IF ( BDY .EQ. 'S' ) THEN
+         IORDER = RSL_MLOW
+         BDY_L_LENGTH = JX
+       ELSE IF ( BDY .EQ. 'E' ) THEN
+         IORDER = RSL_NHIGH
+         BDY_L_LENGTH = IX
+       ELSE IF ( BDY .EQ. 'W' ) THEN
+         IORDER = RSL_NLOW
+         BDY_L_LENGTH = IX
+c       ELSE
+c         WRITE(0,*)'NAME =',NAME, ' BDY = ',BDY
+c         STOP 'DM_DIST_BDY ORDERING 2D'
+       ENDIF
+
+       IF ( BDY .NE. 'U' ) THEN
+       CALL RSL_MM_DIST_BDY( IUNIT, IOTAG, IORDER, BUF, DOMAINS(INEST),
+     +                       RSL_REAL, BDY_WIDTH, BDY_HEIGHT,
+     +                       BDY_G_LENGTH, BDY_L_LENGTH )
+       ENDIF
+
+       RETURN
+       END
+
+
+C THERE IS NO STUB FOR THIS ONE.  NON-MPP CODE SHOULD NEVER CALL
+       SUBROUTINE DM_DIST_READ(IUNIT,INEST,BUF,NDIM,IL,JL,KL,IX,JX,KX)
+       IMPLICIT NONE
+       INTEGER IUNIT,INEST,NDIM,IL,JL,KL,IX,JX,KX
+       REAL BUF(*)
+#include <rsl.inc>
+#include <rslcom.inc>
+       GLEN(1) = IL
+       GLEN(2) = JL
+       GLEN(3) = KL
+       LLEN(1) = IX
+       LLEN(2) = JX
+       LLEN(3) = KL
+       IF ( NDIM .EQ. 3 ) THEN
+         CALL RSL_READ(IUNIT,
+     +     IO3D_IJK,BUF,DOMAINS(INEST),RSL_REAL,GLEN,LLEN)
+       ELSE
+         CALL RSL_READ(IUNIT,
+     +     IO2D_IJ, BUF,DOMAINS(INEST),RSL_REAL,GLEN,LLEN)
+       ENDIF
+       RETURN
+       END
+
+C THERE IS NO STUB FOR THIS ONE.  NON-MPP CODE SHOULD NEVER CALL
+       SUBROUTINE DM_DIST_WRITE(IUNIT,INEST,BUF,NDIM,IL,JL,KL,IX,JX,KX)
+       IMPLICIT NONE
+       INTEGER IUNIT,INEST,NDIM,IL,JL,KL,IX,JX,KX
+       REAL BUF(*)
+#include <rsl.inc>
+#include <rslcom.inc>
+       GLEN(1) = IL
+       GLEN(2) = JL
+       GLEN(3) = KL
+       LLEN(1) = IX
+       LLEN(2) = JX
+       LLEN(3) = KL
+       IF ( NDIM .EQ. 3 ) THEN
+         CALL RSL_WRITE(IUNIT,
+     +     IO3D_IJK,BUF,DOMAINS(INEST),RSL_REAL,GLEN,LLEN)
+       ELSE
+         CALL RSL_WRITE(IUNIT,
+     +     IO2D_IJ, BUF,DOMAINS(INEST),RSL_REAL,GLEN,LLEN)
+       ENDIF
+       RETURN
+       END
+

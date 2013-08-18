@@ -1,0 +1,20 @@
+      REAL DQDT,DQIDT,DQLDT,DQRDT,DQSDT,DTDT,DUDT,DVDT,RAINCV,W0AVG              ADDRCU.1
+      INTEGER NCA                                                                ADDRCU.2
+      REAL TNCA, PSRC, PCLB, UMFB, SPSRC, SPCLB, SUMFB, CIN                      05DEC01.618
+      INTEGER NCAD                                                               05DEC01.619
+      POINTER                                                                    ADDRCU.3
+     1 (IADTDT,DTDT(MIXC,MJXC,MKXC))  ,(IADQDT,DQDT(MIXC,MJXC,MKXC)),            ADDRCU.4
+     2 (IADUDT,DUDT(MIXC,MJXC,MKXC))  ,(IADVDT,DVDT(MIXC,MJXC,MKXC)),            ADDRCU.5
+     3 (IADQLDT,DQLDT(MIXC,MJXC,MKXC)),(IADQRDT,DQRDT(MIXC,MJXC,MKXC)),          ADDRCU.6
+     4 (IADQIDT,DQIDT(MIXC,MJXC,MKXC)),(IADQSDT,DQSDT(MIXC,MJXC,MKXC)),          ADDRCU.7
+     5 (IAW0AVG,W0AVG(MIXC,MJXC,MKXC)),(IARCV,RAINCV(MIXC,MJXC)),                ADDRCU.8
+     1 (IATNCA,TNCA(MIXC,MJXC)),       (IAPSRC,PSRC(MIXC,MJXC)),                 05DEC01.620
+     2 (IAPCLB,PCLB(MIXC,MJXC)),       (IAUMFB,UMFB(MIXC,MJXC)),                 05DEC01.621
+     3 (IASPSRC,SPSRC(MIXC,MJXC)),     (IASPCLB,SPCLB(MIXC,MJXC)),               05DEC01.622
+     4 (IASUMFB,SUMFB(MIXC,MJXC)),     (IACIN,CIN(MIXC,MJXC)),                   05DEC01.623
+     5 (IANCAD,NCAD(MIXC,MJXC)),                                                 05DEC01.624
+     6 (IANCA,NCA(MIXC,MJXC))                                                    ADDRCU.9
+      COMMON /ADDRCU/IADTDT,IADQDT,IADUDT,IADVDT,IADQLDT,                        ADDRCU.10
+     1          IADQRDT,IADQIDT,IADQSDT,IAW0AVG,IARCV,                           05DEC01.625
+     2          IATNCA,IAPSRC,IAPCLB,IAUMFB,IASPSRC,IASPCLB,                     05DEC01.626
+     3          IASUMFB,IACIN,IANCAD,IANCA                                       05DEC01.627

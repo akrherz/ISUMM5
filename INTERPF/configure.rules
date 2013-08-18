@@ -1,0 +1,26 @@
+#	The user should not need to modify any of this.
+
+#	Suffixes with which the INTERPF Makefile is to be concerned.
+
+.SUFFIXES: .F .i .o .f .c
+
+#	Build rules for the INTERPF programs.
+
+.F.i:
+	$(RM) $@
+	$(CPP) $(CPPFLAGS) $*.F > $@
+
+.F.o:
+	$(RM) $@
+	$(CPP) $(CPPFLAGS) $*.F > $*.f
+	$(FC) -c $(FCFLAGS) $*.f
+	$(RM) $*.f
+
+.F.f:
+	$(RM) $@
+	$(CPP) $(CPPFLAGS) $*.F > $@
+
+.f.o:
+	$(RM) $@
+	$(FC) -c $(FCFLAGS) $*.f
+	$(RM) $*.f

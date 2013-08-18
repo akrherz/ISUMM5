@@ -1,0 +1,21 @@
+CSTART   mpp_mm5_00.incl
+      INTEGER MLOC,NLOC
+      INTEGER IDEFERR
+      EXTERNAL MAPPING
+      CALL RSL_INITIALIZE
+#ifndef T3E
+      CALL RSL_ERROR_DUP
+#else
+      CALL ERROR_DUP(RSL_MYPROC)
+#endif
+      CALL RSL_SET_REGULAR_DECOMP
+C This enables use of new version of RSL with dynamic
+C runpads (2000 02 03, JM)
+      CALL RSL_ALLOW_DYNPAD
+#ifndef vpp
+      CALL SET_DEF_DECOMP_FCN( MAPPING )
+#endif
+#ifdef UPSHOT
+      CALL MM5_INITLOG
+#endif
+CEND   mpp_mm5_00.incl

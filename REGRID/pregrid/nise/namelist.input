@@ -1,0 +1,4 @@
+&record1
+ start_year     =  2002                              ! The valid date
+ start_month    =    11                              ! for the HDF EOS
+ start_day      =    06 /                            ! sea ice fraction file

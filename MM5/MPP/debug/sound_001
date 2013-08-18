@@ -1,0 +1,51 @@
+cC                                                                                SOUND.87
+cC  CALCULATE THE LOOP BOUNDARIES                                                 SOUND.88
+cC                                                                                SOUND.89
+c      ICUT=0                                                                     SOUND.90
+c      IF(INEST.GT.1)ICUT=1                                                       SOUND.91
+c      ISTART=2+ICUT                                                              SOUND.92
+c      IEND=L-1-ICUT                                                              SOUND.93
+c      JSTART=2+ICUT                                                              SOUND.94
+c      JEND=M-1-ICUT                                                              SOUND.95
+c#ifdef DEBUGGAL
+c# include <sound_001>
+c#endif
+cC                                                                                SOUND.96
+cC  SET MASK FOR THE PRESSURE CALCULATION                                         SOUND.97
+cC                                                                                SOUND.98
+
+      if(inest.eq.NESTDEBUG)then
+      i=IDEBUG
+      j=JDEBUG
+      print *,'sound_001: start of sound0',inest,iyy,jxx
+      print *,'ktau',ktau
+      print *,'istep',istep
+      print *,'dtl',dtl
+      print *,'dts',dts
+      print *,'dtsmax',dtsmax
+      print*, 'psa  ',psa(i+1,j-1),psa(i+1,j  ),psa(i+1,j+1)
+      print*, '     ',psa(i  ,j-1),psa(i  ,j  ),psa(i  ,j+1)
+      print*, '     ',psa(i-1,j-1),psa(i-1,j  ),psa(i-1,j+1)
+      print*, 'ps0  ',ps0(i  ,j-1),ps0(i  ,j  )
+      print*, '     ',ps0(i-1,j-1),ps0(i-1,j  )
+
+      do k = 1, mkx
+      print*, 'utens',k,utens(i,j,k)
+      print*, 'vtens',k,vtens(i,j,k)
+      print*, 'pptens',k,pptens(i,j,k)
+      print*, 'wtens',k,wtens(i,j,k)
+      print*, 'ua   ',k,ua(i,j,k)
+      print*, 'va   ',k,va(i,j,k)
+      print*, 'ta   ',k,ta(i,j,k)
+      print*, 'wa   ',k,wa(i,j,k)
+      print*, 't0   ',k,t0(i,j,k)
+      print*, 'ub   ',k,ub(i,j,k)
+      print*, 'vb   ',k,vb(i,j,k)
+      print*, 'tb   ',k,tb(i,j,k)
+      print*, 'qvb  ',k,qvb(i,j,k)
+      print*, 'ppb  ',k,ppb(i,j,k)
+      enddo
+      print*, 'wa   ',mkx+1,wa(i,j,mkx+1)
+
+      endif
+

@@ -1,0 +1,63 @@
+      REAL QBO,QBOTEN,TBO,TBOTEN,UBO,UBOTEN,VBO,VBOTEN,VORDIF                    FDDAGD.1
+      POINTER (IFUBO,UBO(MIXFG,MJXFG,MKXFG)),                                    FDDAGD.2
+     1  (IFVBO,VBO(MIXFG,MJXFG,MKXFG)),                                          FDDAGD.3
+     1  (IFUBT,UBOTEN(MIXFG,MJXFG,MKXFG)),                                       FDDAGD.4
+     1  (IFVBT,VBOTEN(MIXFG,MJXFG,MKXFG)),                                       FDDAGD.5
+     1  (IFTBO,TBO(MIXFG,MJXFG,MKXFG)),                                          FDDAGD.6
+     1  (IFTBT,TBOTEN(MIXFG,MJXFG,MKXFG)),                                       FDDAGD.7
+     1  (IFQBO,QBO(MIXFG,MJXFG,MKXFG)),                                          FDDAGD.8
+     1  (IFQBT,QBOTEN(MIXFG,MJXFG,MKXFG)),                                       FDDAGD.9
+     1  (IFVOR,VORDIF(MIXFG,MJXFG,MKXFG))                                        FDDAGD.10
+C                                                                                FDDAGD.11
+      COMMON/ADDR5/IFUBO,IFVBO,IFUBT,IFVBT,IFTBO,IFTBT,IFQBO,IFQBT,              FDDAGD.12
+     1     IFVOR                                                                 FDDAGD.13
+C                                                                                FDDAGD.14
+C                                                                                FDDAGD.15
+C                                                                                FDDAGD.16
+C                                                                                FDDAGD.17
+      REAL DMI,DMSCR,PSBD,PSO,PSOC,PSOD,PSOTEN,WCS,WDT,WQ                        FDDAGD.18
+      REAL MPSD,MPSX                                                             FDDAGD.19
+      INTEGER IPRE,IPSCR                                                         FDDAGD.20
+      POINTER (IFPSO,PSO(MIXFG,MJXFG)),(IFPST,PSOTEN(MIXFG,MJXFG)),              FDDAGD.21
+     1  (IFPSC,PSOC(MIXFG,MJXFG)),(IFPSD,PSOD(MIXFG,MJXFG)),                     FDDAGD.22
+     1  (IFPSB,PSBD(MIXFG,MJXFG)),                                               19DEC02.1308
+     1  (IFWDT,WDT(MIXFG,MJXFG)),                                                FDDAGD.24
+     1  (IFWCS,WCS(MIXFG,MJXFG)),(IFWQ,WQ(MIXFG,MJXFG)),                         FDDAGD.25
+     1  (IFDMI,DMI(MIXFG,MJXFG)),(IFDMS,DMSCR(MJXFG,MIXFG)),                     FDDAGD.26
+     1  (IFIPR,IPRE(MIXFG,MJXFG)),(IFIPS,IPSCR(MJXFG,MIXFG)),                    FDDAGD.27
+     1  (IFMPD,MPSD(MIXFG,MJXFG)),(IFMPX,MPSX(MIXFG,MJXFG))                      FDDAGD.28
+      COMMON/ADDR6/ IFPSO,IFPST,IFPSC,IFPSD,IFPSB,IFWDT,IFWCS,                   FDDAGD.29
+     1       IFWQ,IFDMI,IFDMS,IFIPR,IFIPS,IFMPD,IFMPX                            FDDAGD.30
+C                                                                                FDDAGD.31
+C                                                                                FDDAGD.32
+C                                                                                FDDAGD.33
+      REAL GP,GQ,GR,GT,GV,TFAC,ZFAC                                              FDDAGD.34
+      COMMON /CFDDAGD/ GV,GT,GQ,GP,GR,TFAC,ZFAC                                  FDDAGD.35
+      DIMENSION GV(MAXSES,2),GT(MAXSES,2),GQ(MAXSES,2),GP(MAXSES,2),             FDDAGD.36
+     1          GR(MAXSES),TFAC(MAXNES,2),ZFAC(MAXNES,2,MKXFG)                   FDDAGD.37
+      REAL DUMA1,DUMA2,DUMM1,DUMM2,QBOC,TBOC,UBOD,VBOD                           FDDAGD.38
+      DIMENSION DUMM2(MIXFG,MKXFG),DUMA2(MIXFG),UBOD(MIXFG,MKXFG),               FDDAGD.39
+     1      VBOD(MIXFG,MKXFG),TBOC(MIXFG,MKXFG),QBOC(MIXFG,MKXFG),               FDDAGD.40
+     2      DUMM1(MIXFG,MKXFG),DUMA1(MIXFG)                                      FDDAGD.41
+      REAL BLDUM2D,DUM2D,SCR2D                                                   FDDAGD.42
+      COMMON /CFD/ DUM2D(MIXFG,MJXFG),                                           FDDAGD.43
+     1      BLDUM2D(MIXFG,MJXFG),SCR2D(MIXFG,MJXFG)                              FDDAGD.44
+C                                                                                FDDAGD.45
+C                                                                                FDDAGD.46
+C                                                                                FDDAGD.47
+C                                                                                FDDAGD.48
+      REAL BLPOC,BLPOD,BLWCS,BLWDT,BLWNV,SFCOBS,SFCTIM,TIMB,TIME,WXYTOP          FDDAGD.49
+      INTEGER IDCHK,IDDATE,IDHK,IQCHK,NTB,NTE                                    FDDAGD.50
+      POINTER (IFSFCO,SFCOBS(NTIM,NVAR,MIXFG,MJXFG)),                            FDDAGD.51
+     1  (IFBLWN,BLWNV(NVAR,MIXFG,MJXFG)),                                        FDDAGD.52
+     1  (IFBLWT,BLWDT(MIXFG,MJXFG)),(IFBLWS,BLWCS(MIXFG,MJXFG)),                 FDDAGD.53
+     1  (IFBLPC,BLPOC(MIXFG,MJXFG)),(IFBLPD,BLPOD(MIXFG,MJXFG)),                 FDDAGD.54
+     1  (IFWXY,WXYTOP(MIXFG,MJXFG)),(IFSFT,SFCTIM(NTIM)),                        FDDAGD.55
+     1  (IFTIB,TIMB(NVAR)),(IFTIE,TIME(NVAR)),                                   FDDAGD.56
+     1  (IFNTB,NTB(NVAR)),(IFNTE,NTE(NVAR)),                                     FDDAGD.57
+     1  (IFIQC,IQCHK(NTIM,NVAR)),(IFIDD,IDDATE(NCHA)),                           FDDAGD.58
+     1  (IFIDC,IDCHK(NCHA,NVAR)),(IFIDH,IDHK(NVAR))                              FDDAGD.59
+C                                                                                FDDAGD.60
+      COMMON/ADDR7/ IFSFCO,IFBLWN,IFBLWT,IFBLWS,IFBLPC,                          FDDAGD.61
+     1      IFBLPD,IFWXY,IFSFT,IFTIB,IFTIE,IFNTB,IFNTE,                          FDDAGD.62
+     2      IFIQC,IFIDD,IFIDC,IFIDH                                              FDDAGD.63

@@ -1,0 +1,34 @@
+C   THE SUM INCLUDE FILE AND COMMON BLOCK ARE USED TO FACILITATE EASY            SUM.1
+C IMPLEMENTATION OF A PARALLEL SUMMATION IN A STRAIGHT FORWARD MANNER            SUM.2
+C BUT STILL WITH RELATIVELY HIGH PERFOMANCE AND SCALABILITY.                     SUM.3
+                                                                                 SUM.4
+C   NUMSUM IS THE NUMBER OF GLOBAL SUMS STORED                                   SUM.5
+      INTEGER NUMSUM                                                             SUM.6
+      PARAMETER (NUMSUM = 32)                                                    SUM.7
+      INTEGER ITQEVA_SUM                                                         SUM.8
+      PARAMETER (ITQEVA_SUM = 1)                                                 SUM.9
+      INTEGER ITDRYM_SUM                                                         SUM.10
+      PARAMETER (ITDRYM_SUM = 2)                                                 SUM.11
+      INTEGER ITVMASS_SUM                                                        SUM.12
+      PARAMETER (ITVMASS_SUM = 3)                                                SUM.13
+      INTEGER ITCMASS_SUM                                                        SUM.14
+      PARAMETER (ITCMASS_SUM = 4)                                                SUM.15
+      INTEGER ITRMASS_SUM                                                        SUM.16
+      PARAMETER (ITRMASS_SUM = 5)                                                SUM.17
+      INTEGER ITDADV_SUM                                                         SUM.18
+      PARAMETER (ITDADV_SUM = 6)                                                 SUM.19
+      INTEGER ITQADV_SUM                                                         SUM.20
+      PARAMETER (ITQADV_SUM = 7)                                                 SUM.21
+      INTEGER IWMAX                                                              SUM.22
+      PARAMETER (IWMAX = 8)                                                      SUM.23
+      REAL PARJSUM(NUMSUM,MJX)                                                   SUM.24
+                                                                                 SUM.25
+      INTEGER IICON_SUM                                                          SUM.26
+      PARAMETER (IICON_SUM = 1)                                                  SUM.27
+      INTEGER IIMAX                                                              SUM.28
+      PARAMETER (IIMAX = 2)                                                      SUM.29
+      INTEGER IKMAX                                                              SUM.30
+      PARAMETER (IKMAX = 3)                                                      SUM.31
+      INTEGER IPARJSUM(NUMSUM,MJX)                                               SUM.32
+                                                                                 SUM.33
+      COMMON /PARJSUM/ PARJSUM, IPARJSUM                                         SUM.34

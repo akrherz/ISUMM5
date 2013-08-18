@@ -1,0 +1,5 @@
+CSTART   mpp_initnest_37.incl
+      CALL RSL_EXCH_STENCIL( DOMAINS(NUMNES), STEN_INIT(NUMNES))
+
+
+CEND   mpp_initnest_37.incl

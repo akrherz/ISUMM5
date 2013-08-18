@@ -1,0 +1,63 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; OSF1 V4.0 alpha) [Netscape]">
+</head>
+<body text="#000000" bgcolor="#CCFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<h1>
+What you need to run REGRID</h1>
+
+<ol>
+<li>
+Compilers:&nbsp; Fortran 90 and c.&nbsp; The REGRID programs are written
+in F90, and make extensive use of language features not available in F77.&nbsp;
+Additionally, some of the necessary routines in the pregrid suite are written
+in c.&nbsp; Certain utility programs make use of NCAR-Graphics library
+routines, but these utility programs are not essential to running REGRID.&nbsp;
+NCAR-Graphics is a bonus, but not necessary.</li>
+
+<li>
+A TERRAIN output file, created by the MM5 preprocessor program TERRAIN.</li>
+
+<li>
+Gridded meteorological analyses or forecast fields on pressure levels.&nbsp;
+Fields available must include the following on pressure levels:</li>
+
+<ul>
+<li>
+U component of the horizontal wind</li>
+
+<li>
+V component of the horizontal wind</li>
+
+<li>
+Temperature</li>
+
+<li>
+Relative Humidity, Dewpoint, Mixing ratio, or Specific Humidity</li>
+
+<li>
+Height or geopotential.</li>
+</ul>
+
+<p><br>And the following at the surface:
+<ul>
+<li>
+Sea-surface temperature</li>
+
+<li>
+Sea-level pressure</li>
+</ul>
+</ol>
+
+<hr WIDTH="100%">
+<br><a href="Documentation_Home.html">Documentation HOME</a>
+<p>
+<!-- hhmts start -->
+Last modified: Tue Jun  6 14:08:53 MDT 2000
+<!-- hhmts end -->
+</p>
+</body>
+</html>

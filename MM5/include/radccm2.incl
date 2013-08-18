@@ -1,0 +1,36 @@
+C                                                                                RADCCM2.1
+C RADIATION CONSTANTS                                                            RADCCM2.2
+C                                                                                RADCCM2.3
+      REAL GRAVIT,   ! GRAVITATIONAL ACCELERATION                                RADCCM2.4
+     1        RGA,   ! 1 OVER GRAVIT                                             RADCCM2.5
+     2      CPAIR,   ! HEAT CAPACITY AIR AT CONSTANT PRESSURE                    RADCCM2.6
+     3     EPSILO,   ! RATIO MMW H2O TO MMW AIR                                  RADCCM2.7
+     4       SSLP,   ! STANDARD PRESSURE                                         RADCCM2.8
+     5     STEBOL,   ! STEPHAN BOLTZMANN CONSTANT                                RADCCM2.9
+     6     RGSSLP,   ! 0.5 / (GRAVIT*SSLP)                                       RADCCM2.10
+     7     CO2VMR,   ! CO2 VOLUME MIXING RATIO                                   RADCCM2.11
+     8      DPFO3,   ! DOPPLER FACTOR FOR O3                                     RADCCM2.12
+     9     DPFCO2,   ! DOPPLER FACTOR FOR CO2                                    RADCCM2.13
+     1     DAYSPY,   ! SOLAR DAYS IN ONE YEAR                                    RADCCM2.14
+     2        PIE    ! PIE                                                       RADCCM2.15
+C                                                                                RADCCM2.16
+      COMMON/CRDCON/GRAVIT,    RGA,  CPAIR,  EPSILO,   SSLP,                     RADCCM2.17
+     1              STEBOL, RGSSLP, CO2VMR,   DPFO3, DPFCO2,                     RADCCM2.18
+     2              DAYSPY,    PIE                                               RADCCM2.19
+C                                                                                RADCCM2.20
+C-----------------------------------------------------------------------         RADCCM2.21
+C                                                                                RADCCM2.22
+C-----------------------------------------------------------------------         RADCCM2.23
+C                                                                                RADCCM2.24
+C RADIATION CONTROL VARIABLES                                                    RADCCM2.25
+C                                                                                RADCCM2.26
+C                                                                                RADCCM2.27
+C IRADAE = ITERATION FREQUENCY FOR ABSORPTIVITY/                                 RADCCM2.28
+C EMISSIVITY COMPUTATION                                                         RADCCM2.29
+C                                                                                RADCCM2.30
+C                                                                                RADCCM2.31
+C      INTEGER IRADAE                                                            RADCCM2.32
+C                                                                                RADCCM2.33
+C      COMMON/RADFRQ/IRADAE                                                      RADCCM2.34
+C                                                                                RADCCM2.35
+C-----------------------------------------------------------------------         RADCCM2.36

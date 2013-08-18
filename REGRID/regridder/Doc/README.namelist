@@ -1,0 +1,260 @@
+INTRODUCTION
+------------
+The regridder program is driven primarily by the options chosen 
+in the NAMELIST file namelist.input.  This file provides information
+such as the dates to process and which first-guess files to input.
+This file is typically modified for each new case to be run.
+
+SAMPLE NAMELIST
+---------------
+
+There are no comments allowed in the FORTRAN 90 standard, and 
+new lines are only supported between NAMELIST records.  The individual
+elements are separated by commas (",").  The slash ("/") marks
+the end of the NAMELIST record.  This can be used to advantage
+by placing the slash prior to some of the NAMELIST entries, 
+effectively removing them from input.  For example, you could
+place a slash "/" after the 10000 value for the ptop_in_Pa, which
+would cause there to be no new pressure levels; however, record3
+and record4 would still be read by the code.
+
+
+&record1
+ start_year                      =  1993
+ start_month                     =    03
+ start_day                       =    13 
+ start_hour                      =    00
+ end_year                        =  1993
+ end_month                       =    03
+ end_day                         =    14 
+ end_hour                        =    00
+ interval                        =  21600 /
+
+&record2
+ ptop_in_Pa                      = 10000 , 
+ new_levels_in_Pa                = 97500 , 95000 ,         90000 , 
+                                   87500 
+ sst_to_ice_threshold            = 273.15
+ linear_interpolation            = .FALSE. /
+
+&record3
+ root                            = 'NNRP' 'ETA212' 
+ constants_full_name             = 'SST:1993-03-13_00'
+ terrain_file_name               = '../../TERRAIN/TERRAIN_DOMAIN1' /
+
+&record4
+ print_echo                      = .FALSE. , 
+ print_debug                     = .FALSE. , 
+ print_mask                      = .FALSE. ,
+ print_interp                    = .FALSE. ,
+ print_link_list_store           = .FALSE. , 
+ print_array_store               = .FALSE. , 
+ print_header                    = .FALSE. ,
+ print_output                    = .FALSE. , 
+ print_file                      = .FALSE. ,
+ print_f77_info                  = .FALSE. /
+
+&record5
+ insert_bogus_storm              = .FALSE.
+ num_storm                       =    1
+ latc_loc                        =   36.
+ lonc_loc                        =  -35.
+ vmax_meters_per_second          =   35. 
+ rmax                            =   90000.0
+ vmax_ratio                      =       0.75/
+
+
+DATE AND TIME
+-------------
+
+There are three pieces of date information required by the 
+regridder program: the date/time to start the processing
+(start_year, start_month, start_day, start_hour), 
+the final date/time of the process (end_year, ending_month, 
+ending_day, ending_hour)), and the time increment in seconds 
+(interval) between these two date/times.  
+
+In the example NAMELIST above, the program will process five
+time periods: 13 March 1993 00Z through 14 March 1993 00Z at
+6 h intervals.
+
+
+PRESSURE INFORMATION
+--------------------
+
+The regridder program requires two types of pressure data as
+input: the top lid of the first guess data to process
+(ptop_in_Pa) and the new pressure levels to which the user 
+would like to have the first-guess fields interpolated
+(new_levels_in_Pa).  
+
+All of the pressure input values are REAL with units of Pa.  Any 
+pressure level above the chosen lid will be discarded.  The
+program will require the user to remove any duplicated new levels
+(or levels that already exist within the first-guess data set).
+
+The program will automatically fill in the surface level with 
+the 100000 Pa level data if no surface data are provided.  The 
+user does not need to put any special values on the new levels
+list for this action, nor is the user able to circumvent this
+feature.
+
+In the example NAMELIST above, the program discards all pressure
+level data above 10000 Pa.  Assuming that the input first-guess
+data has information at 100000, 92500 and 85000 Pa, the program
+will fill in the data between 100000 and 85000 Pa at 2500 Pa
+increments.
+
+New to Version 3 release 3 are the following two namelist variables:
+
+sst_to_ice_threshold = value
+
+   Use it if one wants to turn water to permanent ice when the water 
+   is cold enough (< value specified). If you don't want to use it,
+   leave it to -9999.
+
+linear_interpolation = .TRUE. or .FALSE.
+ 
+   Bi-linear interpolation is added in this release. This will allow
+   some diagnostic fields that require gradient calculation to be
+   smoother.
+    
+
+INPUT FIRST-GUESS FILENAMES
+---------------------------
+
+The program allows a maximum of 100 different first-guess
+file prefixes per time period.  The user may supply directory
+information in the character string.
+
+The sequence of date/times to process are each prefixed with 
+each of the first-guess CHARACTER strings.  If the file exists, 
+it is opened for input by the program.  There are no specific
+assumptions made about the file contents based upon the 
+given name.  All of the files are assumed to be in the 
+intermediate format that allows the pregrid programs to 
+communicate with the regridder.
+
+In the example NAMELIST above, the program will attempt to 
+open the following fifteen files:
+            NNRP:1993-03-13_00
+          ETA212:1993-03-13_00
+             SST:1993-03-13_00
+
+            NNRP:1993-03-13_06
+          ETA212:1993-03-13_06
+             SST:1993-03-13_00
+
+            NNRP:1993-03-13_12
+          ETA212:1993-03-13_12
+             SST:1993-03-13_00
+
+            NNRP:1993-03-13_18
+          ETA212:1993-03-13_18
+             SST:1993-03-13_00
+
+            NNRP:1993-03-14_00
+          ETA212:1993-03-14_00
+             SST:1993-03-13_00
+
+The first three files will be opened during the processing of
+the first time period, and the second three files will be 
+opened during the processing of the second time period, etc.  The
+files do not have to exist, though at least one file must
+exist per time period.  Differing numbers of files may exist per
+time period.  The data is saved in the order in which it is 
+read.  Duplicated information (such as the sea surface 
+temperature) is discared, where the initial instance is always
+saved and all repetitions are skipped.  The size of the grid
+of the data within a single file does not have to be constant, nor
+does the projection have to remain the same.
+
+Note that for the "root" files, only the *root* of the name
+is supplied, while for the "constants_full_name" the *full name*
+(including date information) is supplied.  Notice in the example 
+above that the SST field has the same (constant) date.  For a 
+file listed in the constants_full_name section (read after the 
+root files), the date information inside the file is neglected.
+This allows a single time period, such as for SST, to be used 
+for an entire analysis period.
+
+The MM5V3-formatted input is the TERRAIN file terrain_file_name.  
+This is the file which has sufficient information for the 
+regridder program to horizontally interpolate the data to the 
+model grid.  Of course, no date information is required on the 
+TERRAIN file. 
+
+A note for Sun Users: If regridder has trouble reading namelist,
+try to change
+
+&record3
+ root                            = 'NNRP' 'ETA212'
+ constants_full_name             = 'SST:1993-03-13_00'
+ terrain_file_name               = '../../TERRAIN/TERRAIN_DOMAIN1' /
+
+to
+
+&record3
+ root(1)                         = 'NNRP'
+ root(2)                         = 'ETA212'
+ constants_full_name             = 'SST:1993-03-13_00'
+ terrain_file_name               = '../../TERRAIN/TERRAIN_DOMAIN1' /
+
+Since Version 3.6, one may use 'constants_full_name' to ingest 
+maximum snow albedo field (ALMX_FILE), and monthly albedo fields
+(available from NCAR's MSS: /MESOUSER/DATASETS/REGRID/MONTHLY_ALBEDO.TAR.gz,
+and ftp://ftp.ucar.edu/mesouser/MM5V3/REGRID_DATA/MONTHLY_ALBEDO.TAR.gz).
+
+
+PRINT OUT
+---------
+
+The program has quite a number of standard-out print statements
+that may be toggled on and off.  Unless the program is broken,
+why bother looking at all of that worthless stuff?  If the user
+is still a RAWINS bigot, the print_f77_info flag may be of
+assistance: it outputs some information about how to set up the
+RAWINS parameter statements.
+
+
+TROPICAL STORM BOGUSSING - New namelist in V3.5 
+-----------------------------------------------
+
+A new namelist section is added in V3.5 to enable a user to do
+tropical storm bogussing. The bogussing is based on the following
+number of parameters:
+
+inset_bogus_storm: T/F flag whether to use the TC bogus option
+num_storm: one may bogus up to 100 tropical storms in one domain
+latc_loc:  latitude value of tropical storm center (negative in s. hemisphere)
+lonc_loc:  longitude value of tropical storm center (negative in w. hemisphere)
+vmax_meters_per_second:  maximum wind speed in m/second
+rmax: radius of maximum sustained winds (m)
+r_search: radius to search for old vortex (m)
+r_vor: radius of new vortex (m)
+humidity_max: maximum relative humidity at storm core (%)
+vmax_ratio: speed maximum scaling factor
+beta: Rankine vortex constant
+devpc: maximum pressure depression
+vert_variation: 1=functional form of RH max and vortex weighting, 2=specified
+                values as given to AFWA in May 2001
+
+Other assumptions are made inside bogussing routine. See 
+regridder/src/module_tc_bogus.F. 
+
+The procedure searches for the old storm in the vicinity of the new storm
+(within 300 km of the new storm), remove it, and place the new storm with 
+an assumed radius of maximum wind (50 km currently). The bogus vortex is
+assumed to be an Rankine vortex (alpha=-0.75), and occupy an area of 300 km radius. 
+
+References:
+
+Low-Nam, S., and C. Davis, 2001: Development of a tropical cyclone bogussing
+  scheme for the MM5 system. Preprint, The Eleventh PSU/NCAR Mesoscale Model
+  Users' Workshop, June 25-27, 2001, Boulder, Colorado, p 130-134. 
+  (Available online at 
+   http://www.mmm.ucar.edu/mm5/workshop/workshop-program-2001.html)
+
+Davis, C. and S. Lownam, 2001: The NCAR-AFWA tropical cyclone bogussing scheme.
+  A report prepared for the Air Force Weather Agency (AFWA). 12pp.
+  (Available online at http://www.mmm.ucar.edu/mm5/mm5v3/v3prep.html)

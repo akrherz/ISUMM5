@@ -1,0 +1,131 @@
+C  VEGETATION DATA      1      2       3       4       5        6                06NOV00.783
+      DATA NCATVEG /25/,                                                         VS_DATA2.2
+     >        IVW /    16,    16,     16,     16,     16,      16/,              06NOV00.784
+     >     RESOLV /   1.0,   0.5, 0.1667, 0.0833, 0.0333, 0.00833/,              06NOV00.785
+     >     XLATV0 /  90.0,  90.0,   90.0,   90.0,   90.0,    90.0/,              06NOV00.786
+     >     XLONV0 /-180.0,-180.0, -180.0, -180.0, -180.0,  -180.0/,              06NOV00.787
+     >    NLATVEG /   180,   360,   1080,   2160,   5400,   21600/,              05DEC01.51
+     >    NLONVEG /   360,   720,   2160,   4320,  10800,   43200/               05DEC01.52
+C                                                                                VS_DATA2.9
+      DATA LLBV /'URBAN AND BUILT-UP LAND      ',                                VS_DATA2.10
+     *           'DRYLAND CROPLAND AND PASTURE ',                                VS_DATA2.11
+     *           'IRRIGATED CROPLAND AND PASTRE',                                VS_DATA2.12
+     *           'MIXED DRYLND/IRRGTD CROP&PAST',                                VS_DATA2.13
+     *           'CROPLAND/GRASSLAND MOSAIC    ',                                VS_DATA2.14
+     *           'CROPLAND/WOODLAND MOSAIC     ',                                VS_DATA2.15
+     *           'GRASSLAND                    ',                                VS_DATA2.16
+     *           'SHRUBLAND                    ',                                VS_DATA2.17
+     *           'MIXED SHRUBLAND/GRASSLAND    ',                                VS_DATA2.18
+     *           'SAVANNA                      ',                                VS_DATA2.19
+     *           'DECIDUOUS BROADLEAF FOREST   ',                                VS_DATA2.20
+     *           'DECIDUOUS NEEDLELEAF FOREST  ',                                VS_DATA2.21
+     *           'EVERGREEN BROADLEAF FOREST   ',                                VS_DATA2.22
+     *           'EVERGREEN NEEDLELEAF FOREST  ',                                VS_DATA2.23
+     *           'MIXED FOREST                 ',                                VS_DATA2.24
+     *           'WATER BODIES                 ',                                VS_DATA2.25
+     *           'HERBACEOUS WETLAND           ',                                VS_DATA2.26
+     *           'WOODED WETLAND               ',                                VS_DATA2.27
+     *           'BARREN OR SPARSELY VEGETATED ',                                VS_DATA2.28
+     *           'HERBACEOUS TUNDRA            ',                                VS_DATA2.29
+     *           'WOODED TUNDRA                ',                                VS_DATA2.30
+     *           'MIXED TUNDRA                 ',                                VS_DATA2.31
+     *           'BARE GROUND TUNDRA           ',                                VS_DATA2.32
+     *           'SNOW OR ICE                  ',                                VS_DATA2.33
+     *           'MISSING DATA                 '/                                VS_DATA2.34
+      DATA LLBV3 / ' 0 NODAT' ,                                                  VS_DATA2.35
+     *            ' 1 URBAN' ,                                                   VS_DATA2.36
+     *            ' 2 DRCRP' ,                                                   VS_DATA2.37
+     *            ' 3 IRCRP' ,                                                   VS_DATA2.38
+     *            ' 4 MIXCP' ,                                                   VS_DATA2.39
+     *            ' 5 CRGRM' ,                                                   VS_DATA2.40
+     *            ' 6 CRWDM' ,                                                   VS_DATA2.41
+     *            ' 7 GRSLD' ,                                                   VS_DATA2.42
+     *            ' 8 SHRLD' ,                                                   VS_DATA2.43
+     *            ' 9 SHRGR' ,                                                   VS_DATA2.44
+     *            '10 SAVAN' ,                                                   VS_DATA2.45
+     *            '11 DBFST' ,                                                   VS_DATA2.46
+     *            '12 DNFST' ,                                                   VS_DATA2.47
+     *            '13 EBFST' ,                                                   VS_DATA2.48
+     *            '14 ENFST' ,                                                   VS_DATA2.49
+     *            '15 MXFST' ,                                                   VS_DATA2.50
+     *            '16 WATER' ,                                                   VS_DATA2.51
+     *            '17 HWTLD' ,                                                   VS_DATA2.52
+     *            '18 WWTLD' ,                                                   VS_DATA2.53
+     *            '19 BARSP' ,                                                   VS_DATA2.54
+     *            '20 HRTUN' ,                                                   VS_DATA2.55
+     *            '21 WDTUN' ,                                                   VS_DATA2.56
+     *            '22 MXTUN' ,                                                   VS_DATA2.57
+     *            '23 BGTUN' ,                                                   VS_DATA2.58
+     *            '24 SNWIC' /                                                   VS_DATA2.59
+      DATA LBVG/18,19,20,21,22,23,24,25,26,27,28,29,30,                          VS_DATA2.60
+     *          31,32,33,34,35,36,37,38,39,40,41,42/                             VS_DATA2.61
+      DATA LLBV2/' 1',' 2',' 3',' 4',' 5',' 6',' 7',' 8',                        VS_DATA2.62
+     *          ' 9','10','11','12','13','14','15','16',                         VS_DATA2.63
+     *          '17','18','19','20','21','22','23','24','25'/                    VS_DATA2.64
+C                                                                                VS_DATA2.65
+C  SOIL DATA            1      2       3       4       5        6                06NOV00.790
+      DATA NCATSOIL /17/,                                                        VS_DATA2.67
+     >        ISW /    14,    14,     14,     14,     14,      14/,              06NOV00.791
+     >     RESOLS /   1.0,   0.5, 0.1667, 0.0833, 0.0333, 0.00833/,              06NOV00.792
+     >     XLATS0 /  90.0,  90.0,   90.0,   90.0,   90.0,    90.0/,              06NOV00.793
+     >     XLONS0 /-180.0,-180.0, -180.0, -180.0, -180.0,  -180.0/,              06NOV00.794
+     >   NLATSOIL /   180,   360,   1080,   2160,   5400,   21600/,              06NOV00.795
+     >   NLONSOIL /   360,   720,   2160,   4320,  10800,   43200/               06NOV00.796
+C                                                                                VS_DATA2.74
+      DATA LLBS /'SAND                         ',                                VS_DATA2.75
+     *           'LOAMY SAND                   ',                                VS_DATA2.76
+     *           'SANDY LOAM                   ',                                VS_DATA2.77
+     *           'SILT LOAM                    ',                                VS_DATA2.78
+     *           'SILT                         ',                                VS_DATA2.79
+     *           'LOAM                         ',                                VS_DATA2.80
+     *           'SANDY CLAY LOAM              ',                                VS_DATA2.81
+     *           'SILTY CLAY LOAM              ',                                VS_DATA2.82
+     *           'CLAY LOAM                    ',                                VS_DATA2.83
+     *           'SANDY CLAY                   ',                                VS_DATA2.84
+     *           'SILTY CLAY                   ',                                VS_DATA2.85
+     *           'CLAY                         ',                                VS_DATA2.86
+     *           'ORGANIC MATERIALS            ',                                VS_DATA2.87
+     *           'WATER                        ',                                VS_DATA2.88
+     *           'BEDROCK                      ',                                VS_DATA2.89
+     *           'OTHER                        ',                                VS_DATA2.90
+     *           'NO DATA                      '/                                VS_DATA2.91
+C                                                                                VS_DATA2.92
+      DATA LLBS3 / ' 0 NODAT' ,                                                  VS_DATA2.93
+     *            ' 1 SAND ' ,                                                   VS_DATA2.94
+     *            ' 2 LMYSD' ,                                                   VS_DATA2.95
+     *            ' 3 SDYLM' ,                                                   VS_DATA2.96
+     *            ' 4 SLTLM' ,                                                   VS_DATA2.97
+     *            ' 5 SILT ' ,                                                   VS_DATA2.98
+     *            ' 6 LOAM ' ,                                                   VS_DATA2.99
+     *            ' 7 SDYCL' ,                                                   VS_DATA2.100
+     *            ' 8 SLYCL' ,                                                   VS_DATA2.101
+     *            ' 9 CLYLM' ,                                                   VS_DATA2.102
+     *            '10 SDYCL' ,                                                   VS_DATA2.103
+     *            '11 SLTCL' ,                                                   VS_DATA2.104
+     *            '12 CLAY ' ,                                                   VS_DATA2.105
+     *            '13 ORGMT' ,                                                   VS_DATA2.106
+     *            '14 WATER' ,                                                   VS_DATA2.107
+     *            '15 BDRCK' ,                                                   VS_DATA2.108
+     *            '16 OTHER' /                                                   VS_DATA2.109
+      DATA LBSL /18,19,20,21,22,23,24,25,26,27,28,29,30,                         VS_DATA2.110
+     *                                        31,32,33,34/                       VS_DATA2.111
+      DATA LLBS2/' 1',' 2',' 3',' 4',' 5',' 6',' 7',' 8',                        VS_DATA2.112
+     *          ' 9','10','11','12','13','14','15','16','17'/                    VS_DATA2.113
+C                                                                                VS_DATA2.114
+C  ---------------------------------------------------------------------         VS_DATA2.115
+C MONTHLY VEGETATION FRACTION:                                                   VS_DATA2.116
+      DATA LLBF /'JANUARY                      ',                                VS_DATA2.117
+     *           'FEBRUARY                      ',                               VS_DATA2.118
+     *           'MARCH                        ',                                VS_DATA2.119
+     *           'APRIL                        ',                                VS_DATA2.120
+     *           'MAY                          ',                                VS_DATA2.121
+     *           'JUNE                         ',                                VS_DATA2.122
+     *           'JULY                         ',                                VS_DATA2.123
+     *           'AUGUST                       ',                                VS_DATA2.124
+     *           'SEPTEMBER                    ',                                VS_DATA2.125
+     *           'OCTOBER                      ',                                VS_DATA2.126
+     *           'NOVEMBER                     ',                                VS_DATA2.127
+     *           'DECEMBER                     '/                                VS_DATA2.128
+C                                                                                VS_DATA2.129
+      DATA VEGECOFILE /'lvc2.tbl'/, SOILCOFILE /'lsco.tbl'/                      VS_DATA2.130
+C                                                                                VS_DATA2.131

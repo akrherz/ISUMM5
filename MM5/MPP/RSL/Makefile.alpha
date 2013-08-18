@@ -1,0 +1,202 @@
+
+
+ OBSOLETE --- DO NOT USE 
+
+
+
+
+DEVTOP = ../..
+MPPTOP = $(DEVTOP)/MPP
+include $(DEVTOP)/MPP/conf.mpp
+include $(DEVTOP)/include/config.INCL
+
+###########################
+# do not set these to anything; they are here to avoid inheriting settings
+# from the configure.user file (they may be set further below)
+#
+FC =
+FCFLAGS =
+CFLAGS =
+CPP =
+CPPFLAGS =
+LOCAL_LIBRARIES =
+###########################
+
+FLICFLAGS = -F=$(MPPTOP)/FLICFILE -CPP='include<rsl.inc>' -CPP='include<rslcom.inc>' -H='FLIC_RUN_DECL'
+
+########## IBM
+CPP_FLAGS = -C -P -Dalpha -DMPI -DMPP1 -DIOR=2
+FC = f77
+CC = cc
+LD = mpxlf
+#LD = xlf
+RM = /bin/rm 
+AWK = awk
+SED = sed
+CAT = cat
+CUT = cut
+EXPAND = expand
+CUTTER = $(MPPTOP)/col_cutter
+CPP = /lib/cpp -C -P
+#M4 = m4 $(MPPTOP)/LoopMacros.m4 
+M4 = m4 $(MPPTOP)/LMexp.m4
+N32 = $(MPPTOP)/FLIC/FLIC/flic $(FLICFLAGS)
+IWORDSIZE = 4
+RWORDSIZE = 4
+LWORDSIZE = 4
+CPP_FLAGS = -DMPI -DMPP1 -DIOR=2 -DIWORDSIZE=$(IWORDSIZE) -DRWORDSIZE=$(RWORDSIZE) -DLWORDSIZE=$(LWORDSIZE) -DIDEBUG=3 -DJDEBUG=4 -DKDEBUG=23
+RSLLOC = $(MPPTOP)/RSL/RSL
+INCLUDES = -I$(MPPTOP) -I$(MPPTOP)/$(MPP_LAYER) -I$(DEVTOP)/pick
+CC_FLAGS = -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) -DMPI
+F77_FLAGS  = -D$(RUNTIME_SYSTEM) -I$(LIBINCLUDE) -c -O4 -Olimit 2000 -i8 -fpe0 -align dcommons -align records -warn nounreachable -convert big_endian
+LINK_FLAGS = $(RSLLOC)/librsl.a
+DEBUG = -g
+OPTIM = # -O3 -qstrict
+##########
+
+RSL_PAD = 7
+
+.SUFFIXES: .F .o .c
+
+include $(MPPTOP)/mpp_objects
+
+ARCH_OBJS =  nan.o set_to_nan.o milliclock.o
+
+all : parame.incl $(OBJS) $(ARCH_OBJS)
+	$(LD) $(OPTIM) $(EBUG) -o mm5.exe $(OBJS) $(ARCH_OBJS) $(LINK_FLAGS)
+	/bin/mv mm5.exe $(DEVTOP)/Run
+
+parame.incl :
+	@echo '      PARAMETER(MAXNES = $(MAXNES))' > parame.incl
+	@echo '      PARAMETER(MAXMV  = 10 )' >> parame.incl
+	@echo '      PARAMETER(MIX_G  = $(MIX))' >> parame.incl
+	@echo '      PARAMETER(MJX_G  = $(MJX))' >> parame.incl
+	@echo '      PARAMETER(MKX_G  = $(MKX))' >> parame.incl
+	@echo '      PARAMETER(MIX=MIX_G/$(PROCMIN_NS)+2*$(RSL_PAD)+2)' >>parame.incl
+	@echo '      PARAMETER(MJX=MJX_G/$(PROCMIN_EW)+2*$(RSL_PAD)+2)' >>parame.incl
+	@echo '      PARAMETER(MKX  = $(MKX))' >> parame.incl
+	@echo '      PARAMETER(IEXMS   = $(EXMS))' >> parame.incl
+	@echo '      PARAMETER(IARASC  = $(ARASC))' >> parame.incl
+	@echo '      PARAMETER(IRDDIM  = $(RDDIM))' >> parame.incl
+	@echo '      PARAMETER(ISLDIM  = $(SLDIM))' >> parame.incl
+	@echo '      PARAMETER(INAV    = $(NAV))' >> parame.incl
+	@echo '      PARAMETER(INAV2   = $(NAV2))' >> parame.incl
+	@echo '      PARAMETER(INAV3   = $(NAV3))' >> parame.incl
+	@echo '      PARAMETER(IICE    = $(ICE))' >> parame.incl
+	@echo '      PARAMETER(IICEG   = $(ICEG))' >> parame.incl
+	@echo '      PARAMETER(IKFFC   = $(KFFC))' >> parame.incl
+	@echo '      PARAMETER(IFDDAG  = $(FDDAGD))' >> parame.incl
+	@echo '      PARAMETER(IFDDAO  = $(FDDAOBS))' >> parame.incl
+	@echo '      PARAMETER(INHYD   = $(NHYDRO))' >> parame.incl
+	cat $(DEVTOP)/include/parame >> parame.incl
+	/bin/mv parame.incl $(DEVTOP)/pick
+
+param.o : param.F
+	$(AWK) -f $(MPPTOP)/namedata.awk DIR=f DECLFILE=read_config1.h \
+                  PACKFILE=read_config2.h $(MPPTOP)/namelist.data
+	/bin/mv read_config2.h $(DEVTOP)/pick
+	$(AWK) -f $(MPPTOP)/namedata.awk DIR=b DECLFILE=read_config1.h \
+                  PACKFILE=read_config3.h $(MPPTOP)/namelist.data
+	/bin/mv read_config1.h $(DEVTOP)/pick
+	/bin/mv read_config3.h $(DEVTOP)/pick
+	$(CUT) -c1-72 $*.F | $(EXPAND) |\
+	  $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+define_comms.o : define_comms.F
+	$(M4) $*.F | $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+# This one contains FLIC macros already inserted.  Don't run through FLIC.
+mp_initdomain.o : mp_initdomain.F
+	$(M4) $*.F | $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+# These are column callable and do not need FLIC.
+initpb.o : initpb.F
+	$(M4) $*.F | $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+hoskeep.o : hoskeep.F
+	$(M4) $*.F | $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+bound.o : bound.F
+	$(M4) $*.F | $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+outpb.o : outpb.F
+	$(M4) $*.F | $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+mpslab.o : mpslab.F
+	$(M4) $*.F | $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+mpsfcrad.o : mpsfcrad.F
+	$(M4) $*.F | $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+mptransm.o : mptransm.F
+	$(M4) $*.F | $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+mp_stotndt.o : mp_stotndt.F
+	$(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) $*.F | \
+ 	    $(CUT) -c1-72 | \
+            $(M4) - | \
+            $(CPP) |\
+            $(EXPAND) |\
+            $(SED) 's/qv \(.b[t(]\)/q \1/' | \
+            $(CUTTER) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+mp_feedbk.o : mp_feedbk.F
+	$(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) $*.F | \
+ 	    $(CUT) -c1-72 | \
+            $(M4) - | \
+            $(CPP) |\
+            $(EXPAND) |\
+            $(SED) 's/qv \(.b[t(]\)/q \1/' | \
+            $(CUTTER) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+bcast_size.o : bcast_size.F
+	$(M4) $*.F | $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+merge_size.o : merge_size.F
+	$(M4) $*.F | $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+# functions
+gamma.o : gamma.F
+	$(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) $*.F > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+dtfrz.o : dtfrz.F
+	$(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) $*.F > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+dtfrznew.o : dtfrznew.F
+	$(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) $*.F > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+tpdd.o : tpdd.F
+	$(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) $*.F > $*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+###
+.F.o:
+	$(CUT) -c1-72 $*.F | $(SED) 's/`//' | $(EXPAND) |\
+	   $(CPP) -I$(RSLLOC) $(INCLUDES) $(CPP_FLAGS) > $*.b
+	$(N32) $*.b > $*.dm
+	$(M4) $*.dm | sed '/^$$/d' \
+	    | $(CPP) $(INCLUDES) -I$(RSLLOC) | $(CUTTER) >$*.f
+	$(FC) -c $(OPTIM) $(DEBUG) $(F77_FLAGS) $*.f
+
+.c.o:
+	$(CC) -c $(OPTIM) $(DEBUG) $(CC_FLAGS) $<
+
+clean:
+	/bin/rm -f *.f *.o *.b *.dm read_config1.h read_config2.h read_config3.h parame.incl
+

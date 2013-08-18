@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Recent changes to pregrid programs</title>
+  </head>
+<body text="#000000" bgcolor="#CCFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+  <body>
+    <h1>Recent changes to pregrid programs</h1>
+   <ul>
+This file documents recent changes to the pregrid programs.  We'll see
+if I'm disciplined enough to keep it reasonably up-to-date.
+   </ul>
+
+<p>
+
+<h3>2003-01-24 (pregrid version 0.28):</h3>
+   <ul>
+    <li>Correct the truelat for southern hemisphere polar grids.
+    <br><br>
+    Affected files: <br>
+       <ul><li>util/gribcode.F (test on hemisphere before setting
+	      truelat)<br>
+	    <li>util/rd_grib.F (test on hemisphere before setting
+	      truelat)<br>
+ </ul></ul>
+
+<p>
+
+<h3>2001-09-19 (pregrid version 0.26):</h3>
+   <ul>
+    <li>Slight change to the iterative algorithm which computes
+    temperature from virtual temperature for the ON84 GDAS data set.
+    See affected file for details.
+    <br><br>
+    Affected files: <br>
+       <ul><li>on84/tv_to_t.F (change the conversion algorithm, and
+	      stop things if they don't converge)
+ </ul></ul>
+
+
+
+<h3>2001-02-14 (pregrid version 0.25):</h3>
+   <ul>
+    <li> Added the snow-propagation function to ncep.grib code.  This
+	  function was already there for on84 code, and ported in
+	  pretty conveniently.<br><br>
+	  Affected files: <br>
+	  <ul><li>ncep.grib/snowprop.F (added this subroutine)<br>
+	  <li>ncep.grib/output.F   (write the snow-cover to a different
+		  file, and send information back to main routine)<br>
+          <li>ncep.grib/pregrid_ng.F (call the new subroutine, and another call to
+	      delete_files)<br>
+	  <li>ncep.grib/Makefile   (added snowprop.o to list of object
+			  files)<br><br></ul>
+    <li> Allow file names to have date stamps out to minutes or
+	      seconds, if the user requests a time interval (in
+	      seconds) that is not evenly divisible into hours or
+	      minutes.<br><br>
+	  Affected files: <br>
+	  <ul><li>grib.misc/pregrid_grib.F<br>
+	    <li>grib.misc/datint.F<br>
+	    <li>grib.misc/file_delete.F<br>
+	    <li>grib.misc/output.F<br>
+	    <li>grib.misc/rrpr.F<br>
+	    <li>ncep.grib/pregrid_ng.F<br>
+	    <li>ncep.grib/datint.F<br>
+	    <li>ncep.grib/output.F<br>
+	    <li>ncep.grib/sstint.F<br>
+	    <li>on84/pregrid_on84.F<br>
+	    <li>on84/datint.F<br>
+	    <li>on84/output.F<br>
+	    <li>on84/snowprop.F<br>
+	    <li>on84/sstint.F<br>
+
+</ul></ul>
+      
+    
+<h3>2000-11-07 (pregrid version 0.24):</h3>
+   <ul>
+    <li> For GRIB decoding routines, add a cylindrical equidistant
+grid to lat-lon to x-y routine.<br><br> 
+	  Affected files: <br>
+	  <ul>
+	    gribcode.F (routine gribllxy)<br>
+	  </ul><br>
+    <li> For GRIB decoding routines, define sec1(25) and sec1(26) as
+binary flags (0=false, 1=true) for the presence of a Grid Description
+Section (GDS) and a Bit Map Section (BMS), respectively. <br><br> 
+	  Affected files: <br>
+	  <ul>
+	    gribcode.F (numerous routines)<br>
+	  </ul><br>
+    <li> A number of changes mostly related to predefined
+         grids for GRIB decoding:<br><br>
+               <ul><li>Take gclon out of the module, and use gridinfo(6) instead.
+                 This makes for one less thing for the user to set in the
+                 the case of predefined grids.</ul>
+
+               <ul><li>Add a number of predefined grids (61, 62, 63, 64, 105)</ul>
+               <ul><li>Add a logical variable RECOGNIZED_GRID if the grid is 
+                 recognized, either from the GDS or from the list of 
+                 predefined grids.</ul>
+<br>
+	  Affected files: <br><ul>gribcode.F (numerous routines)<br>
+</ul></ul>
+
+
+<h3>2000-10-27 (pregrid version 0.23):</h3>
+   <ul>
+    <li>Added a program (util/build_mosaic.F) to combine two or more 
+        tiles of a lat/lon grid into one tile.  See the 
+       <a href="faq.html#MOSAIC"> associated comments</a> in the FAQ
+          file for a few details.<br><br>
+	  Affected files: <br>
+	  <ul>
+	    util/build_mosaic.F (new source-code file)<br>
+	    Makefile (option to make the program by issuing the
+            command "make build_mosaic")<br>
+	  </ul>
+</ul>
+</ul>
+
+
+<h3>2000-09-07 (pregrid version 0.22):</h3>
+   <ul>
+    <li>A SUN portability problem.  Subroutine GRIBPRINT wasn't
+	  building format strings quite right.  That has been
+	  corrected.<br><br>
+	  Affected files: <br>
+	  <ul>
+	    util/gribcode.F (subroutine gribprint)<br>
+	  </ul>
+	  <br>
+	<li>A SUN portability problem.  Subroutine GRIBLLG had
+	  negative steps in an array reference.  That confused SUN and
+	  has been replaced by a do-loop.<br><br>
+
+    Affected files: <br>
+	<ul>
+      util/gribcode.F (subroutine griblgg) <br>
+</ul>
+</ul>
+
+
+<h3>2000-08-31 (pregrid version 0.21):</h3>
+   <ul>
+    <li>Changed the grib.misc program and the ncep.grib program
+    to recognize the field name "SKINTEMP" in the Vtable as something
+    we can use as a sea-surface temperature. <br><br>
+
+    Affected files: <br>
+	<ul>
+      grib.misc/pregrid_grib.F <br>
+      ncep.grib/pregrid_ng.F <br>
+      ncep.grib/output.F <br>
+</ul>
+<br>
+    <li>Turned off an error print (actually a warning) that was
+	scaring people in ncep.grib program.  This happened when the
+	program, as expected, tried to open a non-existent file.<br><br>
+
+    Affected files: <br>
+	<ul>
+      ncep.grib/rd_grib.F <br>
+      util/cio.c <br>
+</ul>
+</ul>
+
+
+<h3>2000-08-10 (pregrid version 0.20):</h3>
+   <ul>
+    <li>Added the "thinned-grid" capability to GRIB processing.  This
+code will now be able to deal with the WAFS grids 37 to 44 on an
+individual basis.  There is still no mosaic capability in pregrid.<br><br>
+
+    Affected files: <br>
+	<ul>
+      grib.misc/rd_grib.F <br>
+</ul>
+</ul>
+
+
+
+</p>
+<p>
+<hr WIDTH="100%">
+<br><a href="Documentation_Home.html">Documentation HOME</a>
+<p>
+<!-- Created: Thu Aug 31 11:26:12 MDT 2000 -->
+<!-- hhmts start -->
+Last modified: Fri Jan 24 09:58:10 MST 2003
+<!-- hhmts end -->
+  </body>
+</html>

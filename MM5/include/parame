@@ -1,0 +1,180 @@
+C                                                                                PARAME.1
+      INTEGER MIXM,MJXM                                                          PARAME.2
+      PARAMETER (MIXM=(MIX-1)*IEXMS+1,MJXM=(MJX-1)*IEXMS+1)                      PARAME.3
+      INTEGER MKXM                                                               PARAME.4
+      PARAMETER (MKXM=(MKX-1)*IEXMS+1)                                           PARAME.5
+      INTEGER MIXA,MJXA                                                          PARAME.6
+      PARAMETER (MIXA=(MIX-1)*IARASC+1,MJXA=(MJX-1)*IARASC+1)                    PARAME.7
+      INTEGER MKXA                                                               PARAME.8
+      PARAMETER (MKXA=(MKX-1)*IARASC+1)                                          PARAME.9
+      INTEGER MIXR,MJXR                                                          PARAME.10
+      PARAMETER (MIXR=(MIX-1)*IRDDIM+1,MJXR=(MJX-1)*IRDDIM+1)                    PARAME.11
+      INTEGER MKXR                                                               PARAME.12
+      PARAMETER (MKXR=(MKX-1)*IRDDIM+1)                                          PARAME.13
+      INTEGER MIXS,MJXS                                                          PARAME.14
+      PARAMETER (MIXS=(MIX-1)*ISLDIM+1,MJXS=(MJX-1)*ISLDIM+1)                    PARAME.15
+      INTEGER MIXL,MJXL                                                          PARAME.16
+      PARAMETER (MIXL=(MIX-1)*ILDDIM+1,MJXL=(MJX-1)*ILDDIM+1)                    PARAME.17
+      INTEGER KX,KXP1                                                            PARAME.18
+      PARAMETER (KXP1=MKX+1,KX=MKX)                                              PARAME.19
+C                                                                                PARAME.20
+C                                                                                PARAME.21
+      INTEGER NCHA,NIOBF,NTIM,NVAR                                               PARAME.22
+      PARAMETER (NTIM=5,NVAR=8,NCHA=1,NIOBF=(10000-1)*IFDDAO+1)                  PARAME.23
+      INTEGER MIXFG,MJXFG                                                        PARAME.24
+      PARAMETER (MIXFG=(MIX-1)*IFDDAG+1,MJXFG=(MJX-1)*IFDDAG+1)                  PARAME.25
+      INTEGER MKXFG                                                              PARAME.26
+      PARAMETER (MKXFG=(MKX-1)*IFDDAG+1)                                         PARAME.27
+      INTEGER MIXFO,MJXFO                                                        PARAME.28
+      PARAMETER (MIXFO=(MIX-1)*IFDDAO+1,MJXFO=(MJX-1)*IFDDAO+1)                  PARAME.29
+      INTEGER MKXFO                                                              PARAME.30
+      PARAMETER (MKXFO=(MKX-1)*IFDDAO+1)                                         PARAME.31
+      INTEGER MIXV,MJXV                                                          PARAME.32
+      PARAMETER (MIXV=(MIX-1)*INAV+1,MJXV=(MJX-1)*INAV+1)                        PARAME.33
+      INTEGER MKXV                                                               PARAME.34
+      PARAMETER (MKXV=(MKX-1)*INAV+1)                                            PARAME.35
+      INTEGER MIXV2,MJXV2                                                        PARAME.36
+      PARAMETER (MIXV2=(MIX-1)*INAV2+1,MJXV2=(MJX-1)*INAV2+1)                    PARAME.37
+      INTEGER MKXV2                                                              PARAME.38
+      PARAMETER (MKXV2=(MKX-1)*INAV2+1)                                          PARAME.39
+      INTEGER MIXV3,MJXV3                                                        PARAME.40
+      PARAMETER (MIXV3=(MIX-1)*INAV3+1,MJXV3=(MJX-1)*INAV3+1)                    PARAME.41
+      INTEGER MKXV3                                                              PARAME.42
+      PARAMETER (MKXV3=(MKX-1)*INAV3+1)                                          PARAME.43
+      INTEGER MIXNH                                                              PARAME.44
+      PARAMETER (MIXNH=(MIX-1)*INHYD+1)                                          PARAME.45
+      INTEGER MJXNH,MKXNH                                                        PARAME.46
+      PARAMETER (MJXNH=(MJX-1)*INHYD+1,MKXNH=(MKX-1)*INHYD+1)                    PARAME.47
+      INTEGER KXP1NH                                                             PARAME.48
+      PARAMETER (KXP1NH=(KXP1-1)*INHYD+1)                                        PARAME.49
+      INTEGER MIXIC,MJXIC                                                        PARAME.50
+      PARAMETER (MJXIC=(MJX-1)*IICE+1,MIXIC=(MIX-1)*IICE+1)                      PARAME.51
+      INTEGER MKXIC                                                              PARAME.52
+      PARAMETER (MKXIC=(MKX-1)*IICE+1)                                           PARAME.53
+      INTEGER MIXIG,MJXIG                                                        PARAME.54
+      PARAMETER (MJXIG=(MJX-1)*IICEG+1,MIXIG=(MIX-1)*IICEG+1)                    PARAME.55
+      INTEGER MKXIG                                                              PARAME.56
+      PARAMETER (MKXIG=(MKX-1)*IICEG+1)                                          PARAME.57
+      INTEGER MIXC,MJXC                                                          PARAME.58
+      PARAMETER (MJXC=(MJX-1)*IKFFC+1,MIXC=(MIX-1)*IKFFC+1)                      PARAME.59
+      INTEGER MKXC                                                               PARAME.60
+      PARAMETER (MKXC=(MKX-1)*IKFFC+1)                                           PARAME.61
+      INTEGER MIXG,MJXG,MKXG,MGSTOT1,MGSTOT2                                     PARAME.62
+      INTEGER NVARTKE,NVARFOG,NELEMTKE,NELEMTKEI,NELEMFOG                        PARAME.63
+      PARAMETER(MIXG=(MIX-1)*IGSPBL+1,MJXG=(MJX-1)*IGSPBL+1,                     PARAME.64
+     &          MKXG=(MKX-1)*IGSPBL+1)                                           PARAME.65
+      PARAMETER(MGSTOT1=MAXNES*MIXG*MJXG*(MKXG+1))                               PARAME.66
+      PARAMETER(MGSTOT2=MAXNES*MIXG*MJXG)                                        PARAME.67
+      PARAMETER(NVARTKE=2+1)                                                     PARAME.68
+      PARAMETER(NVARFOG=2)                                                       PARAME.69
+#ifndef MPP1                                                                     25JAN00.697
+      PARAMETER(NELEMTKE=2*(MIXG*MJXG*(MKXG+1))+MJXG)                            PARAME.70
+      PARAMETER(NELEMTKEI=MJXG)                                                  PARAME.71
+#else                                                                            25JAN00.698
+      PARAMETER(NELEMTKE=2*(MIXG*MJXG*(MKXG+1))+MIXG*MJXG)                       25JAN00.699
+      PARAMETER(NELEMTKEI=MIXG*MJXG)                                             25JAN00.700
+#endif                                                                           25JAN00.701
+      PARAMETER(NELEMFOG=2*MIXG*MJXG)                                            PARAME.72
+      INTEGER NVARI,NVARMX,NVARP,NVARSX,NVARX                                    PARAME.73
+      PARAMETER (NVARX=8,NVARMX=4,NVARSX=51,NVARI=13,                            19DEC02.2064
+     1           NVARP=24)                                                       PARAME.75
+C                                                                                PARAME.76
+      INTEGER IRAX                                                               PARAME.77
+      PARAMETER (IRAX=3)                                                         PARAME.78
+c These are now set in configure.user, sans IRAX
+cDMF  PARAMETER (NSPGX=5,NSPGD=5,IRAX=3)                                         PARAME.78
+      INTEGER IRATIO,NSPGM                                                       PARAME.79
+      PARAMETER (NSPGM=NSPGX*8,IRATIO=IRAX)                                      PARAME.80
+C                                                                                PARAME.81
+C                                                                                PARAME.82
+C--- CURRENTLY ABSOLUTE MAX NUMBER OF DOMAINS AND LEVELS.                        PARAME.83
+C--- ALTHOUGH THE MODEL CAN HANDLE MORE THAN THAT, INPUT/OUTPUT                  PARAME.84
+C--- OPERATIONS MAY HAVE TROUBLES AND WILL HAVE TO BE CHANGED                    PARAME.85
+C--- IF USING MORE THAN 10 DOMAINS OR LEVELS                                     PARAME.86
+C                                                                                PARAME.87
+      INTEGER MAXSES                                                             PARAME.88
+      PARAMETER (MAXSES=10)                                                      PARAME.89
+      INTEGER NVARNI,NVARNR                                                      PARAME.90
+      PARAMETER (NVARNI=21,NVARNR=6*MAXSES)                                      PARAME.91
+      INTEGER IHUGE                                                              PARAME.92
+      PARAMETER (IHUGE=MIX*MJX*MKX*NVARX+MIXM*MJXM*MKXM*NVARMX                   PARAME.93
+     1   +MIX*MJX*NVARSX+MIX*MKX*NSPGD*8+MIX*MKX*NSPGX*8                         PARAME.94
+     1   +MIXM*MKXM*NSPGX*8+MJX*MKX*NSPGD*8+MJX*MKX*NSPGX*8                      PARAME.95
+     1   +MJXM*MKXM*NSPGX*8+MIX*4*NSPGX+MJX*4*NSPGX                              PARAME.96
+     4   +MIX*MKX*8+MJX*MKX*8+NVARI+NVARP+NVARNI+NVARNR                          PARAME.97
+     6   +9*MIXFG*MJXFG*MKXFG                                                    PARAME.98
+     6   +4*MIXFO*MJXFO*MKXFO                                                    PARAME.99
+     6   +(19+NVAR)*MIXFG*MJXFG                                                  PARAME.100
+     7   +NTIM*NVAR*MIXFG*MJXFG+5*NVAR+15*NIOBF                                  PARAME.101
+     8   +NTIM*NVAR+NVAR*NCHA+NCHA+NTIM                                          PARAME.102
+     9   +2*MIXNH*MJXNH*KXP1NH+2*MIXNH*MJXNH*MKXNH                               PARAME.103
+     1   +4*MIXNH*MKXNH*NSPGX+4*MJXNH*MKXNH*NSPGX                                PARAME.104
+     1   +4*MIXNH*KXP1NH*NSPGX+4*MJXNH*KXP1NH*NSPGX                              PARAME.105
+     2   +3*MIXNH*MJXNH*MKXNH+MIXNH*MJXNH+MIXV*MJXV*MKXV+                        PARAME.106
+     1     3*MIXV2*MJXV2*MKXV2+5*MIXV3*MJXV3*MKXV3+                              PARAME.107
+     1     9*MIXC*MJXC*MKXC+11*MIXC*MJXC+                                        05DEC01.1521
+     1     2*MIXA*MJXA*MKXA+2*MIXA*MJXA+                                         PARAME.109
+     1     35*MIXL*MJXL+6*MIXL*MJXL*MLX+2*MIXL*MJXL*12+                          19DEC02.2065
+     1    2*MIXIG*MJXIG*MKXIG+4*MIXIG*MKXIG*NSPGX+                               PARAME.111
+     1    4*MJXIG*MKXIG*NSPGX+                                                   PARAME.112
+     1    2*MIXIG*MJXIG*MKXIG+4*MIXIG*MKXIG*NSPGX+                               PARAME.113
+     1    4*MJXIG*MKXIG*NSPGX+                                                   PARAME.114
+     1    4*MIXIC*MJXIC*MKXIC+8*MIXIC*MKXIC*NSPGX+                               PARAME.115
+     1    8*MJXIC*MKXIC*NSPGX+2*MIXS*MJXS*MLX                                    PARAME.116
+     2    +14*MIX*MJX+MIXR*MJXR*MKXR+13*13                                       PARAME.117
+     &    +NELEMTKE+NELEMFOG)                                                    PARAME.118
+      INTEGER IIHUGE                                                             PARAME.119
+      PARAMETER (IIHUGE=NVARI+NVARNI+NVARNR                                      PARAME.120
+     1     +2*MIXC*MJXC+MIXA*MJXA+3*MIXL*MJXL+NELEMTKEI)                         05DEC01.1523
+      INTEGER IFGHUG                                                             PARAME.122
+      PARAMETER (IFGHUG=9*MIXFG*MJXFG*MKXFG+(17+NVAR)*MIXFG*MJXFG                PARAME.123
+     *   +NTIM*NVAR*MIXFG*MJXFG+2*NVAR+NTIM)                                     PARAME.124
+      INTEGER IFGIHUG                                                            PARAME.125
+      PARAMETER (IFGIHUG=2*MIXFG*MJXFG+3*NVAR+NTIM*NVAR+NCHA                     PARAME.126
+     -   +NCHA*NVAR)                                                             PARAME.127
+      INTEGER IFOHUG                                                             PARAME.128
+      PARAMETER (IFOHUG=4*MIXFO*MJXFO*MKXFO+15*NIOBF)                            PARAME.129
+      INTEGER IRHUGE                                                             PARAME.130
+      PARAMETER (IRHUGE=IHUGE-IIHUGE-IFGHUG-IFGIHUG-IFOHUG)                      PARAME.131
+C                                                                                PARAME.132
+C--- NUMBER OF VARIABLES.                                                        PARAME.133
+C--- THERE ARE NVARX 3D BASIC ARRAYS                                             PARAME.134
+C--- NVARMX 3D MOISTURE ARRAYS                                                   PARAME.135
+C--- NVARSX 2D BASIC ARRAYS                                                      PARAME.136
+C--- 72 SEVEN REGULAR VARIABLE BOUNDARIES +16 MORE VEL BDYS                      PARAME.137
+C--- 4 FOR A-S CUMULUS                                                           PARAME.140
+C--- 10 FOR GRAUPEL AND BDYS =2+8                                                PARAME.141
+C--- 10 FOR ICE NUM CONC AND BDYS =2+8                                           PARAME.142
+C--- NVARI FOR SCALAR INTEGERS                                                   PARAME.143
+C--- NVARP FOR SCALAR REALS                                                      PARAME.144
+C--- 27 FOR COMMON BLOCK NESTL (NVARNI+6),                                       PARAME.145
+C--- 20 FOR K-F AND F-C CUMULUS                                                  05DEC01.1524
+C--- 46 VARIABLES FOR FDDA, =9+14+16+7                                           PARAME.147
+C--- 24 VARIABLES FOR NONHYDROSTATIC RUNS, =4+16+4                               PARAME.148
+C--- 9 FOR HIGHER LEVEL PBL STUFF,                                               PARAME.149
+C--- 43 FOR LAND-SURFACE,                                                        19DEC02.2066
+C--- 20 FOR EXPLICIT MIXED-PHASE PHYSICS AND BDYS, =4+16                         PARAME.151
+C--- 2 FOR MULTI-LAYER SOIL                                                      PARAME.152
+C--- 14 FOR 1 OVER PSA, PSTAR AT DOT POINTS PDOTA, 1 OVER PDOTA AND B VA         PARAME.153
+C       DPSDXM, DPSDYM, DMDX, DMDY, EX, CRX, SRX                                 PARAME.154
+C--- 1 FOR RUNS WITH ATMOSPHERIC RADIATION.                                      PARAME.155
+C--- 1 FOR UPPER RAD BDY CONDITION                                               PARAME.156
+C                                                                                PARAME.157
+      INTEGER NUMVAR                                                             PARAME.158
+      PARAMETER (NUMVAR=NVARX+NVARMX+NVARSX+72                                   PARAME.159
+     1     +4                                                                    PARAME.160
+     1    +10                                                                    PARAME.161
+     1    +10                                                                    PARAME.162
+     1    +24                                                                    PARAME.163
+     1     +NVARI+NVARP+27+20+46+43+9+20+2+14+1+1                                19DEC02.2067
+     &     +NVARTKE+NVARFOG)                                                     PARAME.165
+      REAL ALLARR,ALLFG,ALLFO                                                    PARAME.166
+      INTEGER INTALL,INTFG                                                       PARAME.167
+      COMMON /HUGE/ ALLARR(IRHUGE,MAXNES),INTALL(IIHUGE,MAXNES),                 PARAME.168
+     -  ALLFG(IFGHUG,MAXNES),INTFG(IFGIHUG,MAXNES),ALLFO(IFOHUG,MAXNES)          PARAME.169
+      INTEGER LEVIDN,NSTTOT,NUMLV,NUMNC                                          PARAME.170
+      COMMON /NESLEV/ NUMLV(MAXSES,MAXSES),NSTTOT,                               PARAME.171
+     1      LEVIDN(MAXSES),NUMNC(MAXSES)                                         PARAME.172
+C                                                                                07NOV00.2494
+      INTEGER ITSDIM                                                             07NOV00.2495
+      PARAMETER (ITSDIM=30)                                                      07NOV00.2496

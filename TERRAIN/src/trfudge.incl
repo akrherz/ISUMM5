@@ -1,0 +1,8 @@
+C    CONTENT:   THE INFORMATION ON TERRAIN FUDGING AREA.                         TRFUDGE.1
+C    USED IN:   SETUP,  TERDRV.                                                  TRFUDGE.2
+C                                                                                TRFUDGE.3
+      COMMON /TRFUDGE/ STARTLAT(10),ENDLAT(10),STARTLON(10),ENDLON(10),          TRFUDGE.4
+     &   NFUGBOX                                                                 TRFUDGE.5
+C                                                                                TRFUDGE.6
+C                                                                                TRFUDGE.7
+C                                                                                TRFUDGE.8

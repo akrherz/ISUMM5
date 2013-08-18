@@ -1,0 +1,502 @@
+===================================================================
+CHANGES
+diff -r3.11 -r3.13
+6c6
+< The current release is 3.5 (December 5, 2001)
+---
+> The current release is 3.6 (December 19, 2002)
+8a9,52
+> 
+> Bug fixes and Changes in release 3.6
+> 
+> 1. Bug fixes:
+> 
+> - The moisture variables going into MM5 are mixing ratios, not 
+>   specific humidities. Changes have been made to the comments and 
+>   header information so that they are now consistent with this.
+> 
+>   Affected files:
+>   src/module_all_io.F, module_lateral_bdy.F
+> 
+> 2. Changes and improvements
+> 
+> - Add an option to use a different method to compute surface pressure. 
+>   This option is controlled by the new namelist variable psfc_method in
+>   namelist record4. This new option improves surface pressure calculation
+>   for regions where strong inversion exists in the lower troposhere.
+> 
+>   Affected files:
+>   namelist.input, namelist.input.SOC
+>   src/Makefile, interpf.F, module_all_io.F, module_diags.F
+> 
+> - Add sea ice fraction field in the lower boundary file. This field
+>   may be used by MM5 model when polar physics option is chosen.
+> 
+>   Affected file:
+>   src/module_all_io.F
+> 
+> - Change the calls to subroutine "clean_rh" to 3d calls, rather
+>   than KX 2d calls. This prevents potential problems from running on
+>   some computers.
+> 
+>   Affected files:
+>   src/interpf.F, module_util.F
+> 
+> - Removing optimization for compilation on IBM - it was too slow.
+> 
+>   Affected file:
+>   Makefile
+> 
+> ========================================================
+> 
+> Bug fixes and Changes in release 3.5
+===================================================================
+Makefile
+diff -r3.9 -r3.10
+85,86c85,86
+< 		echo "FCFLAGS		=	-qfree=f90 -qlanglvl=90pure -O3 -qarch=auto -qnosave -qmaxmem=-1 -q64 -qspillsize=20000 -Q"	>> macros_interpf	; \
+< 		echo "LDFLAGS		=	-O3 -q64" 			>> macros_interpf	; \
+---
+> 		echo "FCFLAGS		=	-qfree=f90 -qlanglvl=90pure -qarch=auto -qnosave -qmaxmem=-1 -q64 -qspillsize=20000 -Q"	>> macros_interpf	; \
+> 		echo "LDFLAGS		=	-q64" 				>> macros_interpf	; \
+===================================================================
+README
+diff -r3.5 -r3.7
+2,3c2,3
+< VERSION 3 INTERPF PROGRAM (release 3-4)
+< (Updated November 6, 2000)
+---
+> VERSION 3 INTERPF PROGRAM (release 3-6)
+> (Updated December 19, 2002)
+===================================================================
+namelist.input
+diff -r3.8 -r3.11
+34c34,35
+<  wrth2o         = .TRUE. /                           ! T/F specific humidity wrt H2O
+---
+>  wrth2o         = .TRUE.                             ! T/F specific humidity wrt H2O
+>  psfc_method    = .FALSE./                           ! T/F sfc temperature from diurnal avg
+===================================================================
+namelist.input.SOC
+diff -r3.5 -r3.6
+32c32,33
+<  wrth2o         = .TRUE. /
+---
+>  wrth2o         = .TRUE. 
+>  antarctic      = .FALSE. / 
+===================================================================
+Doc/README.namelist
+diff -r3.1 -r3.2
+100a101,106
+> Since version 3.6, a new option is added (psfc_method) that gives the
+> user the choice between using the default calculation for surface
+> pressure (psfc_method = 0), or to calculate the surface pressure from
+> the dirurnal avarage (psfc_method = 1). The new method is recommended
+> in cases where strong inversion exists in the lower atmosphere. Such
+> case may occur in polar, and/or other very cold regions. 
+105,106c111,113
+<  wrth2o         = .TRUE. /                            ! T/F specific humidity wrt H2O
+< 
+---
+>  wrth2o         = .TRUE.                              ! T/F specific humidity wrt H2O
+>  psfc_method    = 0 /                                 ! 0: old method
+>                                                       ! 1: sfc temperature from diurnal avg
+===================================================================
+src/Makefile
+diff -r3.7 -r3.8
+47c47
+< 			module_header_data.o module_util.o
+---
+> 			module_header_data.o module_util.o module_date_pack.o
+===================================================================
+src/interpf.F
+diff -r3.13 -r3.16
+75a76,79
+> !KWM START
+>    INTEGER :: psfc_method
+>    REAL , ALLOCATABLE , DIMENSION(:,:) :: avgsfct
+> !KWM END
+93a98,100
+> !KWM START
+>                       psfc_method ,  &
+> !KWM END
+334a342,360
+> !Wei
+> !  Need to temporarily close input file unit
+>    print *, 'temporarily close file with unit ', input_press
+>    CLOSE (input_press)
+>    print *, 'input_file ', input_file(1), imx,jmx
+> !KWM_START
+>    ALLOCATE ( avgsfct     ( IMX , JMX ) )
+>    if ( ( psfc_method .eq. 1 ) .and. ( .not. less_than_24h ) ) then
+>       CALL average_surface_T_over_time(input_file, imx, jmx, kxs, avgsfct)
+>    endif
+> !KWM_END
+> !Wei
+> !  After calculating average surface temp, reopen file
+>    print *, 'Re-opening input file'
+>    input_count = 1
+>    CALL get_fg_file ( input_file(input_count) , input_press )
+>    CALL read_bh ( input_press )
+> !Wei_End
+> 
+593,594c619,623
+< 
+<       CALL sfcprs ( t, q, height, psealvlc, terrain, pup, imx, jmx, kx, sfc_p )
+---
+> !KWM REMOVED      CALL sfcprs ( t, q, height, psealvlc, terrain, pup, imx, jmx, kx, sfc_p )
+> !KWM START
+>       CALL sfcprs ( t, q, height, psealvlc, terrain, avgsfct, pup, imx, jmx, kx, sfc_p , psfc_method , &
+>            less_than_24h )
+> !KWM END
+700,703c729,730
+<          DO k = 1 , kxs
+<             CALL clean_rh ( qc_sig(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+<             CALL clean_rh ( qr_sig(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+<          END DO
+---
+>          CALL clean_rh ( qc_sig , imx , jmx , kxs , 0.0 , 40.0E-3 )
+>          CALL clean_rh ( qr_sig , imx , jmx , kxs , 0.0 , 40.0E-3 )
+728,731c755,756
+<          DO k = 1 , kxs
+<             CALL clean_rh ( qs_sig(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+<             CALL clean_rh ( qi_sig(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+<          END DO
+---
+>          CALL clean_rh ( qs_sig , imx , jmx , kxs , 0.0 , 40.0E-3 )
+>          CALL clean_rh ( qi_sig , imx , jmx , kxs , 0.0 , 40.0E-3 )
+749,751c774
+<          DO k = 1 , kxs
+<             CALL clean_rh ( qg_sig(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+<          END DO
+---
+>          CALL clean_rh ( qg_sig , imx , jmx , kxs , 0.0 , 40.0E-3 )
+767,769c790
+<          DO k = 1 , kxs
+<             CALL clean_rh ( qn_sig(1,1,k) , imx , jmx , 0.0 , 1.0E20 )
+<          END DO
+---
+>          CALL clean_rh ( qn_sig , imx , jmx , kxs , 0.0 , 1.0E20 )
+851,854c872,873
+<          DO k = 1 , kxs
+<             CALL clean_rh ( allm_3d(1)%array(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+<             CALL clean_rh ( allm_3d(2)%array(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+<          END DO
+---
+>          CALL clean_rh ( allm_3d(1)%array , imx , jmx , kxs , 0.0 , 40.0E-3 )
+>          CALL clean_rh ( allm_3d(2)%array , imx , jmx , kxs , 0.0 , 40.0E-3 )
+868,871c887,888
+<          DO k = 1 , kxs
+<             CALL clean_rh ( allm_3d(3)%array(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+<             CALL clean_rh ( allm_3d(4)%array(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+<          END DO
+---
+>          CALL clean_rh ( allm_3d(3)%array , imx , jmx , kxs , 0.0 , 40.0E-3 )
+>          CALL clean_rh ( allm_3d(4)%array , imx , jmx , kxs , 0.0 , 40.0E-3 )
+880,882c897
+<          DO k = 1 , kxs
+<             CALL clean_rh ( allm_3d(5)%array(1,1,k) , imx , jmx , 0.0 , 40.0E-3 )
+<          END DO
+---
+>          CALL clean_rh ( allm_3d(5)%array , imx , jmx , kxs , 0.0 , 40.0E-3 )
+891,893c906
+<          DO k = 1 , kxs
+<             CALL clean_rh ( allm_3d(6)%array(1,1,k) , imx , jmx , 0.0 , 1.0E20 )
+<          END DO
+---
+>          CALL clean_rh ( allm_3d(6)%array , imx , jmx , kxs , 0.0 , 1.0E20 )
+1160a1174,1176
+> !KWM START
+>    DEALLOCATE ( avgsfct )
+> !KWM END
+===================================================================
+src/module_all_io.F
+diff -r3.20 -r3.28
+4a5
+>    USE date_pack
+788c789,790
+<               ( all_2d(loop)%small_header%name(1:8) .EQ. 'SEAICE  ' ) ) THEN
+---
+>               ( all_2d(loop)%small_header%name(1:8) .EQ. 'SEAICE  ' ) .OR. &
+>               ( all_2d(loop)%small_header%name(1:8) .EQ. 'SEAICEFR' ) ) THEN
+1176a1179,1181
+> !KWM START
+>                             psfc_method ,  &
+> !KWM END
+1221a1227
+>       INTEGER :: psfc_method
+1223c1229
+<       NAMELIST /RECORD4/ removediv, usesfc, wrth2o
+---
+>       NAMELIST /RECORD4/ removediv, usesfc, wrth2o, psfc_method
+1240c1246,1250
+<    
+---
+> 
+>       !  Default value for variable "psfc_method"
+>       
+>       psfc_method = 0
+>       
+1263c1273
+< #ifndef ( IBM ) 
+---
+> #ifndef IBM
+1479c1489
+<          bhi( 3,5) = 5 ; bhic( 3,5) = 'INTERP Program Version Number                                                   '
+---
+>          bhi( 3,5) = 6 ; bhic( 3,5) = 'INTERP Program Version Number                                                   '
+1584c1594
+<       !  Water vapor specific humidity.
+---
+>       !  Water vapor mixing ratio
+1596c1606
+<       description     = 'Water vapor specific humidity                 '
+---
+>       description     = 'Water vapor mixing ratio                      '
+1865a1876,2062
+> 
+> !KWM START
+>    SUBROUTINE average_surface_T_over_time ( input_file , imx , jmx , kxs, avgsfct )
+> !
+> ! Time average of the surface air T from the pressure-level input file.  This subroutine
+> ! should be called only if "less_than_24h" is .FALSE.  To keep from introducing a bias
+> ! when the number of time periods do not fit cleanly into days (for example, a data set with
+> ! times 00Z, 12Z and 00Z will have a strong bias for the 00Z conditions if all three times
+> ! go into the average) the data are first read into a holding array, and when that holding 
+> ! array has one day's worth of data, those data are summed and added to the average array.
+> !
+>      IMPLICIT NONE
+>      CHARACTER ( LEN = 132 ) , DIMENSION ( 100 ) , INTENT( in ) :: input_file
+>      INTEGER , INTENT( in )                                     :: imx
+>      INTEGER , INTENT( in )                                     :: jmx
+>      INTEGER , INTENT( in )                                     :: kxs
+>      REAL    , DIMENSION ( imx , jmx ) , INTENT ( out )         :: avgsfct
+>      INTEGER                                                    :: flag
+>      INTEGER                                                    :: idum
+>      INTEGER                                                    :: ierr
+>      INTEGER                                                    :: i
+>      INTEGER                                                    :: icount
+>      INTEGER                                                    :: dcount
+>      INTEGER                                                    :: file_count
+>      INTEGER                                                    :: idts
+>      INTEGER                                                    :: intv
+>      INTEGER                                                    :: last_intv
+>      REAL                                                       :: xdum
+>      INTEGER , PARAMETER                                        :: nhold = 48
+>      INTEGER , PARAMETER                                        :: iunit = 60
+>      REAL    , DIMENSION ( imx , jmx , nhold )                  :: holdt
+>      CHARACTER ( len = 24 )                                     :: startdate
+>      CHARACTER ( len = 24 )                                     :: lastdate
+>      LOGICAL                                                    :: is_it_there
+>      REAL    , ALLOCATABLE, DIMENSION ( : , : )                 :: tmp2d
+> 
+>      startdate = "0000-00-00_00:00:00.0000"
+>      avgsfct = 0.
+> 
+>      file_loop : DO file_count = 1, 100
+> 
+>         IF ( input_file ( file_count ) == "" ) THEN
+>            EXIT file_loop
+>         END IF
+> 
+>         INQUIRE ( FILE = TRIM ( input_file ( file_count ) ) , EXIST = is_it_there )
+> 
+>         IF ( .NOT. is_it_there ) THEN
+>            EXIT file_loop
+>         END IF
+> 
+>         OPEN ( FILE   = TRIM ( input_file ( file_count ) ) , &
+>              UNIT   =  iunit                            , &
+>              STATUS = 'OLD'                             , &
+>              FORM   = 'UNFORMATTED'                     , &
+>              ACCESS = 'SEQUENTIAL'                      , &
+>              ACTION = 'READ'                            )
+> 
+> print *, 'opening file = ', input_file ( file_count )
+> print *, 'imx, jmx, nhold = ',imx, jmx, nhold
+> 
+>         var_loop : DO
+> 
+>            READ ( iunit , iostat=ierr ) flag
+>            IF ( ierr /= 0 ) EXIT var_loop
+> 
+>            IF ( flag == bh_flag ) THEN
+> 
+>               ! Just skip the big_header info
+>               READ ( iunit ) idum
+> 
+>            ELSE IF ( flag == sh_flag ) THEN
+> 
+>               READ ( iunit ) small_header%num_dims , small_header%start_dims , small_header%end_dims , &
+>                    small_header%xtime , small_header%staggering , small_header%ordering , &
+>                    small_header%current_date , small_header%name , small_header%units , &
+>                    small_header%description
+> 
+>               IF ( small_header%name == "T" ) THEN
+>                  PRINT * , " Read time " , small_header%current_date ( 1 : 19 )
+> 
+>                  IF ( startdate ( 1 : 4 ) == "0000" ) THEN
+> 
+>                     startdate = small_header%current_date
+>                     lastdate = startdate
+>                     holdt = 0.0
+>                     idts = 0
+>                     intv = 0
+>                     icount = 0
+>                     dcount = 0
+> 
+>                  ELSE
+> 
+>                     last_intv = intv
+>                     CALL geth_idts ( small_header%current_date ( 1 : 19 ) , startdate ( 1 : 19 ) , idts )
+>                     CALL geth_idts ( small_header%current_date ( 1 : 19 ) ,  lastdate ( 1 : 19 ) , intv )
+> 
+>                     IF ( ( last_intv > 0 ) .AND. ( intv /= last_intv ) ) THEN
+> 
+>                        PRINT * , " Intervals in input file not consistent "
+>                        STOP " STOP in subroutine 'average_surface_T_over_time' "
+> 
+>                     END IF
+> 
+>                  END IF
+> 
+>                  icount = icount + 1
+> 
+>                  IF ( icount > nhold ) THEN
+> 
+>                     PRINT * , " ************************************************************************** "
+>                     PRINT * , " NHOLD exceeded in subroutine 'average_surface_T_over_time': NHOLD = ", NHOLD
+>                     PRINT * , " This could happen if the input time interval is less than " , &
+>                          ( 1440 / float ( NHOLD ) ) , " minutes "
+>                     PRINT * , " or if the input time interval does not fit evenly into days. "
+>                     PRINT * , " If either of these is the case, try increasing NHOLD "
+>                     STOP 
+> 
+>                  END IF
+> 
+>                  IF ( ( bhi( 1,1) .EQ. 2 ) .AND. &
+>                       ( bhi( 8,1) .EQ. 1 ) .AND. &
+>                       ( bhi(15,1) .EQ. 0 ) ) THEN
+>                     ALLOCATE(tmp2d(small_header%end_dims(1), small_header%end_dims(2)))
+>                     READ ( iunit ) tmp2d
+>                     holdt ( : , : , icount ) = tmp2d ( bhi(11,1) + 1 : bhi(11,1) + imx , bhi(12,1) + 1 : bhi(12,1) + jmx )
+>                     DEALLOCATE(tmp2d)
+>                  else
+>                     READ ( iunit ) holdt( : , : , icount )
+>                  endif
+>                  holdt ( : , jmx , icount ) = holdt ( : , jmx - 1 , icount )
+>                  holdt ( imx , : , icount ) = holdt ( imx - 1 , : , icount )
+> 
+>                  IF ( ( idts > 0 ) .AND. ( MOD ( ( idts + intv ) , 86400 ) == 0 ) ) THEN
+> 
+>                     PRINT * , " Summing data to avgsfct at time " , small_header%current_date ( 1 : 19 )
+>                     dcount = dcount + icount
+> print *, 'idts,intv,icount = ', idts,intv,icount
+> 
+>                     DO i = 1 , icount
+>                        avgsfct = avgsfct + holdt( : , : , i )
+>                     END DO
+> 
+>                     icount = 0
+>                     holdt = 0.0
+> print *, 'dcount = ', dcount
+> 
+>                  END IF
+> 
+>                  lastdate = small_header%current_date
+> 
+>               ELSE
+> 
+>                  READ ( iunit ) xdum
+> 
+>               END IF
+> 
+> 
+>            ELSE IF ( flag == 2 ) THEN
+> 
+>               ! We've hit the end of time.  Nothing in particular to do.
+> 
+>            ELSE
+> 
+>               PRINT * , " Unrecognized FLAG in subroutine average_surface_T_over_time "
+>               PRINT * , " FLAG = " , flag
+>               STOP
+> 
+>            END IF
+> 
+>         END DO var_loop
+> 
+>         CLOSE ( iunit )
+> 
+>      END DO file_loop
+> 
+>      WRITE ( * , ' ( " Using " , i4 , " input T fields in our T average. " ) ' ) dcount
+> 
+>      IF ( icount > 0 ) THEN
+>         WRITE ( * , ' ( " Skipping " , i4 , " input T fields off the end of our input data set for our T average. " ) ' ) icount
+>      END IF
+> 
+>      avgsfct = avgsfct / float ( dcount )
+> 
+>    END SUBROUTINE average_surface_T_over_time
+> !KWM END
+> 
+===================================================================
+src/module_diags.F
+diff -r3.3 -r3.5
+283c283,286
+<    SUBROUTINE sfcprs (t, q, height, pslv, ter, p, imx, jmx, kx, psfc)
+---
+> !KWM REMOVED   SUBROUTINE sfcprs (t, q, height, pslv, ter, p, imx, jmx, kx, psfc)
+> !KWM START
+>    SUBROUTINE sfcprs (t, q, height, pslv, ter, avgsfct, p, imx, jmx, kx, psfc, psfc_method, less_than_24h)
+> !KWM END
+335a339,343
+> !KWM START
+>       INTEGER , INTENT ( IN )     :: PSFC_METHOD
+>       LOGICAL , INTENT ( IN )     :: LESS_THAN_24H
+>       REAL    , INTENT ( IN )     :: AVGSFCT     ( IMX , JMX )
+> !KWM END
+464,465c472,482
+<       p1 = -ter * g / ( rov2 * ( tsfc + tslv ) )
+<       psfc = pslv * EXP(p1)
+---
+> !KWM REMOVED      p1 = -ter * g / ( rov2 * ( tsfc + tslv ) )
+> !KWM REMOVED      psfc = pslv * EXP(p1)
+> !KWM START
+>       IF ( ( psfc_method .eq. 1 ) .AND. ( .NOT. less_than_24h ) ) THEN
+>          ! Throw in a quick replacement of tsfc
+>          psfc = pslv * ( 1.0 + gamma * ter / avgsfct ) ** ( - g / ( r * gamma ) )
+>       ELSE
+>          p1 = - ter * g / ( rov2 * ( tsfc + tslv ) )
+>          psfc = pslv * EXP ( p1 )
+>       END IF
+> !KWM END
+===================================================================
+src/module_lateral_bdy.F
+diff -r3.3 -r3.4
+526c526
+<          !  Water vapor mixing ratio / specific humidity
+---
+>          !  Water vapor mixing ratio
+===================================================================
+src/module_util.F
+diff -r3.3 -r3.4
+110c110
+<    SUBROUTINE clean_rh ( rh , iew , jns , rh_min , rh_max )
+---
+>    SUBROUTINE clean_rh ( rh , iew , jns , kx , rh_min , rh_max )
+114,116c114,116
+<       INTEGER                        :: iew , jns
+<       REAL , DIMENSION ( iew , jns ) :: rh
+<       REAL                           :: rh_min , rh_max
+---
+>       INTEGER                             :: iew , jns , kx
+>       REAL , DIMENSION ( iew , jns , kx ) :: rh
+>       REAL                                :: rh_min , rh_max
+118,119c118,119
+<       rh(iew,:) = rh(iew-1,:)
+<       rh(:,jns) = rh(:,jns-1)
+---
+>       rh(iew,:,:) = rh(iew-1,:,:)
+>       rh(:,jns,:) = rh(:,jns-1,:)

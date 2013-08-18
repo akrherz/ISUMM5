@@ -1,0 +1,229 @@
+===================================================================
+CHANGES
+diff -r3.17 -r3.19
+11c11,74
+< The current release is 3.6 (December 19, 2002)
+---
+> The current release is 3.7 (December 23, 2004)
+> 
+> ========================================================
+> 
+> Bug fixes and changes in V3.7:
+> 
+> Bug fixes:
+> 
+> - Add a fix to correct water points if running with more 
+>   than 6 domains.
+>   Thanks to Alexander Kalmikov
+> 
+>   Affected files:
+>   src/output.F
+>   src/replace.F
+>   src/tfudge.F
+> 
+> - Add a missing IPRINT argument to the WATERCHECK calls.
+>   
+>   Affected file:
+>   src/terdrv.F
+> 
+> - Correct bugs in print statements.
+> 
+>   Affected files:
+>   src/crvst.F
+>   src/pltter.F
+> 
+> Changes and improvements:
+> 
+> - Add an extra plot that combines the MESH plot with a
+>   map background plot. Thanks to Jim Bresch.
+> 
+>   Affected file:
+>   src/pltter.F
+> 
+> - Add compiler flags for INTEL. PGI compiler remains the 
+>   default compiler. To compile with INTEL compiler, type
+>   "make intel"
+> 
+>   Affected files:
+>   Makefile
+>   src/Makefile
+>   Templates/terrain.deck.intel
+> 
+> - Add compiler flags for Cray X1 
+>   Thanks to Peter Johnsen from Cray
+> 
+>   Affected files:
+>   Makefile
+>   src/Makefile.x1
+>   Templates/terrain.deck.x1
+> 
+> - Remove also the LANDUSE files when 'make dataclean' 
+>   is executed.
+> 
+>   Affected file:
+>   Makefile
+> 
+> - Add maxstack and maxdata for running larger jobs on 
+>   IBM computers.
+> 
+>   Affected file:
+>   Makefile
+===================================================================
+Makefile
+diff -r3.14 -r3.21
+14c14
+< RM_Data =       DEM_*_GLOBAL LWMASK* SOILCAT.* SOILTEMP.* VEG-FRACTION.* VEG-USGS.* VEG-SIB.* new_30sdata*
+---
+> RM_Data =       DEM_*_GLOBAL LWMASK* SOILCAT.* SOILTEMP.* VEG-FRACTION.* VEG-USGS.* VEG-SIB.* new_30sdata* LANDUSE*
+23a24,34
+> 	grep crayx1 .tmpfile ; \
+> 	if [ $$? = 0 ]; then echo "Compiling for CRAY X1" ;                \
+> 		( $(CD) src ; make -i -f Makefile.x1 all                                \
+> 		"RM             = $(RM)"        "RM_LIST        = $(RM_LIST)"   \
+> 		"LN             = $(LN)"        "MACH           = crayx1"         \
+> 		"MAKE           = $(MAKE)"      "CPP            = cpp" \
+> 		"CPPFLAGS       = -eZ -I. -D$(NCARGRAPHICS) -DRECLENBYTE -UCRAY"        \
+> 		"FC             = ftn"          "FCFLAGS        = -I. -ra "     \
+> 		"LDOPTIONS      = "             "CFLAGS         = "             \
+> 		"LOCAL_LIBRARIES= " ) ; \
+> 	else \
+87c98
+< 		"LDOPTIONS	= " 		"CFLAGS		= -I."		\
+---
+> 		"LDOPTIONS	= -bmaxstack:512000000 -bmaxdata:2000000000"	 "CFLAGS		= -I."		\
+107a119
+> 		fi ; \
+110a123,134
+> intel:
+> 	echo "Compiling for Linux using INTEL compiler"
+> 	( $(CD) src ; $(MAKE) all				\
+> 	"RM		= $(RM)" 	"RM_LIST	= $(RM_LIST)"	\
+> 	"LN		= $(LN)" 	"MACH		= SGI"		\
+> 	"MAKE		= $(MAKE)"	"CPP		= /lib/cpp"	\
+> 	"CPPFLAGS	= -I. -C -traditional -D$(NCARGRAPHICS) "	\
+> 	"FC		= ifort  "	"FCFLAGS	= -I. -w90 -w95 -convert big_endian "\
+> 	"LDOPTIONS	= -i_dynamic" 		"CFLAGS		= -I."		\
+> 	"LOCAL_LIBRARIES= -L$(NCARG_ROOT)/lib -L/usr/X11R6/lib -lncarg -lncarg_gks -lncarg_c -lX11 -L/usr/lib/gcc-lib/i386-redhat-linux/3.3.2  -lg2c" ) ; \
+> 		( $(RM) terrain.exe ; $(LN) src/terrain.exe . ) ;
+> 
+117c141,146
+<         else \
+---
+> 	else \
+> 		grep crayx1 .tmpfile ; \
+> 	if [ $$? = 0 ]; then \
+> 		echo "Making terrain deck for CRAY X1" ;                \
+> 		( cp Templates/terrain.deck.x1 terrain.deck ) ; \
+> 	else \
+146a176,177
+> 		( cp Templates/terrain.deck.intel terrain.deck.intel ) ;	\
+> 	fi; \
+===================================================================
+README
+diff -r3.12 -r3.13
+2,3c2,3
+< VERSION 3 TERRAIN PROGRAM (release-3-6)
+< (Updated December 19, 2002)
+---
+> VERSION 3 TERRAIN PROGRAM (release-3-7)
+> (Updated December 23, 2004)
+===================================================================
+src/Makefile
+diff -r3.6 -r3.7
+62c62
+< 		$(FC) rdnml.o -o $@
+---
+> 		$(FC) rdnml.o -o $@ $(LDOPTIONS)
+===================================================================
+src/crvst.F
+diff -r3.3 -r3.5
+146c146
+<      1             YYY(ILEV,II,JJ)                                               CRVST.145
+---
+>      1             YYY(II,JJ,ILEV)                                               23DEC04.1
+===================================================================
+src/output.F
+diff -r3.15 -r3.19
+45c45
+<       NVW = IVW(NESTID)                                                          OUTPUT.42
+---
+>       NVW = IVW(NTYPE(NESTID))                                                   23DEC04.2
+74c74
+<       BHI (3,1) = 6                                                              19DEC02.3
+---
+>       BHI (3,1) = 7                                                              23DEC04.3
+76c76
+<       BHI (4,1) = 0                                                              05DEC01.11
+---
+>       BHI (4,1) = 0                                                              23DEC04.4
+150c150
+<          BHI (23,1) = IVW(NESTID)                                                OUTPUT.147
+---
+>          BHI (23,1) = IVW(NTYPE(NESTID))                                         23DEC04.5
+153c153
+<          BHI (23,1) = IVW(NESTID)                                                OUTPUT.150
+---
+>          BHI (23,1) = IVW(NTYPE(NESTID))                                         23DEC04.6
+===================================================================
+src/pltter.F
+diff -r3.10 -r3.13
+541a542
+>       DO imeshtwo=1,2                                                            23DEC04.7
+571a573,575
+>       IF (IMESHTWO .eq. 2) THEN                                                  23DEC04.8
+>         CALL GFLAS3(N1)                                                          23DEC04.9
+>       ENDIF                                                                      23DEC04.10
+572a577
+>       ENDDO                                                                      23DEC04.11
+574c579
+<         PRINT *,'5, -----> MESH PLOOTED'                                         PLTTER.515
+---
+>         PRINT *,'5, -----> MESH PLOTTED'                                         23DEC04.12
+===================================================================
+src/replace.F
+diff -r3.6 -r3.8
+60c60
+<       NVW = IVW(NESTID)                                                          REPLACE.54
+---
+>       NVW = IVW(NTYPE(NESTID))                                                   23DEC04.13
+===================================================================
+src/setup.F
+diff -r3.18 -r3.22
+61c61
+<       PRINT *,'THIS IS TERRAIN VERSION 3.6'                                      19DEC02.10
+---
+>       PRINT *,'THIS IS TERRAIN VERSION 3.7.0'                                    23DEC04.14
+376a377
+>        IF (ISMTHTR.LE.3) THEN                                                    23DEC04.15
+378a380,383
+>        ELSE                                                                      23DEC04.16
+>         WRITE(FILENAME,'(''TERRSMT_DOMAIN'',I1)') MD                             23DEC04.17
+>         IF (MAXNES.GE.10) WRITE(FILENAME,'(''TERRSMT_DOMAIN'',I2)') MD           23DEC04.18
+>        ENDIF                                                                     23DEC04.19
+===================================================================
+src/terdrv.F
+diff -r3.18 -r3.21
+57a58
+>       INTEGER INN                                                                23DEC04.20
+409a411,414
+>       ELSEIF(ISMTHTR.GE.4) THEN                                                  23DEC04.21
+>         DO INN=1,ISMTHTR                                                         23DEC04.22
+>           CALL SMTH121(HT,IX,JX,3)                                               23DEC04.23
+>         ENDDO                                                                    23DEC04.24
+472c477
+<      -                   49.0, RAD,DIS(N))                                       TERDRV.477
+---
+>      -                   49.0, RAD,DIS(N),IPRINT)                                23DEC04.25
+476c481
+<      -                   49.0, RAD,DIS(N))                                       TERDRV.481
+---
+>      -                   49.0, RAD,DIS(N),IPRINT)                                23DEC04.26
+===================================================================
+src/tfudge.F
+diff -r3.8 -r3.10
+55,56c55,56
+<       NVW = IVW(NUMNC(NESTID)+1)                                                 06NOV00.566
+<       NSW = ISW(NUMNC(NESTID)+1)                                                 06NOV00.567
+---
+>       NVW = IVW(NTYPE(NESTID))                                                   23DEC04.27
+>       NSW = ISW(NTYPE(NESTID))                                                   23DEC04.28

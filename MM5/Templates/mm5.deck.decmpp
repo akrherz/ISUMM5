@@ -1,0 +1,88 @@
+#!/bin/sh
+#
+#  Version 3 of mm5 job deck
+#
+#  The mm5 executable (mm5.exe) expects to find the following files
+#      in the Run/ directory:
+#      MMINPUT_DOMAIN1   -|
+#      BDYOUT_DOMAIN1     | --> output files from Interpf
+#      LOWBDY_DOMAIN1    -|
+#      TERRAIN_DOMAIN[2,3..] if running nests  --> output from Terrain
+#
+#  If it is a restart run:
+#      RESTART_DOMAIN1[,2,3..]  --> output from MM5 run: renamed from
+#                                   SAVE_DOMAIN1[,2,3...]
+#
+#  If it is gridded FDDA run with surface analysis nudging:
+#      SFCFDDA_DOMAIN1[2,3,...]
+#
+#  If it is observational nudging run:
+#      MM5OBS_DOMAIN1[,2,3..]   --> user-created observation files
+#
+#  Output from a MM5 run:
+#    If IFTAPE = 1
+#      MMOUT_DOMAIN1[,2,3...]   --> one output for each domain
+#    If IFSAVE = TRUE
+#      SAVE_DOMAIN1[,2,3...]
+#
+#
+# temp files should be accessible
+umask 022
+#
+# Sections
+# 1. Options for namelist ("mmlif")
+# 2. Running...
+#
+#-----------------------------------------------------------------------------
+# 1. Options for namelist ("mmlif")
+#-----------------------------------------------------------------------------
+#
+#	The first dimension (column) of the arrays denotes the domain
+#	identifier.
+#		Col 1 = Domain #1, Col 2 = Dom #2, etc.
+#
+cat > ./Run/oparam << EOF
+ &OPARAM
+#INCLUDE oparam
+ &END
+EOF
+cat > ./Run/lparam << EOF
+ &LPARAM
+#INCLUDE lparam
+EOF
+cat > ./Run/nparam << EOF
+ &NPARAM
+#INCLUDE nparam
+ &END
+EOF
+cat > ./Run/pparam << EOF
+ &PPARAM
+#INCLUDE pparam
+ &END 
+EOF
+cat > ./Run/fparam << EOF
+ &FPARAM
+#INCLUDE fparam
+ &END
+EOF
+#
+#-----------------------------------------------------------------
+#
+#      create namelist: mmlif, and remove comments from namelist:
+#
+make mmlif
+cd ./Run
+sed -f ../Util/no_comment.sed mmlif | grep [A-Z,a-z] > mmlif.tmp
+mv mmlif.tmp mmlif
+rm fparam lparam nparam oparam pparam
+#
+#-----------------------------------------------------------------
+#
+#       run MM5
+#
+date
+echo "mpirun mm5.mpp"
+mpirun ./mm5.mpp 
+#dmpirun mm5.mpp
+
+#ENDTEMPLATE

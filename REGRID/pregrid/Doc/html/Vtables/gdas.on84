@@ -1,0 +1,14 @@
+ON84 | Level| Level| Level| REGRID   |  REGRID  | REGRID                                      |
+Code | Code |   1  |   2  | Name     |  Units   | Description                                 |
+-----+------+------+------+----------+----------+---------------------------------------------+
+  1  |  8   |   *  |      | HGT      | m        | Height                                      |
+ 16  |  8   |   *  |      | T        | K        | Temperature                                 |
+ 48  |  8   |   *  |      | U        | m s{-1}  | U                                           |
+ 49  |  8   |   *  |      | V        | m s{-1}  | V                                           |
+ 88  |  8   |   *  |      | RH       | %        | Relative Humidity                           |
+  8  | 128  |      |      | PRESSURE | Pa       | Sea Level Pressure                          |
+  8  | 129  |      |      | PSFC     |          |                                             |
+ 16  | 129  |      |      | T        | K        | Temperature                                 |
+ 384 | 129  |      |      | SST      | K        | Sea-Surface Temperature                     |
+ 93  | 129  |      |      | SNOWCOVR | 0/1 Flag | Snow Cover Flag                             |
+-----+------+------+------+----------+----------+---------------------------------------------+

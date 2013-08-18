@@ -1,0 +1,49 @@
+Dear User,
+
+If you do not get your ERA40 data from NCAR/DSS, 
+these notes may not apply to you.
+
+#####################################################################
+
+If you are planning on running the model with ERA 40 data, 
+please take note of the following.
+
+DATA needed:
+	From DSS ds118.1: 
+		1. download the 3D dataset file
+	From DSS ds118.0: 
+		1. download the PRIMARY surface data file 
+		2. download the single INVARIANT file that
+ 		   contain the SOILHGT and LANDSEA data fields
+		   This is dataset U01487
+		   (This dataset is used to created the constants file
+		    SIVT_FILE:1957-09-01_12. If you do not wish to 
+		    create this file, you can use the one supplied in
+		    the REGRID/regridder director.)
+
+Run pregid.csh as you will normally run this script. The data files
+needed to run the script are the 3D dataset from ds118.1 and the
+PRIMARY surface data file from ds118.0
+You will need the following Vtables:
+	Vtable.ERA43D
+	Vtable.ERA4SST
+	Vtable.ERA4SNOW
+	Vtable.ERA4SOIL
+
+Use / create the SIVT_FILE:1957-09-01_12 file
+1. The file SIVT_FILE:1957-09-01_12 is available in REGRID/regridder
+   and it can be used as is, OR;
+2. Create the SIVT_FILE:1957-09-01_12 file
+   Run pregrid_era40_int.csh
+   All you need to change in this script is the location (DataDir) of 
+   the data file U01487
+   This script will read the data file U01487 and with the use of 
+   Vtable.ERA4SIVT, it will create the file SIVT_FILE:1957-09-01_12 
+
+When running regridder, you need to include the file
+SIVT_FILE:1957-09-01_12, as a "constants_full_name", in record3 of the
+namelist.input file.
+
+
+If you have comments/problems please contact mesouser@ucar.edu
+#####################################################################

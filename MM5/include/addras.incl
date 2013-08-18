@@ -1,0 +1,7 @@
+      COMMON /ADDRAS/IAOUTT,IAOUTQ,IAPRET,IAKDT                                  ADDRAS.1
+C                                                                                ADDRAS.2
+      REAL OUTTQ,OUTTT,PRETT                                                     ADDRAS.3
+      INTEGER KDT                                                                ADDRAS.4
+      POINTER                                                                    ADDRAS.5
+     1 (IAOUTT,OUTTT(MIXA,MJXA,MKXA)) ,(IAOUTQ,OUTTQ(MIXA,MJXA,MKXA)),           ADDRAS.6
+     2 (IAPRET,PRETT(MIXA,MJXA))      ,(IAKDT,KDT(MIXA,MJXA))                    ADDRAS.7

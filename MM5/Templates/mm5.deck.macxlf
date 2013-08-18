@@ -1,0 +1,104 @@
+#!/bin/sh
+#
+#  Version 3 of mm5 job deck
+#
+#  The mm5 executable (mm5.exe) expects to find the following files
+#      in the Run/ directory:
+#      MMINPUT_DOMAIN1   -|
+#      BDYOUT_DOMAIN1     | --> output files from Interpf
+#      LOWBDY_DOMAIN1    -|
+#      TERRAIN_DOMAIN[2,3..] if running nests  --> output from Terrain
+#
+#  If it is a restart run:
+#      RESTART_DOMAIN1[,2,3..]  --> output from MM5 run: renamed from
+#                                   SAVE_DOMAIN1[,2,3...]
+#
+#  If it is gridded FDDA run with surface analysis nudging:
+#      SFCFDDA_DOMAIN1[2,3,...]
+#
+#  If it is observational nudging run:
+#      MM5OBS_DOMAIN1[,2,3..]   --> user-created observation files
+#
+#  Output from a MM5 run:
+#    If IFTAPE = 1
+#      MMOUT_DOMAIN1[,2,3...]   --> one output for each domain
+#    If IFSAVE = TRUE
+#      SAVE_DOMAIN1[,2,3...]
+#
+#
+# temp files should be accessible
+umask 022
+#
+# Select appropriate FDDAsw if doing gridded analysis FDDA
+#
+#FDDAsw=yes                # gridded FDDA input switch
+FDDAsw=no
+#
+# Sections
+# 1. Options for namelist ("mmlif")
+# 2. Running...
+#
+#-----------------------------------------------------------------------------
+# 1. Options for namelist ("mmlif")
+#-----------------------------------------------------------------------------
+#
+#	The first dimension (column) of the arrays denotes the domain
+#	identifier.
+#		Col 1 = Domain #1, Col 2 = Dom #2, etc.
+#
+cat > ./Run/oparam << EOF
+ &OPARAM
+#INCLUDE oparam
+ /
+EOF
+cat > ./Run/lparam << EOF
+ &LPARAM
+#INCLUDE lparam
+EOF
+cat > ./Run/nparam << EOF
+ &NPARAM
+#INCLUDE nparam
+ /
+EOF
+cat > ./Run/pparam << EOF
+ &PPARAM
+#INCLUDE pparam
+ /
+EOF
+cat > ./Run/fparam << EOF
+ &FPARAM
+#INCLUDE fparam
+ /
+EOF
+#
+#-----------------------------------------------------------------
+#
+#      create namelist: mmlif, and remove comments from namelist:
+#
+make mmlif
+cd ./Run
+sed -e 's/;.*/   /' -e'/^  /d' mmlif > mmlif.tmp
+mv mmlif.tmp mmlif
+rm fparam lparam nparam oparam pparam
+#
+#       copy gridded FDDA files
+#
+if [ $FDDAsw = yes ]; then
+   echo "Copy grid fdda file"
+   for i in MMINPUT_DOMAIN[1-9]
+   do
+     Num=`echo $i | grep [1-9]$ | sed 's/.*\(.\)/\1/'`
+     cp $i MMINPUT2_DOMAIN$Num
+     echo "cp $i MMINPUT2_DOMAIN$Num"
+   done
+fi
+#
+#-----------------------------------------------------------------
+#
+#       run MM5
+#
+date
+echo "time mm5.exe >! mm5.print.out "
+time ./mm5.exe > mm5.print.out 2>&1
+
+#ENDTEMPLATE

@@ -1,0 +1,57 @@
+	      ECMWF Version of Table 2 for FM92-VIII Ext. GRIB
+Parameters used in ds115.0, ECWMF reanalysis level III-B surface dataset
+
+CODE FIGURE                     FIELD NAME                        UNITS
+
+   129                  Geopotential (orography at sfc)          m2 s-2
+
+   136                  Total Column water                        kg m-2
+
+   137                  Total column water vapor                  kg m-2    
+
+   139                  Soil Temperature level 1                    K
+
+   140                  Soil wetness level 1                    m (of water)
+
+   141                  Snow Depth                                  m
+
+   151                  Mean Sea Level (MSL) Pressure               Pa
+
+   164                  Total Cloud Cover                         (0 - 1)
+
+   165                  U-wind at 10 m                            m s-1
+
+   166                  V-wind at 10 m                            m s-1
+
+   167                  Temperature at 2 m                          K
+
+   168                  Dewpoint at 2 m                             K
+
+   170                  Soil temperature level 2                    K
+
+   171                  Soil wetness level 2                     m (of water)
+
+   172                  Land-Sea Mask                            (0, 1)
+
+   173                  Surface Roughness                           m
+
+   174                  Albedo                                      -
+
+   183                  Soil temperature level 3                    K
+
+   184                  Soil wetness level 3                     m (of water)
+
+   186                  Low Cloud Cover                           (0 - 1)
+
+   187                  Medium Cloud Cover                        (0 - 1)
+
+   188                  High Cloud Cover                          (0 - 1)
+
+   198                  Skin reservoir content                   m (of water)
+
+   235                  Skin temperature                            K
+
+   236                  Soil temperature level 4                    K
+
+   237                  Soil wetness level 4                     m (of water)
+

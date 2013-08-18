@@ -1,0 +1,22 @@
+C  IVW      -- WATER BODY ID FOR VEGETATION                                      VS_CMN1.1
+C  RESOLV   -- RESOLUTION FOR VEGETATION                                         VS_CMN1.2
+C  XLATV0   -- INITIAL LATITUDE FOR VEGETATION                                   VS_CMN1.3
+C  XLONV0   -- INITIAL LONGITUDE FOR VEGETATION                                  VS_CMN1.4
+C  NLATVEG  -- NUMBER OF RECORDS FOR VEGETATION                                  VS_CMN1.5
+C  NLONVEG  -- NUMBER OF DATA POINTS PRE RECORD FOR VEGETATION                   VS_CMN1.6
+C  ISW      -- WATER BODY ID FOR SOIL                                            VS_CMN1.7
+C  RESOLS   -- RESOLUTION FOR SOIL                                               VS_CMN1.8
+C  XLATS0   -- INITIAL LATITUDE FOR SOIL                                         VS_CMN1.9
+C  XLONS0   -- INITIAL LONGITUDE FOR SOIL                                        VS_CMN1.10
+C  NLATSOIL -- NUMBER OF RECORDS FOR SOIL                                        VS_CMN1.11
+C  NLONSOIL -- NUMBER OF DATA POINTS PRE RECORD FOR SOIL                         VS_CMN1.12
+C                                                                                VS_CMN1.13
+      INTEGER IVW(max_type),      ISW(max_type),  NLONVEG(max_type),             06NOV00.635
+     >    NLATVEG(max_type), NLONSOIL(max_type), NLATSOIL(max_type)              06NOV00.636
+      REAL XLATV0(max_type), XLONV0(max_type), XLATS0(max_type),                 06NOV00.637
+     >     XLONS0(max_type), RESOLV(max_type), RESOLS(max_type)                  06NOV00.638
+                                                                                 VS_CMN1.18
+      COMMON /VSDATA /NCATVEG, NCATSOIL, IVW, ISW, RESOLV, RESOLS,               VS_CMN1.19
+     >                NLONVEG,  NLATVEG, NLONSOIL, NLATSOIL,                     VS_CMN1.20
+     >                 XLATV0,   XLONV0,   XLATS0, XLONS0                        VS_CMN1.21
+                                                                                 VS_CMN1.22

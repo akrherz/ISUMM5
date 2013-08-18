@@ -1,0 +1,3 @@
+      REAL TSLA,TSLB                                                             SOIL.1
+      POINTER (ITSLA,TSLA(MIXS,MJXS,MLX)),(ITSLB,TSLB(MIXS,MJXS,MLX))            SOIL.2
+      COMMON /SOIL/ITSLA,ITSLB                                                   SOIL.3

@@ -1,0 +1,6 @@
+C  NVC --- THE NUMBER OF VEGETATION CATEGORIES                                   PARAMESV1.1
+C  NSC --- THE NUMBER OF SOIL CATEGORIES                                         PARAMESV1.2
+C  NCMAX = MAX(NVC,NSC)                                                          PARAMESV1.3
+CC        PARAMETER (NVC = 17, NSC = 17, NCMAX = 17)                             PARAMESV1.4
+        PARAMETER (NVC = 25, NSC = 17, NCMAX = 25)                               PARAMESV1.5
+                                                                                 PARAMESV1.6

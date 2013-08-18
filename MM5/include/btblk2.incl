@@ -1,0 +1,12 @@
+      REAL Z                                                                     BTBLK2.1
+      COMMON/BLK1/Z(II)                                                          BTBLK2.2
+      REAL A1,A2,ALF,B1,B2,BETA,BT,C,CPD,G,GAMH,GAMM,GRD,HEATL,R,RD,SQ,          BTBLK2.3
+     $     VISK,VK                                                               BTBLK2.4
+      COMMON/BLK2/ALF,VISK,A1,A2,B1,B2,C,G,BETA,VK,SQ,                           BTBLK2.5
+     1 BT,R,GAMM,GAMH,HEATL,CPD,RD,GRD                                           BTBLK2.6
+#ifndef rs6000                                                                   BTBLK2.8
+c$omp threadprivate (/blk1/,/blk2/)                                              BTBLK2.9
+#else                                                                            BTBLK2.10
+cibmp threadlocal /blk1/                                                         24SEP99.391
+cibmp threadlocal /blk2/                                                         24SEP99.392
+#endif                                                                           BTBLK2.13

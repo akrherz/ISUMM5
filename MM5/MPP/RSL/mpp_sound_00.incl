@@ -1,0 +1,31 @@
+CSTART   mpp_sound_00.incl
+C_FLIC_RUNPAD(8)
+#ifdef MPP1
+      COMMON /SOUNDL/ESTORE
+      REAL  CSNEST(20)
+      COMMON /SOUNDL/CSNEST
+      REAL    TB2D(MIX,MJX)
+      REAL  RHOTMP(MIX,MJX)
+      INTEGER ICFLP1
+      REAL  CFLVAL
+      INTEGER IERRCODE
+
+C THIS BUSINESS IS SIMILAR TO WHAT HAS BEEN DONE IN BLW.F.
+C IT AVOIDS RELYING ON AUTOMATIC STORAGE.
+C IT IS CASE SENSITIVE -- LOWER CASE IS ACTUAL, UPPER IS MACRO
+C IYY IS PASSED INTO SOUND AS AN ARGUMENT
+      REAL  astore_g(MIX_G*MJX_G)
+      REAL    rpsa_g(MIX_G*MJX_G)
+      REAL    msfx_g(MIX_G*MJX_G)
+      REAL    tb2d_g(MIX_G*MJX_G)
+      REAL  rhotmp_g(MIX_G*MJX_G)
+#  define IX(I,J) ((I)+((J)-1)*IYY)
+#  define ASTORE_G(I,J) astore_g(IX(I,J))
+#  define RPSA_G(I,J) rpsa_g(IX(I,J))
+#  define MSFX_G(I,J) msfx_g(IX(I,J))
+#  define TB2D_G(I,J) tb2d_g(IX(I,J))
+#  define RHOTMP_G(I,J) rhotmp_g(IX(I,J))
+
+      DATA (CSNEST(I),I=1,20) /20*-1./
+#endif
+CEND   mpp_sound_00.incl

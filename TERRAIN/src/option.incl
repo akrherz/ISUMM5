@@ -1,0 +1,16 @@
+C    CONTENT:   THE INFORMATION ON THE OPTIONS.                                  OPTION.1
+C    USED IN:   TERRAIN,  BNDRY,   CRLND,  CRTER,  LATLON,  MXMNLL,              OPTION.2
+C                NESTLL, PLTTER, REPLACE,  SETUP,  TERDRV, XYOBSLL.              OPTION.3
+C                                                                                OPTION.4
+C                                                                                OPTION.5
+      COMMON /OPTION/ IPRINT,IPRNTD, IFFUDG, IFTFUG, IFEZFUG,                    OPTION.6
+     1                IBNDRY, IPRTHT, IPRTLU, FIN, IEXP, AEXP,                   OPTION.7
+     1           IWRITE,IPFLAG,IFANAL, ISURF,  IFTER,  IFILL,                    OPTION.8
+     3           DATASW, TRUELAT1,  TRUELAT2, ISMTHTR, IEXTRA,                   OPTION.9
+     4         VEGESOIL,  VEGONLY,    VSPLOT, G30SD                              OPTION.10
+      LOGICAL IPRNTD, IFFUDG, IFTFUG, IFEZFUG, IBNDRY, IPRTHT, IPRTLU,           OPTION.11
+     1        IWRITE, IFANAL,  ISURF,   IFTER,   IEXP,  IFILL, IPFLAG,           OPTION.12
+     2        DATASW, VEGESOIL, VEGONLY, VSPLOT,G30SD, IEXTRA                    OPTION.13
+      INTEGER IPRINT                                                             OPTION.14
+      REAL    FIN(10)                                                            OPTION.15
+C                                                                                OPTION.16

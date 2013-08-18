@@ -1,0 +1,10 @@
+C                                                                                FOGSTUF.1
+C**********************************************************************          FOGSTUF.2
+C                                                                                FOGSTUF.3
+      REAL VISB,FOGDEP,FRACSC                                                    FOGSTUF.4
+      COMMON/FOGSTUF/ VISB,FOGDEP,FRACSC                                         FOGSTUF.5
+      DIMENSION VISB(MAXNES,MIXG,MJXG),                                          FOGSTUF.6
+     &          FOGDEP(MAXNES,MIXG,MJXG),                                        FOGSTUF.7
+     &          FRACSC(MAXNES,MIX,MJX)                                           FOGSTUF.8
+C**********************************************************************          FOGSTUF.9
+C                                                                                FOGSTUF.10

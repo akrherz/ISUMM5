@@ -1,0 +1,409 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; OSF1 V4.0 alpha) [Netscape]">
+</head>
+<body text="#000000" bgcolor="#CCFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<h1>
+Intermediate Format</h1>
+Data are passed from the <i>pregrid</i> programs to <i>regridder</i> via
+intermediate files written in the format described herein.&nbsp; <a href="#Sample programs">Sample
+programs</a> are provided to assist users in understanding the intermediate
+format.
+<h1>
+1. General format description</h1>
+Fields are written to the intermediate files as as two-dimensional horizontal
+(i.e., pressure-level or surface) slabs of data.&nbsp; Each horizontal
+slab contains a single level of a single variable (i.e., 500 mb RH, surface
+T, etc).&nbsp; Any number of horizontal slabs may be written to single
+file.&nbsp; The slabs in a given file are not necessarily all from the
+same data source, or all on the same grid or map projection, but they should
+all represent the data valid at the same time.
+<h1>
+2. File naming conventions</h1>
+Each file contains data for a single time.&nbsp; The file names consist
+of a prefix (ideally, but not necessarily, denoting the source of data),
+followed by a colon, followed by a time-stamp in the form YYYY-MM-DD_HH.
+Program <i>regridder</i> uses the file names as discussed below.
+<p>For example, analyses from the ON84-format data from NCEP for 3 January
+1998 at 12 UTC might be written to a file called "ON84:1998-01-03_12"
+<h1>
+3. File format</h1>
+The files are written as unformatted FORTRAN records.&nbsp; Four records
+are used for every horizontal slab.&nbsp; The first record is a format
+version number, currently 3.&nbsp; This is intended to facilitate backward
+compatibility as the intermediate format is adapted for additional grids.&nbsp;
+The second record contains information common to all types of gridded data
+recognized by <i>regridder</i>.&nbsp; The third record contains information
+specific to the particular grid type represented.&nbsp; This record varies
+depending on the grid type.&nbsp; The fourth record is the 2-dimensional
+slab of data.
+<p>Record 1:&nbsp; <b><font face="Courier New,Courier"><font color="#000000"><font size=+1>IFV</font></font></font></b>
+<br>Record 2:&nbsp; <b><font face="Courier New,Courier">HDATE</font></b>,
+<b><font face="Courier New,Courier">XFCST</font></b>,
+<b><font face="Courier New,Courier">FIELD</font></b>,
+<b><font face="Courier New,Courier">UNITS</font></b>,
+<b><font face="Courier New,Courier">DESC</font></b>,
+<b><font face="Courier New,Courier">XLVL</font></b>,
+<b><font face="Courier New,Courier">NX</font></b>,
+<b><font face="Courier New,Courier">NY</font></b>,
+<b><font face="Courier New,Courier">IPROJ</font></b>
+<br>&nbsp; if (<b><font face="Courier New,Courier">IPROJ</font></b> ==
+0) (Cylindrical equidistant projection)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Record 3:&nbsp; <b><font face="Courier New,Courier">STARTLAT</font></b>,
+<b><font face="Courier New,Courier">STARTLON</font></b>,
+<b><font face="Courier New,Courier">DELTALAT</font></b>,
+<b><font face="Courier New,Courier">DELTALON</font></b>
+<br>&nbsp; else if (<b><font face="Courier New,Courier">IPROJ</font></b>
+== 1) (Mercator projection)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Record 3:&nbsp; <b><font face="Courier New,Courier">STARTLAT</font></b>,<b><font face="Courier New,Courier">STARTLON</font></b>,
+<b><font face="Courier New,Courier">DX</font></b>,
+<b><font face="Courier New,Courier">DY</font></b>,
+<b><font face="Courier New,Courier">TRUELAT1</font></b>
+<br>&nbsp; else if (<b><font face="Courier New,Courier">IPROJ</font></b>
+== 3) (Lambert conformal projection)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Record 3:&nbsp; <b><font face="Courier New,Courier">STARTLAT</font></b>,
+<b><font face="Courier New,Courier">STARTLON</font></b>,
+<b><font face="Courier New,Courier">DX</font></b>,
+<b><font face="Courier New,Courier">DY</font></b>,
+<b><font face="Courier New,Courier">XLONC</font></b>,
+<b><font face="Courier New,Courier">TRUELAT1</font></b>,
+<b><font face="Courier New,Courier">TRUELAT2</font></b>
+<br>&nbsp; else if (<b><font face="Courier New,Courier">IPROJ</font></b>
+== 5) (Polar-stereographic projection)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Record 3:&nbsp; <b><font face="Courier New,Courier">STARTLAT</font></b>,
+<b><font face="Courier New,Courier">STARTLON</font></b>,
+<b><font face="Courier New,Courier">DX</font></b>,
+<b><font face="Courier New,Courier">DY</font></b>,
+<b><font face="Courier New,Courier">XLONC</font></b>,
+<b><font face="Courier New,Courier">TRUELAT1</font></b>
+<br>&nbsp; endif
+<br>Record 4:&nbsp; <b><font face="Courier New,Courier">SLAB</font></b>
+<p>Where:
+<br>&nbsp;
+<table BORDER CELLPADDING=3 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td WIDTH="30" NOSAVE><b>IFV</b></td>
+
+<td WIDTH="40" NOSAVE>integer</td>
+
+<td>The REGRID intermediate-format version number, currently 3.</td>
+</tr>
+
+<tr>
+<td><b>HDATE</b></td>
+
+<td>character (LEN=24)</td>
+
+<td>The time, in format "YYYY-MM-DD_HH:mm:ss&nbsp;&nbsp;&nbsp;&nbsp; "
+(only the first 19 characters are used)</td>
+</tr>
+
+<tr>
+<td><b>XFCST</b></td>
+
+<td>real</td>
+
+<td>Forecast time (in hours) of the data in the slab</td>
+</tr>
+
+<tr>
+<td><b>FIELD</b></td>
+
+<td>character (LEN=9)</td>
+
+<td>A field name.&nbsp; Names with special meaning are described below.</td>
+</tr>
+
+<tr>
+<td><b>UNITS</b></td>
+
+<td>character (LEN=25)</td>
+
+<td>Units describing the field in the slab.</td>
+</tr>
+
+<tr>
+<td><b>DESC</b></td>
+
+<td>character (LEN=46)</td>
+
+<td>Text description of the field in the slab.</td>
+</tr>
+
+<tr>
+<td><b>XLVL</b></td>
+
+<td>real</td>
+
+<td>Pressure-level (Pa) of the data.&nbsp; 200100 Pa indicates surface
+data; 201300 Pa indicates sea-level pressure</td>
+</tr>
+
+<tr>
+<td><b>NX</b></td>
+
+<td>integer</td>
+
+<td>Slab dimension in the X direction</td>
+</tr>
+
+<tr>
+<td><b>NY</b></td>
+
+<td>integer</td>
+
+<td>Slab dimension in the Y direction</td>
+</tr>
+
+<tr>
+<td><b>IPROJ</b></td>
+
+<td>integer</td>
+
+<td>Flag denoting the projection.&nbsp; Recognized values are:
+<br>&nbsp;&nbsp;&nbsp;&nbsp; 0:&nbsp; Cylindrical Equidistant (Lat/lon)
+projection.
+<br>&nbsp;&nbsp;&nbsp;&nbsp; 1:&nbsp; Mercator projection.
+<br>&nbsp;&nbsp;&nbsp;&nbsp; 3:&nbsp; Lambert-conformal projection.
+<br>&nbsp;&nbsp;&nbsp;&nbsp; 5:&nbsp; Polar-stereographic projection.</td>
+</tr>
+
+<tr NOSAVE>
+<td><b>STARTLAT</b></td>
+
+<td WIDTH="40" NOSAVE>real</td>
+
+<td>Starting latitude (degrees north)</td>
+</tr>
+
+<tr>
+<td><b>STARTLON</b></td>
+
+<td>real</td>
+
+<td>Starting longitude (degrees east)</td>
+</tr>
+
+<tr>
+<td><b>DELTALAT</b></td>
+
+<td>real</td>
+
+<td>Latitude increment (degrees) for lat/lon grid</td>
+</tr>
+
+<tr>
+<td><b>DELTALON</b></td>
+
+<td>real</td>
+
+<td>Longitude increment (degrees) for lat/lon grid</td>
+</tr>
+
+<tr>
+<td><b>DX</b></td>
+
+<td>real</td>
+
+<td>Grid-spacing in x (km at TRUELAT1 (and TRUELAT2 as appropriate))</td>
+</tr>
+
+<tr>
+<td><b>DY</b></td>
+
+<td>real</td>
+
+<td>Grid-spacing in y (km at TRUELAT1 (and TRUELAT2 as appropriate))</td>
+</tr>
+
+<tr>
+<td><b>XLONC</b></td>
+
+<td>real</td>
+
+<td>Center longitude of the projection</td>
+</tr>
+
+<tr>
+<td><b>TRUELAT1</b></td>
+
+<td>real</td>
+
+<td>Extra latitude (degrees north) used for defining Mercator, Polar Stereographic, and
+Lambert conformal projections</td>
+</tr>
+
+<tr>
+<td><b>TRUELAT2</b></td>
+
+<td>real</td>
+
+<td>A second extra latitude (degrees north) used for defining Lambert conformal projection</td>
+</tr>
+
+<tr>
+<td><b>SLAB</b></td>
+
+<td>real, dimension(<b>NX</b>,<b>NY</b>)</td>
+
+<td>Two-dimensional array of data.</td>
+</tr>
+</table>
+
+<h1>
+4. Special field names</h1>
+The intermediate-format variable FIELD indicates the physical variable
+in the slab. Certain values of FIELD are recognized by
+<i>pregrid</i> or
+<i>regridder</i>
+for specific treatment.&nbsp;&nbsp; Slabs identified by an unrecognized
+values of FIELD are simply interpolated horizontally and written out by
+<i>regridder</i>.
+Fields marked "<font color="#FF0000">*</font>" in the table below are the
+ones required for running <i>regridder</i>. At least one of the fields marked
+    "<font color="#0000FF">*</font>" is required.  Recognized field names and
+their uses are:
+<table BORDER COLS=2 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td WIDTH="100" NOSAVE>T</td>
+
+<td><font color="#FF0000">* </font>Air temperature (K)</td>
+</tr>
+
+<tr>
+<td>U</td>
+
+<td><font color="#FF0000">* </font>Grid-relative u-component of the horizontal
+wind (m s<sup>-1</sup>)</td>
+</tr>
+
+<tr>
+<td>V</td>
+
+<td><font color="#FF0000">* </font>Grid-relative v-component of the horizontal
+wind (m s<sup>-1</sup>)</td>
+</tr>
+
+<tr>
+<td>RH</td>
+
+<td><font color="#FF0000">* </font>Relative humidity (%, i.e., values generally range from 0 to 100)</td>
+</tr>
+
+<tr>
+<td>HGT</td>
+
+<td><font color="#FF0000">* </font>Geopotential height (m)</td>
+</tr>
+
+<tr>
+<td>PMSL</td>
+
+<td><font color="#FF0000">* </font>Sea-level pressure (Pa) </td>
+</tr>
+
+<tr>
+<td>SST</td>
+
+<td><font color="#0000FF">* </font>Sea-surface Temperature (K).
+	  Either SST or SKINTEMP is required.  Skin Temperature and
+	  sea-surface temperature are interpreted differently by the
+	  INTERPF program.</td> 
+</tr>
+
+<tr>
+<td>SKINTEMP</td>
+
+<td><font color="#0000FF">* </font>Skin Temperature (K).  Either SST
+	  or SKINTEMP is required.  Skin Temperature and
+	  sea-surface temperature are interpreted differently by the
+	  INTERPF program.</td>
+</tr>
+
+<tr>
+<td>SOILT010</td>
+
+<td>Ground temperature from 0 to 10 cm (K)</td>
+</tr>
+
+<tr>
+<td>SOILT200</td>
+
+<td>Ground temperature from 10 to 200 cm (K)</td>
+</tr>
+
+<tr>
+<td>SOILT400</td>
+
+<td>Ground temperature from 200 to 400 cm (K)</td>
+</tr>
+
+<tr>
+<td>SOILM010</td>
+
+<td>Soil moisture from 0 to 10 cm (K)</td>
+</tr>
+
+<tr>
+<td>SOILM200</td>
+
+<td>Soil moisture from 10 to 200 cm (K)</td>
+</tr>
+
+<tr>
+<td>SEAICE</td>
+
+<td>Binary flag for the presence (1.0)/absence (0.0) of sea ice.&nbsp;
+The value should be 0.0 or 1.0.&nbsp; The grib.misc <i>pregrid</i> code
+makes a check on SEAICE.&nbsp; If a value >&nbsp; 0.5, SEAICE is set to
+1.0, otherwise, SEAICE is set to 0.0.</td>
+</tr>
+
+<tr>
+<td>LANDSEA</td>
+
+<td>Binary flag for land(1.0)/water(0.0) masking</td>
+</tr>
+
+<tr>
+<td>SOILHGT</td>
+
+<td>Terrain elevation (m) of the input data set (not of the MM5 model terrain)</td>
+</tr>
+
+<tr>
+<td>WEASD</td>
+
+<td>Water equivalent of accumulated snow depth (kg m<sup>-2</sup>
+	  [equivalent ot mm])</td>
+</tr>
+
+<tr>
+<td>SNOWCOVR</td>
+
+<td>Binary flag for the presence (1.0) or absence (0.0) of snow on the ground</td>
+</tr>
+</table>
+<a href="sst_note.html"><h2>5. A note about sea-surface temperature and skin temperature</a></h2>
+<h2>
+6. Sample Programs</h2>
+Sample programs are provided to assist users in reading the intermediate
+format.&nbsp; The programs are available in Fortran 77 and Fortran 90.&nbsp;
+The F77 program uses hard-coded parameters to dimension read arrays.&nbsp;
+The F90 program makes use of dynamically-allocatable arrays, so no hard-coded
+parameters are needed.
+<br>F77 program <a href="sample.f">sample.f</a>
+<br>F90 program <a href="sample.f90">sample.f90</a>
+<br>
+<hr WIDTH="100%">
+<br><a href="Documentation_Home.html">Documentation HOME</a>
+<p>
+<!-- hhmts start -->
+Last modified: Thu Sep 28 10:15:23 MDT 2000
+<!-- hhmts end -->
+</p>
+</body>
+</html>

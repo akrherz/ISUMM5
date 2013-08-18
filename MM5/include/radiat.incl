@@ -1,0 +1,3 @@
+      REAL RTTEN                                                                 RADIAT.1
+      POINTER (IRTT,RTTEN(MIXR,MJXR,MKXR))                                       RADIAT.2
+      COMMON /RADIAT/IRTT                                                        RADIAT.3

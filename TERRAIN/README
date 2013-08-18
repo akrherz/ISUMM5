@@ -1,0 +1,368 @@
+
+VERSION 3 TERRAIN PROGRAM (release-3-7)
+(Updated December 23, 2004)
+
+This is the main directory of the TERRAIN program in the MM5 modeling 
+system Version 3. Everything a user needs to run the Terrain program 
+(except for NCAR Graphics) is contained in this directory.
+
+Program Terrain does not require NCAR Graphics to run. But with NCAR
+Graphics, Terrain will generate plots that display the domain and
+fields produced by the program.
+
+NCAR Graphics is a licensed software, but part of it has become free.
+TERRAIN program only requires this part of the NCAR Graphics to produce
+plots. For information on NCAR Graphics, please visit
+
+    http://ngwww.ucar.edu/info/pricing.html
+
+If you have NCAR Graphics, set the environment variable NCARG_ROOT
+either in .cshrc file, or type it before you compiler and run TERRAIN:
+
+    setenv NCARG_ROOT /usr/local/ncarg (or the directory where NCAR 
+                                        Graphics is installed)
+
+All fortran source code is located in directory src/. 
+
+For questions, please send emails to mesouser@ucar.edu
+
+--------------------------------------------------------------------
+
+What is in V3 TERRAIN?
+
+This version of terrain program is able to process global 30 sec 
+topography data, use global 30 sec vegetation data to create 
+higher resolution landuse categories, use land-water mask field 
+created with high resolution vegetation date to define coastlines,
+and process additional data required to run land-surface module in MM5.
+
+In addition to elevation and landuse data, V3 TERRAIN output also 
+contains terrestrial output fields: Coriolis parameter, map scale
+factors on dot and cross points, latitudes and longitudes on dot
+and cross points.
+
+V3 TERRAIN program uses V3 data format, which is different from
+that in V2. For details on V3 data format, please see
+
+http://www.mmm.ucar.edu/mm5/mm5v3.html
+
+******* IMPORTANT CHANGES FOR 3.5 RELEASE *******
+
+Starting from 3-5 release, the vegetation, landwater mask, and soil data
+have been updated. The vegetation data are updated based on the 30-second
+resolution USGS Version 2 data. For data information, please see
+http://edcdaac.usgs.gov/glcc/glcc.html.
+The landwater mask data are recreated using the vegetation data. 
+These two types of data are now located at the center of a grid box.
+
+The soil data are updated with 5-minute global United Nation
+FAO (Food and Agriculture Organization) dataset and 30-second STATSGO 
+US dataset. (For more information, please
+see: http://www.fao.org/ag/AGL/agll/dsmw.htm)
+Over the Antarctic, soil type is assumed to be glacier (the FAO dataset
+didn't provide data over Antarctic).
+This is a great improvement over the 1-degree global dataset we had prior 
+to this release. Two layers of soil
+category data are provided in this release: one from 0 - 30 cm layer, and
+the other from 30 - 100 cm layer. User may choose to use either by setting
+a script variable in the new deck (BotSoil). A view of the two layer soil
+data over US can been seen at http://www.mmm.ucar.edu/mm5/mm5v3/v3prep.html.
+
+The new data are available from ftp://ftp.ucar.edu/mesouser/MM5V3/TERRAIN_DATA.
+
+NOTE that you must use the new terrain.deck and new TERRAIN.TAR file in
+V3.5 release to access the new vegetation and landwater mask data. You may
+download the new soil data and use the old TERRAIN program.
+
+The complete list of data files provided by mesouser is in Data/README file.
+
+******* IMPORTANT CHANGES FOR 3.4 RELEASE *******
+
+Starting from 3-4 release, the number of input data resolution has increased
+from five (at 1 degree, 30 min, 10 min, 5 min and 30 second resolution) 
+to six with an additional 2-minutes resolution data (approximately 3.7 km).
+The 2-minute data are provided separately from the lower resolution datasets
+and 30-second dataset. 
+The purpose of this addition is to allow users to use high resolution
+terrestrial datasets for model runs at a few kilometer resolution without
+accessing the 30 sec data which requires a large amount of job memory.
+
+Also starting with 3-4 release, the terrain elevation data at 1 degree,
+30, 10, and 5 minute resolution are recreated from the USGS 30 second
+dataset. The new dataset is provided in a new tar file: TER.TAR.gz, and
+is separated from the old landuse dataset, which is now in LANDUSE-OLD.TAR.gz.
+The new 2 min data are also created from the 30 second dataset.
+
+The complete list of data files provided by mesouser is in Data/README file.
+
+******* IMPORTANT FOR 3.1 RELEASE *******
+
+Starting from 3-1 release, all TERRAIN input data files are reprocessed
+and now are in direct access format. You must use the new deck to run
+3-1 or newer program and the new deck will go to NCAR ftp site to 
+download new data.
+
+*****************************************
+
+This version of terrain program should run on a number of platforms:
+SGI, DEC_Alpha, Cray, Sun, HP, IBM, and PC running Linux. 
+Default compilation options are provided for these platforms.
+
+Platforms tested are: SGI, DEC_Alpha, Sun, Cray, IBM, and PC running Linux.
+
+--------------------------------------------------------------------
+
+Note:
+
+Even though the new landuse data created from the USGS 30 sec vegetation
+data have much higher resolution than the old 10 min landuse data, 
+the correctness and representativeness of the landuse are
+not checked. Users are advised to check the data carefully before 
+proceeding. Landuse physical properties may be modified in MM5 by
+editing the ascii file LANDUSE.TBL in the Run/ of MM5 tar file.
+
+When using the high-resolution datasets, expect terrain program to require
+large amount of memory and disk space. For example, if there is 1 Gb of
+memory on a workstation, one can typically use the 30 sec dataset to cover
+a 10 deg by 10 deg area. The 30 sec global vegetation and soil category
+data each occupies about 1 Gb of disk space.
+
+An option to exclude NCAR Graphics is also included. To select not to use 
+NCAR Graphics, set NCARGRAPHICS = "NONCARG" in Makefile file. You may also
+need to empty the LOCAL_LIBRARIES line where NCAR Graphics library is defined.
+
+--------------------------------------------------------------------
+
+***************************************************************
+Also see the online self-tutorial at
+http://www.mmm.ucar.edu/mm5/mm5v3/tutorial/teachyourself.html
+***************************************************************
+
+How to run Terrain program:
+
+   Type 'make terrain.deck' first to create a deck for your machine. Then
+   edit the deck to select appropriate options, parameter statements, and
+   namelist options. Type './terrain.deck' to compile and run the program.
+   In this case, make is executed inside the deck.
+
+   Type chmod +x terrain.deck, if necessary.
+
+   NOTE that the V3-4 terrain deck has changed. So please go through the
+   deck and namelist carefully to fill in appropriate values. Since most
+   of the script variables are removed (such as TerPlt), you must now
+   fill the namelist directly. These namelists are: 
+   IFTER, IFILL, LSMDATA and VEGTYPE.
+
+   OR (recommended only for experienced users)
+
+   There are two ways to compile and run terrain program. If you choose
+   to use either the old, or USGS landuse datasets, your domain
+   dimensions are less than 100 by 100 in each dimension respectively
+   (including expanded dimensions), and you are not using 30 sec dataset, 
+   you can simply type 'make' to compile the code. 
+
+   If your domain dimensions are bigger than 100 by 100, or you choose to
+   use 30 sec dataset (or use very large domain with 5 min or 10 min terrain
+   data), you need first to modify two parameter include files
+   in src/ directory: parame.incl and paramed.incl. Then type 'make' to
+   compile.
+
+   Note on data dimensions ITRH and JTRH: These are dimensions of data 
+   covering the area of your interest, not original data.
+
+   If you would like to use the SiB data set, you need to do two more things
+   in src/ directory before you compile: 
+
+   1. cp paramesv0.inc paramesv.incl
+   2. cp vs_data0.incl vs_data.incl
+
+   After compiling the program, type 'make terrain.deck' to create a deck
+   for your machine, edit options in the deck, and type './terrain.deck' to
+   run the program.
+
+   If the compilation is successful, 3 executables will be generated in the
+   src/ directory: 
+
+   data_area.exe: calculate data area covered by 30 sec dataset, and decide 
+                  which tile(s) of USGS global dataset is required.
+   rdem.exe:      reconstruct USGS dataset to be used by terrain program.
+   terrain.exe:   generate terrain output fields.
+
+   If your terrain job is successfully completed, you should see the following
+   output files appearing in the top directory:
+
+   TER.PLT (on some machine, gmeta): a plot file containing your domain 
+                    configuration, and contour plots, if you have NCAR Graphics.
+   TERRAIN_DOMAINx: binary output from terrain program for domain x, and to be 
+                    used by later MM5 programs. For example, TERRAIN_DOMAIN1 is 
+                    a required input file for program Regrid.
+
+   You can look at the plots by using NCAR Graphics utility idt: idt TER.PLT. 
+
+   Make sure you have the following in your .cshrc file before you use
+   NCAR Graphics:
+
+   setenv NCARG_ROOT /usr/local/ncarg (or where NCAR Graphics is installed)
+
+------------------------------------------------
+
+More about Terrain:
+
+1. The terrain deck will automatically go to NCAR's anonymous ftp site to get
+   the terrestrial datasets based on the resolution you requested in the 
+   namelist (NTYPE). It makes the use of the ftp shell, ftp.csh, in Data directory.
+   (ftp.csh may be run separately to obtain data, but in this case, you must
+   edit the script and define some variables.)
+
+
+
+2. If you would like to use the 30 sec elevation data, set NTYPE = 6 for
+   the particular nest. Also define script variable Where30sTer in the deck
+   to tell the deck where to locate the data. The data can be downloaded to
+   your local disk prior to running Terrain program.
+
+   If you tell the deck to ftp data, the deck (via another ftp script, ftp30s.csh,
+   in Data/ directory) will automatically go to USGS ftp site to get the data.
+   (USGS ftp site: ftp://edcftp.cr.usgs.gov/pub/data/gtopo30/global)
+
+   Note that the old 30 sec US dataset is not usable in this and previous V3 
+   releases. One will have to use the global 30 sec data instead.
+
+   A new option is added in 3-1 release to use single tile USGS global 30 sec
+   elevation. This data file is only available from NCAR/MSS (1.9 Gb). If you
+   would like to obtain this file, contact mesouser.
+
+3. If you get a 'segmentation faults' error when executing this program,
+   check the domain dimensions defined in namelist, the PARAMETER statement
+   in the deck, do a 'make clean', and type './terrain.deck' to start
+   make and execution again.
+
+4. You can run the job on Cray and use the OutIEEE switch in the Cray
+   deck to create a dataset for workstation.
+
+5. When working on NCAR's Cray, you may obtain a batch deck from
+   ~mesouser/MM5V3/terrain.deck.cray, edit it, and submit it to
+   Cray batch job queue. Note that the deck for release 3.4 is different from
+   the decks for previous releases.
+
+---------------------------------------------------------
+
+*** A Note about Data:
+
+Six resolution datasets are available for elevation, vegetation and 
+land-water mask (the land-water mask data are derived from vegetation data).
+These are 60 min (or 1 deg), 30 min, 10 min, 5 min, 2 min and 30 sec. 
+The coarser resolution datasets are derived from the 30 sec datasets
+(except the old 13-category landuse data).
+
+   Site:
+   ftp://ftp.ucar.edu/mesouser/MM5V3/TERRAIN_DATA
+
+   Files:
+
+   Elevation files:
+
+     TER.TAR.gz (60, 30, 10, and 5 min data)
+     DEM_02M_GLOBAL.gz (2 min data)
+
+   Landuse files:
+
+     13-category old landuse data: 60, 30 and 10 min resolution
+
+     LANDUSE-OLD.TAR.gz
+
+     24-category USGS landuse data based vegetation data: (depending on VEGTYPE)
+
+     VEGETATION-USGS.TAR.gz   - 1 deg, 30, 10, 5 min resolution
+     VEG-USGS.02.gz           - 2 min resolution
+     VEG-USGS.30s.gz          - 30 sec resolution
+
+     16-category SiB landuse data based vegetation data:(depending on VEGTYPE)
+
+     VEGETATION-SIB.TAR.gz    - 1 deg, 30, 10, 5 min resolution
+     VEG-SIB.02.gz            - 2 min resolution
+     VEG-SIB.30s.gz           - 30 sec resolution
+
+   Land-water mask files:
+
+     land-water mask data based USGS vegetation data: (depending on VEGTYPE)
+
+     LANDWATERMASK-USGS.TAR.gz  - 1 deg, 30, 10, 5 min resolution
+     LWMASK-USGS.02.gz          - 2 min resolution
+     LWMASK-USGS.30s.gz         - 30 sec resolution
+     (The USGS data are updated in V3.5)
+
+     land-water mask data based SiB/USGS vegetation data: (depending on VEGTYPE)
+
+     LANDWATERMASK-SIB.TAR.gz   - 1 deg, 30, 10, 5 min resolution
+     LWMASK-SIB.02.gz           - 2 min resolution
+     LWMASK-SIB.30s.gz          - 30 sec resolution
+
+USGS: This is a global dataset, with the exception of Antarctica, part of
+Greenland and Russia (we are looking for ways to fill the gaps).
+Terrain creates 24 category landuse data, including urban. The category
+for water is 16.
+
+SiB:  This is a regional datasets with boundaries from 60W - 180W, and
+0N - 90N (basically North America without the NE corner of Canada).
+Terrain creates 16 category landuse data without urban. The category for
+water is 15. Urban is not one of the categories. 
+This dataset is the same used in NCEP's Eta model.
+
+   If you wish to process data for LSM model option in MM5, set LSMDATA=.TRUE. in
+   the deck, you'll obtain additional data:
+
+   LSM data: 
+
+     SOILCAT.TAR.gz   - soil category data at 1 deg, 30, 10, 5 min resolution
+     SOILCAT.02.gz    - soil category data at 2 min resolution
+     SOILCAT.30s.gz   - soil category data at 30 sec resolution
+     (soil category data are updated for V3.5, and they are now for top 0 - 30 cm layer)
+     SOILTEMP.60      - deep soil temperature at 1 deg resolution
+     VEG-FRACTION.10.gz   - vegetation fraction data at 10 min resolution
+
+     (30 - 100 cm layer soil category data)
+     SOILCATB.TAR.gz   - soil category data at 1 deg, 30, 10, 5 min resolution
+     SOILCATB.02.gz    - soil category data at 2 min resolution
+     SOILCATB.30s.gz   - soil category data at 30 sec resolution
+
+
+Note that soil category data over much of the world have 5 minute resolution since
+V3.5 release. It is 30 sec resolution over the US. Hence data at other resolutions 
+are created from either the 5 minute or 30 sec datasets.
+
+A special note about data over Hawaii Islands:
+
+- The new 5-min soil data show improvement over previous 1-degree dataset.
+
+- The new vegetation data have only urban category over the islands, but none others.
+  So we filled the rest of the islands with dominant landuse categories around 
+  similar latitude circles - this turns up to be mixed forest (category 15). This
+  is different from what is over the islands before which was savanna (category 10).
+
+
+---------------------------------------------------------
+
+Known problem with TERRAIN:
+
+- Over the poles, terrain may produce errorous terrain and other
+  terrestrial fields at the pole and along dateline if even grid 
+  dimensions are used. Using odd grid dimensions will work, at
+  least for a single domain.
+  
+
+---------------------------------------------------------
+
+Files/directories in this directory:
+
+CHANGES:   will contain changes made to this tar file
+README:    basic information on how to run terrain program
+Data:      directory where input data from various ftp sites for terrain program 
+           will reside
+Makefile:  top-level makefile
+Templates: directory where templates of terrain.deck for various platform resides
+x.tbl:     requried for NCAR Graphics to make plot file (TER.PLT)
+ezids and psids: used with IFEZFUG=TRUE to match define coastline based on 
+           NCAR Graphics.
+raobsta.ieee: radiosonde location file (may be out-of-dated)
+src:       directory that holds all source code for terrain.

@@ -1,0 +1,9 @@
+C   COMMON /FUDG/                                                                FUDGE.1
+C     CONTENT:  THE INFORMATION ON LANDUSE FUDGING.                              FUDGE.2
+C     USED IN:  CRLND,  SETUP.                                                   FUDGE.3
+C                                                                                FUDGE.4
+      COMMON /FUDG/ IFFUG, NDFUG, IFUG, JFUG, LNDFUG                             FUDGE.5
+      DIMENSION IFFUG(100),   NDFUG(100),                                        FUDGE.6
+     1        IFUG(200,100), JFUG(200,100),  LNDFUG(200,100)                     FUDGE.7
+      LOGICAL IFFUG                                                              FUDGE.8
+C                                                                                FUDGE.9

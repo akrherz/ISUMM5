@@ -1,0 +1,39 @@
+October 24, 2000
+
+This note concerns debugging the VECTOR=1 option in the MM5
+configure.user file. This option is currently used in Sections 7f
+(Fujitsu) and 7h (NEC SX/5). It may be more convenient to compile and
+run the vector modification on a workstation or other non-vector
+computer. To modify the code so that it will run on Compaq
+platform, do the following (the steps are written for she.mmm.ucar.edu,
+a Compaq 4100 cluster at MMM):
+
+1. Add "VECTOR=1" (no quotes) as a line in Section 7e of configure.user
+
+2. Add "FLIC_MACROS = LMvpp.m4" (no quotes) as a line in Section 7e of
+   configure.user
+
+3. Change RUNTIME_SYSTEM from "alpha" to "alphavector" (yes quotes)
+
+4. Add -Dvpp to CPPFLAGS
+
+5. Add -Dvpp to CFLAGS
+
+Make uninstall and make mpp.  With these modifications, the code will
+run on the Alpha system with the automatic vector transformations to
+EXMOISR, MRFPBL, and CUPARA3.
+
+Note: the configure.user file as-distributed with MM5 has IMPHYS set
+to 4. The vector optimizations apply only to IMPHYS=5. Be sure to
+make this change in your configure.user file before compiling.
+
+Final note: for debugging, one may also wish to change the FCFLAGS
+line in Section 7e to read as follows:
+
+FCFLAGS = -g -Olimit 2000 -fpe0 -align dcommons -align records \
+          -convert big_endian $(SPECIAL_OMP)
+
+-JM 10/24/00
+
+--20--
+

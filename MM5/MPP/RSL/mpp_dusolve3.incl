@@ -1,0 +1,41 @@
+#ifdef FULL_DECLARE
+
+C Defining FULL_DECLARE causes the entire set
+C of declarations to be included. Elsewhere, like in solve.F, the
+C declarations appear in the routine itself, so there only the
+C common declarations are needed foro the MPP version.
+
+C
+C WAS DUSOLVE3.INCL
+C
+      REAL PP3D,QC3D,QG3D,QI3D,QNC3D,QNI3D,QR3D,QV3D,T3D,U3D,V3D,W3D
+      DIMENSION U3D(MIX,  MJX,  MKX),    V3D(MIX,  MJX,  MKX),                   DUSOLVE3.1
+     1          T3D(MIX,  MJX,  MKX),    W3D(MIX,  MJX,  MKX+1),                 DUSOLVE3.2
+     2         PP3D(MIX,  MJX,  MKX),   QV3D(MIX,  MJX,  MKX),                   DUSOLVE3.3
+     3         QC3D(MIXM, MJXM, MKXM),  QR3D(MIXM, MJXM, MKXM),                  DUSOLVE3.4
+     4         QI3D(MIXIC,MJXIC,MKXIC),QNI3D(MIXIC,MJXIC,MKXIC),                 DUSOLVE3.5
+     5         QG3D(MIXIG,MJXIG,MKXIG),QNC3D(MIXIG,MJXIG,MKXIG)                  DUSOLVE3.6
+C
+      REAL QDOT
+      DIMENSION QDOT(MIX,MJX,KXP1)
+C
+      REAL PP3DTEN,QC3DTEN,QG3DTEN,QI3DTEN,QNC3DTEN,QNI3DTEN,QR3DTEN,
+     1     QV3DTEN,T3DTEN,U3DTEN,V3DTEN,W3DTEN
+      DIMENSION U3DTEN(MIX,  MJX,  MKX),    V3DTEN(MIX,  MJX,  MKX),
+     1          T3DTEN(MIX,  MJX,  MKX),    W3DTEN(MIX,  MJX,  MKX+1),
+     2         PP3DTEN(MIX,  MJX,  MKX),   QV3DTEN(MIX,  MJX,  MKX),
+     3         QC3DTEN(MIXM, MJXM, MKXM),  QR3DTEN(MIXM, MJXM, MKXM),
+     4         QI3DTEN(MIXIC,MJXIC,MKXIC),QNI3DTEN(MIXIC,MJXIC,MKXIC),
+     5         QG3DTEN(MIXIG,MJXIG,MKXIG),QNC3DTEN(MIXIG,MJXIG,MKXIG)
+C
+      REAL UCC,UCD,VCC,VCD
+      DIMENSION UCC(MIX,  MJX,  MKX),    VCC(MIX,  MJX,  MKX),
+     1          UCD(MIX,  MJX,  MKX),    VCD(MIX,  MJX,  MKX)
+#endif
+      COMMON /MPP_DUSOLVE3/ 
+     1     PP3D,QC3D,QG3D,QI3D,QNC3D,QNI3D,QR3D,QV3D,T3D,U3D,V3D,W3D
+      COMMON /MPP_DUSOLVE3/ QDOT
+      COMMON /MPP_DUSOLVE3/ 
+     1     PP3DTEN,QC3DTEN,QG3DTEN,QI3DTEN,QNC3DTEN,QNI3DTEN,QR3DTEN,
+     1     QV3DTEN,T3DTEN,U3DTEN,V3DTEN,W3DTEN
+      COMMON /MPP_DUSOLVE3/ UCC,UCD,VCC,VCD

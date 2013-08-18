@@ -1,0 +1,8 @@
+C                                                                                ADDRFOG.1
+C**********************************************************************          ADDRFOG.2
+C                                                                                ADDRFOG.3
+      REAL FOGSW,BCKIR                                                           ADDRFOG.4
+      POINTER (IFGSW, FOGSW(MIXG,MJXG)), (IFGBKI, BCKIR(MIXG,MJXG))              ADDRFOG.5
+      COMMON/ADDRFOG/IFGSW,IFGBKI                                                ADDRFOG.6
+C**********************************************************************          ADDRFOG.7
+C                                                                                ADDRFOG.8

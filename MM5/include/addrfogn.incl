@@ -1,0 +1,7 @@
+C                                                                                ADDRFOGN.1
+C**********************************************************************          ADDRFOGN.2
+C                                                                                ADDRFOGN.3
+      COMMON/ADDRFOGN/INFGSW,INFGBKI                                             ADDRFOGN.4
+      POINTER (INFGSW, FOGSWN(MIXG,MJXG)),(INFGBKI, BCKIRN(MIXG,MJXG))           ADDRFOGN.5
+C**********************************************************************          ADDRFOGN.6
+C                                                                                ADDRFOGN.7

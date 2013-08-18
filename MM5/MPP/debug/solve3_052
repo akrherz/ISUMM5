@@ -1,0 +1,25 @@
+cC                                                                                SOLVE3.1685
+cC     HSCR2 CONTAINS PSB AT DOT POINTS                                           SOLVE3.1686
+cC      PRINT *,PPTENS(3,3,10),WTENS(3,3,10),UTENS(3,3,10),                       SOLVE3.1687
+cC     -        VTENS(3,3,10)                                                     SOLVE3.1688
+c#ifdef DEBUGGAL
+c#  include <solve3_052>
+c#endif
+c      CALL SOUND(IYY,JXX,UB,VB,TB,HSCR2,RHSCR2,UA,VA,TA,QVB,PSA,HT,MSFD,         SOLVE3.1689
+c     +     MSFX,DX,DT,INEST,KTAU)                                                SOLVE3.1690
+cC                                                                                SOLVE3.1691
+
+      if(inest.eq.NESTDEBUG)then
+      i = IDEBUG
+      j = JDEBUG
+      k = KDEBUG
+      print*,'solve3_052: CALLING SOUND',inest
+      PRINT *,PPTENS(i,j,k),WTENS(i,j,k),UTENS(i,j,k),
+     -         VTENS(i,j,k)
+      print *,'ua   ',ua(i,j,k)
+      print *,'va   ',va(i,j,k)
+      print *,'ta   ',ta(i,j,k)
+      print *,'ub   ',ub(i,j,k)
+      print *,'vb   ',vb(i,j,k)
+      print *,'tb   ',tb(i,j,k)
+      endif

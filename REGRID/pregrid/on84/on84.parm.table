@@ -1,0 +1,18 @@
+ CODE    : ABBR       :     Variable                 : Units 
+---------------------------------------------------------------
+   1     : HGT        : Geopotential                 : gpm
+   8     : PRES       : Pressure                     : mb
+   16    : TMP        : Temperature                  : K
+   19    : POT        : Potential Temperature        : K
+   48    : U-GRD      : U Component of wind wrt grid : m s{-1}
+   49    : V-GRD      : V Component of wind wrt grid : m s{-1}
+   88    : RH         : Relative Humidity            : %
+   89    : P WAT      : Precipitable Water           : kg m{-2}
+   93    : SNO D      : Snow Depth                   : m
+   384   : WTMP       : Water Temperature            : K
+
+   128   : MSL        : Mean Seal Level              : ---
+   129   : SFC        : Earth's Surface (BOA)        : ---
+   130   : TRO        : Tropopause                   : ---
+   144   : BDY        : Boundary sigma?              : ---
+   145   : TRS        : Troposphere sigma?           : ---

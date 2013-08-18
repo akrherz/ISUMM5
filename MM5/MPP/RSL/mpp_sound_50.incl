@@ -1,0 +1,28 @@
+CSTART   mpp_sound_50.incl
+#ifdef MPP1
+#  ifdef UPSHOT
+        call mm5_logevent(202)
+#  endif
+C        * * * * * * * * * * * * *
+C        * * * * * * * * * * * * *
+C        * * * * * * * * * * * * *
+C        * * * * * * * * * * * * *
+C        * * * * * * * * * * * * *
+C        * * * * * * * * * * * * *
+C        * * * * * * + * * * * * *
+C        * * * * * * * * * * * * *
+C        * * * * * * * * * * * * *
+C        * * * * * * * * * * * * *
+C        * * * * * * * * * * * * *
+C        * * * * * * * * * * * * *
+C        * * * * * * * * * * * * *
+C                  
+C estore            x
+        IF (IFUPR.EQ.1) THEN
+          CALL RSL_EXCH_STENCIL(DOMAINS(INEST), STEN_UPR(INEST))
+        ENDIf
+#  ifdef UPSHOT
+        call mm5_logevent(103)
+#  endif
+#endif
+CEND   mpp_sound_50.incl

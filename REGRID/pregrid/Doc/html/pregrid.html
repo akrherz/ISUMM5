@@ -1,0 +1,87 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; OSF1 V4.0 alpha) [Netscape]">
+</head>
+<body text="#000000" bgcolor="#CCFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<h1>
+PREGRID</h1>
+
+<h3>
+General description</h3>
+<i>Pregrid</i> is not a single program, but rather a suite of programs to read
+from various sources of gridded data in various formats, and write the
+data out again in a simple, specified format.&nbsp; The primary purpose
+of this suite of programs is to prepare gridded analyses for horizontal
+interpolation to an MM5 model grid by program <i>regridder</i>.
+<p>Separate <i>pregrid</i> programs have been written for a number of data
+sources.&nbsp; In addition, many data sets in the GRIB format may be processed
+by the program in the "grib.misc" directory.&nbsp; Some data sets in GRIB
+format may be handled more easily by a separate program, rather than by
+trying to make the grib.misc code handle everything.&nbsp; If users want
+to import code from some other data source or in some other data format,
+they will need to create their own <i>pregrid</i> program, which simply
+reformats the data to be read by <i>regridder</i>.&nbsp; There currently
+exists a stand-alone shell for running <i>pregrid</i> alone (without <i>regridder</i>).&nbsp;
+A single shell for running both <i>pregrid</i> and <i>regridder</i> may
+be available sometime in the future.
+<h3>
+The "pregrid" directory</h3>
+The pregrid directory has the following files and subdirectories:
+<ul>
+<li>
+Doc:&nbsp; Some documentation files.</li>
+
+<li>
+Makefile:&nbsp; Makefile for building executables.</li>
+
+<li>
+era:&nbsp; Tables needed to run the Ecmwf Reanalysis dataset.</li>
+
+<li>
+grib.misc:&nbsp; Fortran code to run many GRIB datasets.</li>
+
+<li>
+navysst:&nbsp; Program and table needed for Navy SSTs</li>
+
+<li>
+ncep.grib:&nbsp; Program and tables needed for NCEP GDAS archives in GRIB.</li>
+
+<li>
+nnrp:&nbsp; Tables needed to access NCAR/NCEP Reanalysis project archives.</li>
+
+<li>
+on84:&nbsp; Program and Tables needed to access old NCEP GDAS archives
+in ON84 format.</li>
+
+<li>
+pregrid.csh:&nbsp; C-shell script used to run <i>pregrid</i> locally or
+interactively.</li>
+
+<li>
+util:&nbsp; Fortran and c code for many functions common to many of the data
+access programs</li>
+</ul>
+
+<h3>
+<a href="how_to_use_pregrid.html">How to use <i>pregrid</i></a></h3>
+
+<h3>
+<a href="intermediate_format.html">REGRID Intermediate&nbsp;
+	Format</a></h3>
+<h3>
+<a href="pregrid_changes.html">Recent changes to pregrid programs</a></h3>
+
+</p>
+<p>
+<hr WIDTH="100%">
+<br><a href="Documentation_Home.html">Documentation HOME</a>
+<p>
+<!-- hhmts start -->
+Last modified: Thu Aug 31 11:27:21 MDT 2000
+<!-- hhmts end -->
+</p>
+</body>
+</html>

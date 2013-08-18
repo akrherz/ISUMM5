@@ -1,0 +1,15 @@
+      REAL SCALE                                                                 HDTABL.1
+      PARAMETER (SCALE=1.0E7)                                                    HDTABL.2
+      REAL HDIES,HDT150,HDT181,HDWES,HETF,PBVT,PBVT2,PBVT3,PBVTS,                HDTABL.3
+     1     PBVTS2,PBVTS3,PPICAL,PPISCL,RLAMDA,RPRC,RPRE,RXMI,XNCTBL              HDTABL.4
+      COMMON /HDTABL/ HDIES(10000:40000),HDWES(10000:40000),                     HDTABL.5
+     1                HDT181(1000:4000),HDT150(1000:4000),                       HDTABL.6
+     2                PBVT(0:100000), PBVTS(0:100000),                           HDTABL.7
+     3                PBVT2(0:100000), PBVT3(0:100000),                          HDTABL.8
+     4                PBVTS2(0:100000), PBVTS3(0:100000),                        HDTABL.9
+     5                RLAMDA(0:200000),                                          HDTABL.10
+     6                XNCTBL(10000:27320),PPICAL,PPISCL,                         HDTABL.11
+     7                RPRE(0:20000),RPRC(0:20000),                               HDTABL.12
+     8                RXMI(0:100000),NOS(0:200000),                              HDTABL.13
+     9                HETF(10000:27320),                                         HDTABL.14
+     1                NOS25(0:100001)                                            HDTABL.15

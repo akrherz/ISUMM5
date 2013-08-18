@@ -1,0 +1,30 @@
+# Makefile for directory utility_programs ("all")
+# 1. "parseconfig" is made always
+# 2. linesplitter72 is only made if linesplitter.c is new
+#    It is used if the lookup table is used (IMPHYS=4)
+# Contact: D. Hansen,NCAR 1996
+
+DEVTOP = ..
+include ../configure.user
+
+HEADERS = filecache.h
+OBJS =  LineNumberer.o \
+	filecache.o
+
+all:	LineNumberer
+
+$(OBJS): $(HEADERS)
+CFLAGS = -g
+
+LineNumberer: $(OBJS)
+	$(CC) $(CFLAGS) -o LineNumberer $(OBJS)
+
+# -------------------------------------------------------------------------
+# common rules for all Makefiles - do not edit
+
+emptyrule::
+
+clean::
+	$(RM_CMD) "#"*
+
+# -------------------------------------------------------------------------

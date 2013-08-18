@@ -1,0 +1,18 @@
+   
+This is a subdirectory for storing *.f and *.F files.
+
+1. *.f files are those which have been preprocessed by cpp.
+   These will already include the "include" files.
+2. *.F files those which have not been preprocessed by cpp.
+3. *.incl are include for the *.F files.
+
+If a single file is desired for listing purposes, one could
+simply 
+
+'cat *.f > mm5_pick.listing' 
+
+which lists all of the subroutines alphabetically.
+Or if one desires to place the main program at the beginning
+of the mm5_pick.f file, one could
+
+'mv mm5.f mm5_pick.listing; cat *.f >> mm5_pick.listing'

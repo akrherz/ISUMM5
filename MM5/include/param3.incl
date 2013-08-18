@@ -1,0 +1,35 @@
+C                                                                                PARAM3.1
+C----------------------------------------------------------------------          PARAM3.2
+C                                                                                PARAM3.3
+      REAL A,ALPHA,BETA,CD,CDSEA,CH,CHSEA,CP,CZO,DECLIN,DECTIM,DEGRAD,           PARAM3.4
+     1 DELTMX,DPD,DSIGMA,EOMEG,G,GNU,GNUHF,OMU,OMUHF,OZO,PTOP,PTOP4,             PARAM3.5
+     2 QCON,R,RHOS,ROVCP,ROVG,SIGMA,SOLCON,SOLSET,STBOLT,TIMAX,TRAN,             PARAM3.6
+     3 TWT,VCONVC,WGTD,WGTX                                                      PARAM3.7
+      INTEGER ICON,ICONS,IRDTT,ISKF,ISPGD,ISPGX,JXSEX,K700,KCHI,KCLO,            PARAM3.8
+     1 KCMD,KTIR,KXOUT                                                           PARAM3.9
+      COMMON/PARAM3/KXOUT,JXSEX,                                                 PARAM3.10
+     3                 KCLO,  KCMD,  KCHI,  KTIR,  ICON, ISPGD, ISPGX,           PARAM3.11
+     3                TIMAX,DELTMX,     R,    CP, ROVCP,     G,  ROVG,           PARAM3.12
+     4               KARMAN,  RHOS,    CD, CDSEA,    CH, CHSEA,  PTOP,           PARAM3.13
+     5                PTOP4,DEGRAD,DECLIN,DECTIM,   DPD,                         PARAM3.14
+     6                EOMEG,SOLCON,STBOLT, ALPHA,  BETA,   GNU, GNUHF,           PARAM3.15
+     7                  OMU, OMUHF,  WGTD,  WGTX, SIGMA,DSIGMA,     A,           PARAM3.16
+     8                  TWT,  QCON,  TRAN,  K700, IRDTT,  ISKF,                  PARAM3.17
+     9                ICONS, SOLSET, CZO, OZO, VCONVC                            PARAM3.18
+     &                ,KZOGS                                                     PARAM3.19
+      REAL KZOGS(MKX)                                                            PARAM3.20
+C                                                                                PARAM3.21
+      REAL KARMAN                                                                PARAM3.22
+#ifndef VECTOR                                                                   07NOV00.1124
+      DIMENSION ICON(MJX),ICONS(MJX)                                             PARAM3.23
+#else                                                                            07NOV00.1125
+C_FLIC_BEGIN_NOFLIC                                                              07NOV00.1126
+      DIMENSION ICON(MJX),ICONS(MJX)                                             07NOV00.1127
+C_FLIC_END_NOFLIC                                                                07NOV00.1128
+#endif                                                                           07NOV00.1129
+      DIMENSION KXOUT(MAXSES)                                                    PARAM3.24
+      DIMENSION JXSEX(MAXSES)                                                    PARAM3.25
+      DIMENSION SIGMA(KXP1),A(MKX),DSIGMA(MKX),TWT(MKX,2),QCON(MKX),             PARAM3.26
+     1          WGTD(NSPGD),WGTX(NSPGX),TRAN(46,13)                              PARAM3.27
+      real shadint(mix,mjx,maxnes)                                               23DEC04.2750
+      common /ororad/ shadint                                                    23DEC04.2751

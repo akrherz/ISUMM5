@@ -1,0 +1,27 @@
+c#ifdef IBLT5                                                                     02DEC96.303
+c        ELSEIF(IBLTYP(INEST).EQ.5)THEN                                           02DEC96.304
+c          CALL MRFPBL(IYY,JXX,KZZ,J,INEST,NN,UTEN,VTEN,QCTEN,SCR3,SCR4,          02DEC96.305
+c     +         QITEN,QNCTEN)                                                     02DEC96.306
+c#endif                                                                           02DEC96.307
+c        ENDIF                                                                    SOLVE3.1026
+c#endif
+c#ifdef DEBUGGAL
+c#  include <solve3_007>
+c#endif
+cC                                                                                SOLVE3.1027
+cC                                                                                SOLVE3.1028
+cC IF NUDGING SURFACE WINDS IN THE BOUNDARY LAYER, IF IWINDS(INEST+2)=1           SOLVE3.1029
+cC USE A SIMILARITY CORRECTION BASED ON ROUGHNESS TO APPLY 10M                    SOLVE3.1030
+cC WIND TO THE SURFACE LAYER (K=KL) AT 40M.  TO DO THIS WE MUST                   SOLVE3.1031
+
+            if (j.eq.JDEBUG.and.inest.eq.NESTDEBUG ) then
+              i = IDEBUG
+              k = KDEBUG
+              print*,'solve3_007: after hirpbl',inest,i,j
+              print*,'uten',uten(i,k)
+              print*,'vten',vten(i,k)
+              print*,'scr3 ',scr3(i,k)
+              print*,'scr4 ',scr4(i,k)
+              print*,'qcten',qcten(i,k)
+            endif
+

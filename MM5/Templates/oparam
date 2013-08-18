@@ -1,0 +1,32 @@
+ ;
+ ;      ************* FORECAST TIME AND TIME STEP ******************
+ ;
+ TIMAX  = 720.,         ; forecast length in minutes
+ TISTEP = 240.,         ; coarse domain DT in model, use 3*DX
+ ;
+ ;      ************** OUTPUT/RESTART OPTIONS ***************
+ ;
+ IFREST = .FALSE.,      ; whether this is a restart
+    IXTIMR  = 720,      ; restart time in minutes
+ IFSAVE = .TRUE.,       ; save data for restart
+    SVLAST = .TRUE.,    ; T: only save the last file for restart
+                        ; F: save multiple files
+    SAVFRQ = 360.,      ; how frequently to save data (in minutes)
+ IFTAPE = 1,            ; model output: 0,1
+    TAPFRQ = 180.,      ; how frequently to output model results (in minutes)
+    BUFFRQ = 0.,        ; how frequently to split model output files (in minutes),
+ ;                        ignored if < TAPFRQ
+    INCTAP = 1,1,1,1,1,1,1,1,1,1,  ; multipliers of TAPFRQ for outputting
+ IFRSFA = .FALSE.,      ; IF this is a RESTART run, AND IF FDDA is ON, 
+                        ; AND IF multiple input FILES are used, set this to .TRUE.
+                        ; set CDATEST to the INITIAL time of the first run
+ IFSKIP = .FALSE.,      ; whether to skip input files - DO NOT use this for restart
+                        ; also need to set CDATEST if set to .TRUE.
+    CDATEST = '1993-03-13_00:00:00', ; IF IFSKIP=.TRUE., this will be the date from which the code should start
+                                     ; IF IFRSFA=.TRUE., this will be the INITIAL date from the first model run
+ IFPRT = 0,             ; sample print out: =1, a lot of print
+ PRTFRQ = 720.,         ; Print frequency for sample output (in minutes)
+ MASCHK = 99999,        ; mass conservation check (KTAU or no. of time steps)
+ IFTSOUT = .FALSE.,     ; output time series (default 30 points)
+   TSLAT = 0.0,0.0,0.0,0.0,0.0, ; latitudes of time series points (S is negative)
+   TSLON = 0.0,0.0,0.0,0.0,0.0, ; longitudes of time series points (W is negative)

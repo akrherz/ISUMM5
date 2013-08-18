@@ -1,0 +1,1511 @@
+===================================================================
+CHANGES
+diff -r3.8 -r3.12
+6c6,157
+< The current release is 3.5 (December 5, 2001)
+---
+> The current release is 3.6 (December 19, 2002)
+> 
+> ========================================================
+> 
+> Bug fixes and changes in V3.6:
+> 
+> Bug Fixes:
+> 
+> pregrid:
+> 
+>  - Fix the a problem with incoming GRIB data being a constant field. 
+>    Should not have effect on most data. (Thanks to Brent Show from FSL.)
+> 
+>    Affected files:
+>    pregrid/util/gribcode.F
+> 
+>  - Fix a problem with the plotting using Lambert-Conformal Maps. Potential
+>    problem with newer version of the NCAR Graphics.
+> 
+>    Affected files:
+>    pregrid/util/Makefile, plotfmt.F
+> 
+>  - Fix so that all NNRP dates can be accessed, including the dates under
+>    the rerun lists.
+> 
+>    Affected files:
+>    pregrid/nnrp/get_nnrp.csh, get_nnrp.deck, get_nnrp.deck.ibm, get_nnrp.sh
+> 
+> regridder:
+> 
+>  - A fix to prevent TC Bogus accessing uninitialized array elements.
+> 
+>    Affected files:
+>    regridder/src/module_diags.F, module_tc_bogus.F
+> 
+>  - Fix the RH computation so that it makes use of mixing ratio, 
+>    not specific humidity. This affects results only in TC bogussing.
+> 
+>    Affected files:
+>    regridder/src/module_diags.F
+> 
+>  - Correct the problem with bilinearly interpolation across input data 
+>    boundaries (such as for AVN data across 0 degree longitude).
+> 
+>    Affeced files:
+>    regridder/src/module_horiz_interp.F
+> 
+>  - Enforce ABS(lon1) and ABS(xlonc) to be less than 180 degree to 
+>    fix RUC input problem.
+> 
+>    Affected files:
+>    regridder/src/proc_ingest_first_guess.F
+> 
+>  - Fix vertical interpolations of temperature and height to change from 
+>    linear in p to linear in ln(p).
+> 
+>    Affected files:
+>    regridder/src/proc_list_to_array.F
+> 
+>  - Fix an error when no new levels are requested in the namelist.input.
+>   
+>    Affected files:
+>    regridder/src/proc_namelist.F
+> 
+>  - Add a CPU = 1 to the Cray job script so that the code will always be 
+>    compiled with only one CPU to prevent failing compilation. 
+>    Add the TC bogus namelist to the script.
+> 
+>    Affected Files:
+>    cray-regrid.deck
+> 
+> Changes and improvements:
+> 
+> pregrid:
+> 
+>  - Add a check for missing U,V,T in vertical levels, and vertically interpolate 
+>    to fill data in if possible.
+> 
+>    Affected files:
+>    pregrid/grib.misc/rrpr.F
+> 
+>  - Add Vtables for use with NCEP AVN and AFWA AGRMET data streams.
+> 
+>    Affected files:
+>    pregrib/grib.misc/Vtable.AGRMETSNOW, Vtable.AGRMETSOIL, Vtable.AGRMETSOIL2,
+>                      Vtable.AVN3D, Vtable.AVNSNOW, Vtable.AVNSOIL,
+>                      Vtable.AVNSST, Vtable.NAVYSST
+> 
+>  - Add the capability of generating intermediate file for seaice fraction.
+>    This is run separately from pregrid job.
+> 
+>    Affected files:
+>    pregrid/Makefile
+>    pregrid/nise/Makefile, README, namelist.input
+>    pregrid/nise/src/Makefile, module_namelist_stuff.F, module_nsidc.F,
+>                     module_output_data.F, module_support.F, seaicefr.F
+> 
+>  - Able to handle Mercator projection data as input to pregrid.
+> 
+>    Affected files:
+>    pregrid/grib.misc/datint.F, output.F, rd_grib.F, rrpr.F
+>    pregrid/util/gribcode.F, pregrid_version.F
+> 
+> regridder:
+> 
+>  - Add new variables that will be needed when making use of the 
+>    new NOAH LSM in the MM5 code.
+> 
+>    Affected files:
+>    regridder/src/module_constants.F, proc_ingest_first_guess.F, 
+>                  proc_make_dot_point_data.F
+> 
+>  - Add the rmax and vmax_ratio options for TC bogussing to the general
+>    namelist. Add all TC bogus namelist options to the hidden namelist
+>    (more parameters to edit). See regridder/Doc/README.namelist for
+>    detail.
+> 
+>    Affected files:
+>    regridder/namelist.input
+>    regridder/Doc/README.namelist
+>    regridder/src/module_namelist_info.F, module_tc_bogus.F,
+>                  proc_namelist.F
+>    regridder/.hidden/namelist.input
+> 
+>  - Add WEASD, SNOWH, SEAICEFR to land-sea masked interpolations.
+> 
+>    Affected files:
+>    regridder/src/proc_ingest_first_guess.F
+> 
+>  - Allow older namelist.input files (v3.4 - without TC) to be used  with newer 
+>    (v3.5 +) code.
+>   
+>    Affected files:
+>    regridder/src/proc_namelist.F
+> 
+>  - Change to keep ALLOCATED space rather than deallocate/allocate every
+>    time, expect when input field size change.
+> 
+>    Affected files:
+>    regridder/src/proc_ingest_first_guess.F
+> 
+>  - Remove ADJUSTL to make both reading root and constant file names work on IBM
+>    for its xlf8.1 compiler. No effect on results otherwise.
+> 
+>    Affected files:
+>    regridder/src/proc_ingest_first_guess.F
+> 
+>  - When running batch regrid deck on NCAR's computer, tar file is accessed
+>    from disk first and then MSS.
+> 
+>    Affected file:
+>    ibm-regrid.deck
+===================================================================
+Makefile
+diff -r3.11 -r3.12
+63c63
+< 		echo "CPPFLAGS		=	-I. -C -P -DDEC -DBIT32"	>> macros_pregrid	; \
+---
+> 		echo "CPPFLAGS		=	-I. -C -P -DDEC -DBIT -DBIT32"	>> macros_pregrid	; \
+67c67
+< 		echo "CCFLAGS		=	-DDEC -DBIT32 -I."		>> macros_pregrid	; \
+---
+> 		echo "CCFLAGS		=	-DDEC -DBIT -DBIT32 -I."		>> macros_pregrid	; \
+===================================================================
+README
+diff -r3.6 -r3.7
+2,3c2,3
+< VERSION 3 REGRID PROGRAM (release 3-5)
+< (Updated December 5, 2001)
+---
+> VERSION 3 REGRID PROGRAM (release 3-6)
+> (Updated December 19, 2002)
+===================================================================
+cray-regrid.deck
+diff -r3.1 -r3.2
+195a196
+>   setenv NPROC 1
+383a385,391
+> 
+> &record5
+>  insert_bogus_storm              = .FALSE.
+>  num_storm                       =    1
+>  latc_loc                        =   36.
+>  lonc_loc                        =  -35.
+>  vmax                            =   50. /
+===================================================================
+ibm-regrid.deck
+diff -r3.1 -r3.2
+13,14c13,16
+< set TMPDIR=/ptmp/mm5$$
+< mkdir $TMPDIR
+---
+> if ( ! -e /ptmp/$USER ) then
+>    mkdir /ptmp/$USER
+> endif
+> set TMPDIR=/ptmp/$USER
+158,162c160,170
+< 
+< echo "msread REGRID tar file"
+< msread regrid.tar.gz /MESOUSER/MM5V3/REGRID.TAR.gz
+< gunzip regrid.tar.gz
+< tar xvf regrid.tar
+---
+> cp /fs/othrorgs/home0/mesouser/MM5V3/REGRID.TAR.gz REGRID.TAR.gz
+> if ( ! -e REGRID.TAR.gz ) then
+>    msread REGRID.TAR.gz /MESOUSER/MM5V3/REGRID.TAR.gz
+> endif
+> if ( ! -e REGRID.TAR.gz ) then
+>    echo "The REGRID.TAR.gz file does not exist.  Stopping."
+>    exit ( 1 )
+> endif
+> gunzip REGRID.TAR.gz
+> tar xf REGRID.TAR
+> rm REGRID.TAR
+===================================================================
+pregrid/Makefile
+diff -r3.1 -r3.2
+12a13,16
+> 		( $(CD) nise; $(MAKE) all )
+> 
+> nise:		libpgu.a
+> 		( $(CD) nise; $(MAKE) all )
+36a41
+> 		( $(CD) nise; $(MAKE) clean )
+===================================================================
+pregrid/era/get_era.csh
+diff -r3.3 -r3.4
+29c29
+< end
+---
+> endif
+===================================================================
+pregrid/era/get_era.deck.ibm
+diff -r3.1 -r3.2
+13,14c13,16
+< set TMPDIR=/ptmp/mm5$$
+< mkdir $TMPDIR
+---
+> if ( ! -e /ptmp/$USER ) then
+>    mkdir  /ptmp/$USER
+> endif
+> set TMPDIR=/ptmp/$USER
+24c26
+< set Host = username@host.domain:/local_directory
+---
+> #set Host = username@host.domain:/local_directory
+106c108
+<       rcp $local ${Host}
+---
+> #      rcp $local ${Host}
+118c120
+<       rcp $local ${Host}
+---
+> #      rcp $local ${Host}
+===================================================================
+pregrid/grib.misc/datint.F
+diff -r3.1 -r3.2
+2a3,4
+> !*****************************************************************************!
+> !                                                                             !
+3a6,10
+> !    2002-05-16:                                                              !
+> !               - Handle the Mercator projection.                             !
+> !                 This change also required changes to rrpr.F, rd_grib.F,     !
+> !                 output.F, gribcode.F                                        !
+> !                                                                             !
+18a26,27
+> !                                                                             !
+> !*****************************************************************************!
+88a98,99
+>               elseif (map%igrid == 1) then
+>                  read(10) map%lat1, map%lon1, map%dy, map%dx, map%truelat1
+94a106,108
+>               else
+>                  print*, 'Unrecognized map%igrid: ', map%igrid
+>                  stop "STOP IN DATINT"
+110a125,126
+>               elseif (map%igrid == 1) then
+>                  read(10) map%lat1, map%lon1, map%dy, map%dx, map%truelat1
+116a133,135
+>               else
+>                  print*, 'Unrecognized map%igrid: ', map%igrid
+>                  stop "STOP IN DATINT"
+129a149,150
+>                  elseif (map%igrid == 1) then
+>                     write(11) map%lat1, map%lon1, map%dy, map%dx, map%truelat1
+135a157,159
+>                  else
+>                     print*, 'Unrecognized map%igrid: ', map%igrid
+>                     stop "STOP IN DATINT"
+===================================================================
+pregrid/grib.misc/output.F
+diff -r3.1 -r3.2
+1a2,4
+> !                                                                             !
+> !*****************************************************************************!
+> !                                                                             !
+2a6,11
+> !                                                                             !
+> !    2002-05-16:                                                              !
+> !               - Handle the Mercator projection.                             !
+> !                 This change also required changes to rrpr.F, rd_grib.F,     !
+> !                 datint.F, gribcode.F                                        !
+> !                                                                             !
+15a25,26
+> !                                                                             !
+> !*****************************************************************************!
+152a164,165
+>               elseif (map%igrid.eq.1)then ! Mercator
+>                  write (iunit) map%lat1, map%lon1, map%dy, map%dx, map%truelat1
+===================================================================
+pregrid/grib.misc/rd_grib.F
+diff -r3.4 -r3.5
+67,70c67,80
+< ! 2000-8-10: Added the capability to deal with thinned grids.  The            !
+< !    thinned-grid capability was adapted from modifications provided by       !
+< !    Oren Duer of the Hebrew University of Jerusalem.  Many thanks are due    !
+< !    to him.                                                                  !
+---
+> !*****************************************************************************!
+> !                                                                             !
+> ! Recent changes:                                                             !
+> !                                                                             !
+> ! 2002-05-16:                                                                 !
+> !               - Handle the Mercator projection.                             !
+> !                 This change also required changes to rrpr.F, output.F,      !
+> !                 datint.F, gribcode.F                                        !
+> !                                                                             !
+> ! 2000-08-10:                                                                 !
+> !           - Added the capability to deal with thinned grids.  The thinned-  !
+> !             grid capability was adapted from modifications provided by Oren !
+> !             Duer of the Hebrew University of Jerusalem.  Many thanks are    !
+> !             due to him.                                                     !
+297a308,317
+> 
+>   elseif (ksec2(4).eq.1) then ! Mercator grid
+>      map%igrid = 1
+>      map%nx = infogrid(1)
+>      map%ny = infogrid(2)
+>      map%dx = ginfo(8)
+>      map%dy = ginfo(9)
+>      map%lat1 = ginfo(3)
+>      map%lon1 = ginfo(4)
+>      map%truelat1 = ginfo(11)
+===================================================================
+pregrid/grib.misc/rrpr.F
+diff -r3.4 -r3.6
+4a5,6
+> !*****************************************************************************!
+> !                                                                             !
+5a8,17
+> !                                                                             !
+> !    2002-05-16:                                                              !
+> !               - Handle the Mercator projection.                             !
+> !                 This change also required changes to output.F, rd_grib.F,   !
+> !                 datint.F, gribcode.F                                        !
+> !                                                                             !
+> !    2002-02-13:                                                              !
+> !               - Added vertical interpolation in pressure in case of missing !
+> !                 U, V, T (the check for RH was already there)                !
+> !                                                                             !
+21a34,35
+> !                                                                             !
+> !*****************************************************************************!
+120a135,136
+>         elseif (map%igrid.eq.1)then ! Mercator
+>            read (iunit) map%lat1, map%lon1, map%dy, map%dx, map%truelat1
+170a187,239
+> 
+> !
+> ! If upper-air U is missing, see if we can interpolate from surrounding levels.
+> ! This is a simple vertical interpolation, linear in pressure.
+> ! Currently, this simply fills in one missing level between two present levels. 
+> !
+> 
+>      do k = 2, nlvl-1, 1
+>         if (plvl(k-1) .lt. 200000.) then
+>            if ( (.not. is_there(nint(plvl(k)),'U')) .and. &
+>                 ( is_there(nint(plvl(k-1)), 'U')) .and.&
+>                 ( is_there(nint(plvl(k+1)), 'U')) ) then
+>               call get_dims(nint(plvl(k+1)), 'U')
+>               call vntrp(plvl, maxlvl, k, "U       ", map%nx, map%ny)
+>            endif
+>         endif
+>      enddo
+> 
+> !
+> ! If upper-air V is missing, see if we can interpolate from surrounding levels.
+> ! This is a simple vertical interpolation, linear in pressure.
+> ! Currently, this simply fills in one missing level between two present levels. 
+> !
+> 
+>      do k = 2, nlvl-1, 1
+>         if (plvl(k-1) .lt. 200000.) then
+>            if ( (.not. is_there(nint(plvl(k)),'V')) .and. &
+>                 ( is_there(nint(plvl(k-1)), 'V')) .and.&
+>                 ( is_there(nint(plvl(k+1)), 'V')) ) then
+>               call get_dims(nint(plvl(k+1)), 'V')
+>               call vntrp(plvl, maxlvl, k, "V       ", map%nx, map%ny)
+>            endif
+>         endif
+>      enddo
+> 
+> !
+> ! If upper-air T is missing, see if we can interpolate from surrounding levels.
+> ! This is a simple vertical interpolation, linear in pressure.
+> ! Currently, this simply fills in one missing level between two present levels. 
+> !
+> 
+>      do k = 2, nlvl-1, 1
+>         if (plvl(k-1) .lt. 200000.) then
+>            if ( (.not. is_there(nint(plvl(k)),'T')) .and. &
+>                 ( is_there(nint(plvl(k-1)), 'T')) .and.&
+>                 ( is_there(nint(plvl(k+1)), 'T')) ) then
+>               call get_dims(nint(plvl(k+1)), 'T')
+>               call vntrp(plvl, maxlvl, k, "T       ", map%nx, map%ny)
+>            endif
+>         endif
+>      enddo
+> 
+> 
+461d529
+< !KWM  b = 0.5 * (a + c)
+===================================================================
+pregrid/ncep.grib/get_ncep.deck
+diff -r3.2 -r3.3
+34,35c34,35
+< cd mesouser/newprogs
+< get regrid.tar.gz
+---
+> cd mesouser/MM5V3
+> get REGRID.TAR.gz regrid.tar.gz
+===================================================================
+pregrid/ncep.grib/get_ncep.deck.ibm
+diff -r3.1 -r3.3
+13,14c13,16
+< set TMPDIR=/ptmp/mm5$$
+< mkdir $TMPDIR
+---
+> if ( ! -e /ptmp/$USER ) then
+>    mkdir /ptmp/$USER
+> endif
+> set TMPDIR=/ptmp/$USER
+23c25
+< set Host = username@host.domain:/local_directory
+---
+> #set Host = username@host.domain:/local_directory
+37,38c39,40
+< cd mesouser/newprogs
+< get regrid.tar.gz
+---
+> cd mesouser/MM5V3
+> get REGRID.TAR.gz regrid.tar.gz
+122c124
+<       rcp $local ${Host}
+---
+> #      rcp $local ${Host}
+===================================================================
+pregrid/nnrp/get_nnrp.csh
+diff -r3.3 -r3.4
+74a75,80
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+99a106,111
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+139a152,157
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+===================================================================
+pregrid/nnrp/get_nnrp.deck
+diff -r3.4 -r3.5
+91a92,97
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+116a123,128
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+156a169,174
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+===================================================================
+pregrid/nnrp/get_nnrp.deck.ibm
+diff -r3.1 -r3.3
+13,14c13,16
+< set TMPDIR=/ptmp/mm5$$
+< mkdir $TMPDIR
+---
+> if ( ! -e /ptmp/$USER ) then
+>    mkdir /ptmp/$USER
+> endif
+> set TMPDIR=/ptmp/$USER
+23c25
+< set Host = username@host.domain:/local_directory
+---
+> #set Host = username@host.domain:/local_directory
+95a98,103
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+120a129,134
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+160a175,180
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+235c255
+<         rcp ${flwant} ${Host}
+---
+> #        rcp ${flwant} ${Host}
+270c290
+<         rcp ${file} ${Host}/SFCNNRP_${file:t}
+---
+> #        rcp ${file} ${Host}/SFCNNRP_${file:t}
+===================================================================
+pregrid/nnrp/get_nnrp.sh
+diff -r3.2 -r3.3
+78a79,84
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+103a110,115
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+143a156,161
+>       if ( $YYYY == 1976 || $YYYY == 1977 || $YYYY == 1978 ) then
+>         set File3d = ${YYYY}rerun_A.list
+>       endif
+>       if ( $YYYY == 1997 || $YYYY == 1998 || $YYYY == 1999 || $YYYY == 2000 ) then
+>         set File3d = ${YYYY}tovsrerun_A.list
+>       endif
+===================================================================
+pregrid/on84/get_on84.deck.ibm
+diff -r3.1 -r3.2
+13,14c13,16
+< set TMPDIR=/ptmp/mm5$$
+< mkdir $TMPDIR
+---
+> if ( ! -e /ptmp/$USER ) then
+>    mkdir /ptmp/$USER
+> endif
+> set TMPDIR=/ptmp/$USER
+23c25
+< set Host = username@host.domain:/local_directory
+---
+> #set Host = username@host.domain:/local_directory
+144c146
+<       rcp $Local ${Host}
+---
+> #      rcp $Local ${Host}
+===================================================================
+pregrid/toga/get_toga.deck.ibm
+diff -r1.1 -r1.2
+13,14c13,16
+< set TMPDIR=/ptmp/mm5$$
+< mkdir $TMPDIR
+---
+> if ( ! -e /ptmp/$USER ) then
+>    mkdir /ptmp/$USER
+> endif
+> set TMPDIR=/ptmp/$USER
+23c25
+< set Host = username@host.domain:/local_directory
+---
+> #set Host = username@host.domain:/local_directory
+145c147
+<      rcp $Local $Host
+---
+> #     rcp $Local $Host
+===================================================================
+pregrid/util/Makefile
+diff -r3.2 -r3.3
+29c29
+< 	$(FC) -o $(@) $(?:.f=.o) $(NCARG_LIBS)
+---
+> 	$(FC) -o $(@) plotfmt.o pregrid_version.o $(NCARG_LIBS)
+===================================================================
+pregrid/util/gribcode.F
+diff -r3.7 -r3.9
+145a146,164
+> !     elseif (SEC2(4) == 1) then        MERCATOR GRID                         !
+> !                                                                             !
+> !         INFOGRID/GRIDINFO:                                                  !
+> !                                                                             !
+> !             1  :  I Dimension of the grid                                   !
+> !             2  :  J Dimension of the grid                                   !
+> !             3  :  Starting Latitude of the grid.                            !
+> !             4  :  Starting Longitude of the grid.                           !
+> !             5  :  Resolution and component flags.                           !
+> !             6  :  Ending latitude of the grid.                              !
+> !             7  :  Ending longitude of the grid.                             !
+> !             8  :  Grid-spacing in the I direction                           !
+> !             9  :  Grid-spacing in the J direction                           !
+> !            10  :  Scanning mode (bit 3 from Table 8)                        !
+> !            11  :  TRUELAT                                                   !
+> !            21  :  Iscan sign (+1/-1) (bit 1 from Table 8)                   !
+> !            22  :  Jscan sign (+1/-1) (bit 2 from Table 8)                   !
+> !                                                                             !
+> !                                                                             !
+481c500
+<        datarray = xec4(1)
+---
+>        datarray = DFAC*xec4(1)
+1008a1028,1043
+>      else if (sec2(4).eq.1) then
+>         write(ou,'(5x,"Mercator Grid")')
+>         write(ou,'(10x,"NI"'//string) infogrid(1)
+>         write(ou,'(10x,"NJ"'//string) infogrid(2)
+>         write(ou,'(10x,"Lat 1"'//rstring) gridinfo(3)
+>         write(ou,'(10x,"Lon 1"'//rstring) gridinfo(4)
+>         write(ou,'(10x,"Resolution and Component",t45,":", B8.8)') infogrid(5)
+>         write(ou,'(10x,"Lat NI"'//rstring) gridinfo(6)
+>         write(ou,'(10x,"Lon NJ"'//rstring) gridinfo(7)
+>         write(ou,'(10x,"Dx"'//rstring) gridinfo(8)
+>         write(ou,'(10x,"Dy"'//rstring) gridinfo(9)
+>         write(ou,'(10x,"Scanning mode"'//string) infogrid(10)
+>         write(ou,'(10x,"Latin"'//rstring) gridinfo(11)
+>         write(ou,'(10x,"I-Scanning increment"'//string) infogrid(21)
+>         write(ou,'(10x,"J-Scanning increment"'//string) infogrid(22)
+> 
+1025a1061
+> 
+1112c1148
+<   real :: r, gclon
+---
+>   real :: r, gclon, xkm, ykm, y1
+1119a1156,1171
+>   elseif (sec2(4) == 1) then      ! Mercator grid
+> !KWM     r = grrth*cosd(gtrue1)
+> !KWM     xkm = (x-1.)*gridinfo(8)
+> !KWM     ykm = (y-1.)*gridinfo(9)
+> !KWM     xlat = gridinfo(3) + (90. - 2.0 * atand(exp(-ykm/r)))
+> !KWM     xlon = gridinfo(4) + xkm/r
+> 
+>      r = grrth*cosd(gtrue1)
+>      xkm = (x-1.)*gridinfo(8)
+>      ykm = (y-1.)*gridinfo(9)
+> 
+>      xlon = gridinfo(4) + (xkm/r)*(180./pi)
+>      y1 = r*alog((1.+sind(gridinfo(3)))/cosd(gridinfo(3)))/gridinfo(9)
+>      xlat = 90. - 2. * atan(exp(-gridinfo(9)*(y+y1-1.)/r))*180./pi
+> 
+> 
+1156c1208
+<   real :: r, gclon
+---
+>   real :: r, gclon, y1
+1158a1211
+> 
+1160a1214,1221
+> 
+>   else if (sec2(4) == 1) then      ! Mercator grid
+> 
+>      r = grrth*cosd(gtrue1)
+>      x = 1.+( (r/gridinfo(8)) * (xlon-gridinfo(4)) * (pi/180.) )
+>      y1 = (r/gridinfo(9))*alog((1.+sind(gridinfo(3)))/cosd(gridinfo(3)))
+>      y = 1. + ((r/gridinfo(9))*alog((1.+sind(xlat))/cosd(xlat)))-y1
+> 
+1161a1223
+> 
+1168a1231
+> 
+1340a1404,1461
+>      elseif (sec2(4) == 1) then ! Mercator grid
+>         ! Number of points in X and Y
+>         call gbytes(grec, infogrid(1), iskip, 16, 0, 2)        
+>         iskip = iskip + 32
+>         ! Starting lat and lon
+>         call gbytes(grec, infogrid(3), iskip, 24, 0, 2)
+>         iskip = iskip + 48
+>         ! "Resolution and component flags"
+>         call gbyte(grec, infogrid(5), iskip, 8)
+>         iskip = iskip + 8
+>         ! Ending lat and lon
+>         call gbytes(grec, infogrid(6), iskip, 24, 0, 2)
+>         iskip = iskip + 48
+>         ! Truelat, 3 bytes
+>         call gbyte(grec, infogrid(11), iskip, 24)
+>         iskip = iskip + 24
+>         ! "Reserved", i.e., skip a byte
+>         iskip = iskip + 8 
+>         ! Scanning mode flags, first three bits of the next byte
+>         ! and skip the last five bits.
+>         call gbyte(grec, infogrid(21), iskip, 1)
+>         infogrid(21) = 1-(infogrid(21)*2)
+>         iskip = iskip + 1
+>         call gbyte(grec, infogrid(22), iskip, 1)
+>         infogrid(22) = (infogrid(22)*2)-1
+>         iskip = iskip + 1
+>         call gbyte(grec, infogrid(10), iskip, 1)
+>         iskip = iskip + 1
+>         iskip = iskip + 5
+>         ! Grid increment in X and Y
+>         call gbytes(grec, infogrid(8), iskip, 24, 0, 2)        
+>         iskip = iskip + 48
+>         ! Done reading map specifications.
+>         ! Now do various conversions:
+> 
+>         gridinfo(1) = float(infogrid(1)) ! ok
+>         gridinfo(2) = float(infogrid(2)) ! ok
+> 
+>         if (infogrid(3) .ge.8388608) infogrid(3)  = 8388608 - infogrid(3)
+>         if (infogrid(4) .ge.8388608) infogrid(4)  = 8388608 - infogrid(4)
+>         if (infogrid(6) .ge.8388608) infogrid(6)  = 8388608 - infogrid(6)
+>         if (infogrid(7) .ge.8388608) infogrid(7)  = 8388608 - infogrid(7)
+>         if (infogrid(11).ge.8388608) infogrid(11) = 8388608 - infogrid(11)
+>         gridinfo(3)  = infogrid(3)  * 0.001
+>         gridinfo(4)  = infogrid(4)  * 0.001
+>         gridinfo(6)  = infogrid(6)  * 0.001
+>         gridinfo(7)  = infogrid(7)  * 0.001
+>         gridinfo(8)  = infogrid(8)  * 0.001
+>         gridinfo(9)  = infogrid(9)  * 0.001
+>         gridinfo(11) = infogrid(11) * 0.001
+> 
+>         gridinfo(21) = infogrid(21)
+>         gridinfo(22) = infogrid(22)
+> 
+>         gridinfo(20) = 6370.949
+>         grrth = gridinfo(20)
+>         gtrue1 = gridinfo(11)
+> 
+===================================================================
+pregrid/util/plotfmt.F
+diff -r3.2 -r3.3
+175d174
+<      print*, 'ix, jx = ', ix, jx
+184c183,190
+<      print*, pl1, pl2, pl3, pl4
+---
+> ! This never used to be a problem, but currently we seem to need
+> ! truelat1 (in plat) differ from truelat2 (in rota) for the 
+> ! NCAR-Graphics map routines to work.  Maybe it's just a compiler
+> ! thing.  So if the truelats are the same, we add an epsilon:
+>      if (abs(plat - rota) < 1.E-8) then
+>         plat = plat + 1.E-8
+>         rota = rota - 1.E-8
+>      endif
+202c208
+<   call supmap(iproj,plat,plon,rota,pl1,pl2,pl3,pl4,2,30,4,0,ierr)
+---
+>   call supmap(iproj,plat+0.001,plon,rota-0.001,pl1,pl2,pl3,pl4,2,30,4,0,ierr)
+===================================================================
+pregrid/util/pregrid_version.F
+diff -r3.15 -r3.16
+4c4
+<   write(*,'(   " **   pregrid version number: 0.26  **")')
+---
+>   write(*,'(   " **   pregrid version number: 0.27  **")')
+===================================================================
+regridder/namelist.input
+diff -r3.6 -r3.8
+27c27
+<  constants_full_name             = '../pregrid/SST_FILE:1993-03-13_00'
+---
+>  constants_full_name             = './ALMX_FILE' '../pregrid/SST_FILE:1993-03-13_00'
+44,47c44,49
+<  num_storm                       =    1
+<  latc_loc                        =   36.
+<  lonc_loc                        =  -35.
+<  vmax                            =   50. /
+---
+>  num_storm                       =       1
+>  latc_loc                        =      36.0
+>  lonc_loc                        =     -35.0
+>  vmax_meters_per_second          =      35.0
+>  rmax                            =   90000.0
+>  vmax_ratio                      =       0.75 /
+===================================================================
+regridder/Doc/README.namelist
+diff -r3.7 -r3.8
+62c62,64
+<  vmax                            =   50. /
+---
+>  vmax_meters_per_second          =   35. 
+>  rmax                            =   90000.0
+>  vmax_ratio                      =       0.75/
+219a222
+> inset_bogus_storm: T/F flag whether to use the TC bogus option
+223c226,235
+< vmax:      maximum wind speed in m/second
+---
+> vmax_meters_per_second:  maximum wind speed in m/second
+> rmax: radius of maximum sustained winds (m)
+> r_search: radius to search for old vortex (m)
+> r_vor: radius of new vortex (m)
+> humidity_max: maximum relative humidity at storm core (%)
+> vmax_ratio: speed maximum scaling factor
+> beta: Rankine vortex constant
+> devpc: maximum pressure depression
+> vert_variation: 1=functional form of RH max and vortex weighting, 2=specified
+>                 values as given to AFWA in May 2001
+225c237
+< Other assumption is made inside bogussing routine. See 
+---
+> Other assumptions are made inside bogussing routine. See 
+===================================================================
+regridder/src/module_constants.F
+diff -r3.1 -r3.2
+14c14,15
+<    REAL , PARAMETER :: small_positive  = 1.0E-5
+---
+>    REAL , PARAMETER :: small_positive  =  1.0E-5
+>    REAL , PARAMETER ::   big_negative  = -1.0E19
+===================================================================
+regridder/src/module_diags.F
+diff -r3.5 -r3.7
+173c173
+<    SUBROUTINE qvtorh ( q , t , p , imx , jmx , kxs , rh )
+---
+>    SUBROUTINE qvtorh ( q , t , p , k00, imx , jmx , kxs , rh )
+177c177
+<       INTEGER , INTENT(IN) :: imx , jmx , kxs
+---
+>       INTEGER , INTENT(IN) :: imx , jmx , kxs , k00
+188c188
+<       DO k = 1 , kxs
+---
+>       DO k = k00 , kxs
+192c192
+<                qs = eps*es/((0.01 *p(k))-(1.-eps)*es)
+---
+>                qs = eps*es/(0.01*p(k) - es)
+===================================================================
+regridder/src/module_horiz_interp.F
+diff -r3.1 -r3.2
+33,34c33,37
+<             IF ( ( kk .LT. 1) .OR. ( kk .GT. ib ) ) THEN
+<                CYCLE loop_1
+---
+>             IF ( kk .LT. 1) then 
+>                kk = 1
+>             END IF
+>             IF ( kk .GT. ib) THEN
+>                kk = ib
+39,40c42,46
+<                IF ( ( ll .GT. jb ) .OR. ( ll .LT. 1 ) ) THEN
+<                   CYCLE loop_2
+---
+>                IF ( ll .LT. 1) THEN
+>                   ll = 1
+>                END IF
+>                IF ( ll .GT. jb) THEN
+>                   ll = jb
+===================================================================
+regridder/src/module_namelist_info.F
+diff -r3.4 -r3.5
+51a52,59
+>       REAL :: rmax 
+>       REAL :: r_search 
+>       REAL :: r_vor 
+>       REAL :: humidity_max
+>       REAL :: beta 
+>       REAL :: devpc 
+>       REAL :: vmax_ratio
+>       INTEGER :: vert_variation
+===================================================================
+regridder/src/module_tc_bogus.F
+diff -r3.1 -r3.4
+58,64d57
+<    
+<       !  Skads o' radii parameters (m) for the bogus vortex building.
+< 
+<       REAL , PARAMETER :: rmax    =  50000.  ! radius of maximum wind
+<       REAL , PARAMETER :: r_search= 400000.  ! maximum search radius to remove old storm
+<       REAL , PARAMETER :: r_vor   = 300000.  ! radius of new vortex
+<       REAL , PARAMETER :: r_vor2  = 4.*r_vor 
+66d58
+<       REAL , PARAMETER :: flag = -99999.
+67a60,64
+>       REAL :: rmax 
+>       REAL :: r_search
+>       REAL :: r_vor
+>       REAL :: r_vor2
+>       REAL :: vmax_ratio
+112,113d108
+<       REAL :: missing
+<       
+165a161,170
+>    
+>       !  Skads o' radii parameters (m) for the bogus vortex building.
+> 
+>       rmax = rec5%rmax
+>       r_search = rec5%r_search
+>       r_vor = rec5%r_vor
+>       r_vor2 = r_vor * 4
+>       beta = rec5%beta
+>       devpc= rec5%devpc
+>       vmax_ratio = rec5%vmax_ratio
+182,191c187,209
+<       DO k=1,kx
+<          IF ( p(k) .GT. 400. ) THEN
+<             rhmx(k) = 95.
+<          ELSE
+<             rhmx(k) = 95. * MAX( 0.1 , (p(k)-rec2%ptop/100.)/(400.-rec2%ptop/100.) )
+<          END IF
+<          IF ( p(k) .GT. 600. ) THEN
+<             vwgt(k) = 1.0
+<          ELSE IF ( p(k) .LE. 100. ) THEN
+<             vwgt(k) = 0.0001
+---
+>       IF      ( rec5%vert_variation .EQ. 1 ) THEN
+>          DO k=1,kx
+>             IF ( p(k) .GT. 400. ) THEN
+>                rhmx(k) = rec5%humidity_max
+>             ELSE
+>                rhmx(k) = rec5%humidity_max * MAX( 0.1 , (p(k)-rec2%ptop/100.)/(400.-rec2%ptop/100.) )
+>             END IF
+>             IF ( p(k) .GT. 600. ) THEN
+>                vwgt(k) = 1.0
+>             ELSE IF ( p(k) .LE. 100. ) THEN
+>                vwgt(k) = 0.0001
+>             ELSE
+>                vwgt(k) = MAX ( 0.0001 , (p(k)-rec2%ptop/100.)/(600.-rec2%ptop/100.) )
+>             END IF
+>          END DO
+>       ELSE IF ( rec5%vert_variation .EQ. 2 ) THEN
+>          IF ( kx .eq. 24 ) THEN
+>             rhmx = (/ 95.,       95., 95., 95., 95., 95., 95., 95.,      &
+>                       95., 95.,  95., 95., 95., 90., 85., 80., 75.,      &
+>                       70., 66.,  60., 39., 10., 10., 10./)
+>             vwgt = (/ 1.0000,         1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 0.9850,      &
+>                       0.9680, 0.9500, 0.9290, 0.9060, 0.8810, 0.8500, 0.7580, 0.6500, 0.5100,      &
+>                       0.3500, 0.2120, 0.0500, 0.0270, 0.0001, 0.0001, 0.0001/)
+193c211,212
+<             vwgt(k) = MAX ( 0.0001 , (p(k)-rec2%ptop/100.)/(600.-rec2%ptop/100.) )
+---
+>             PRINT '(A)','Number of vertical levels assumed to be 24 for AFWA TC bogus option'
+>             STOP 'AFWA_TC_BOGUS_LEVEL_ERROR'
+195c214
+<       END DO
+---
+>       END IF
+230,231d248
+<          missing = flag
+<    
+234d250
+<          beta = 0.5
+236d251
+<          devpc= 40.
+257c272
+<          vmx = vmax(nstrm)
+---
+>          vmx = vmax(nstrm) * vmax_ratio
+263,267c278
+<             vmx = missing
+<          END IF
+<    
+<          IF ( vmx .EQ. missing ) THEN
+<            vmx = SQRT( 2.*(1-beta)*ABS(phip0) )  
+---
+>             vmx = SQRT( 2.*(1-beta)*ABS(phip0) )  
+333c344
+<          !  Compute specific humidity of FG
+---
+>          !  Compute mixing ratio of FG
+638c649
+<          CALL qvtorh(q0,t0,p*100.,ix,jx,kx,rh0)
+---
+>          CALL qvtorh (q0,t0,p*100.,k00,ix,jx,kx,rh0)
+===================================================================
+regridder/src/proc_ingest_first_guess.F
+diff -r3.24 -r3.29
+106,107c106,111
+<          file_name_len = LEN_TRIM(ADJUSTL(rec3%constants_full_name(diff_files_per_single_time)))
+<          file_name(1:file_name_len) = TRIM(ADJUSTL(rec3%constants_full_name(diff_files_per_single_time)))
+---
+>          file_name_len = LEN_TRIM(rec3%constants_full_name(diff_files_per_single_time))
+>          file_name(1:file_name_len) = TRIM(rec3%constants_full_name(diff_files_per_single_time))
+>          IF (file_name(1:1) .EQ. ' ' ) THEN
+>             PRINT '(A)','Your constant file names may have "spaces" at the beginning.  Remove them.'
+>             STOP 'zap_the_spaces_in_const_filename'
+>          END IF
+113,114c117,122
+<          file_name_len = LEN_TRIM(ADJUSTL(rec3%root(diff_files_per_single_time-rec3%max_files_constants)))
+<          file_name(1:file_name_len) = TRIM(ADJUSTL(rec3%root(diff_files_per_single_time-rec3%max_files_constants)))
+---
+>          file_name_len = LEN_TRIM(rec3%root(diff_files_per_single_time-rec3%max_files_constants))
+>          file_name(1:file_name_len) = TRIM(rec3%root(diff_files_per_single_time-rec3%max_files_constants))
+>          IF (file_name(1:1) .EQ. ' ' ) THEN
+>             PRINT '(A)','Your file names may have "spaces" at the beginning.  Remove them.'
+>             STOP 'zap_the_spaces_in_filename'
+>          END IF
+373a382,385
+>                IF ( lon1  .LT. -180. ) lon1  = lon1  + 360.
+>                IF ( lon1  .GT.  180. ) lon1  = lon1  - 360.
+>                IF ( xlonc .LT. -180. ) xlonc = xlonc + 360.
+>                IF ( xlonc .GT.  180. ) xlonc = xlonc - 360.
+406a419,422
+>                IF ( lon1  .LT. -180. ) lon1  = lon1  + 360.
+>                IF ( lon1  .GT.  180. ) lon1  = lon1  - 360.
+>                IF ( xlonc .LT. -180. ) xlonc = xlonc + 360.
+>                IF ( xlonc .GT.  180. ) xlonc = xlonc - 360.
+461a478,481
+>                IF ( lon1  .LT. -180. ) lon1  = lon1  + 360.
+>                IF ( lon1  .GT.  180. ) lon1  = lon1  - 360.
+>                IF ( xlonc .LT. -180. ) xlonc = xlonc + 360.
+>                IF ( xlonc .GT.  180. ) xlonc = xlonc - 360.
+479c499,504
+<          ALLOCATE (array(idim,jdim))
+---
+>          IF ( ( idim .NE. idim_old ) .OR. ( jdim .EQ. jdim_old ) ) THEN
+>             IF ( ALLOCATED ( array ) ) THEN
+>                DEALLOCATE ( array ) 
+>             END IF
+>             ALLOCATE (array(idim,jdim))
+>          END IF
+487c512
+<          WHERE ( array .LT. -1.e20 ) 
+---
+>          WHERE ( array .LT. -1.e19 ) 
+513,517d537
+<             !  We have to DEALLOCATE the array since we will skip that part of the
+<             !  loop with this CYCLE.
+< 
+<             DEALLOCATE (array)
+< 
+533,537d552
+<             !  We have to DEALLOCATE the array since we will skip that part of the
+<             !  loop with this CYCLE.
+< 
+<             DEALLOCATE (array)
+< 
+575c590,595
+<               ( field(1:3) .EQ. 'SEA'      ) ) THEN
+---
+>               ( field(1:5) .EQ. 'SOILW'    ) .OR. &
+>               ( field(1:6) .EQ. 'MONALB'   ) .OR. &
+>               ( field(1:8) .EQ. 'ALBSNOMX' ) .OR. &
+>               ( field(1:3) .EQ. 'SEA'      ) .OR. &
+>               ( field(1:5) .EQ. 'SNOWH'    ) .OR. &
+>               ( field(1:5) .EQ. 'WEASD'    ) ) THEN
+667c687,689
+<                             ( ( field(1:5) .EQ. 'SOILT' ) .OR. ( field(1:7) .EQ. 'SOILHGT' ) ) ) THEN
+---
+>                             ( ( field(1:5) .EQ. 'SOILT'    ) .OR. ( field(1:7) .EQ. 'SOILHGT'  ) .OR. &
+>                               ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) .OR. &
+>                               ( field(1:6) .EQ. 'MONALB'   ) .OR. ( field(1:8) .EQ. 'ALBSNOMX' ) ) ) THEN
+698c720
+<                             ( field(1:5) .EQ. 'SOILM' ) ) THEN
+---
+>                             ( ( field(1:5) .EQ. 'SOILM' ) .OR. ( field(1:5) .EQ. 'SOILW' ) ) ) THEN
+719c741
+<                             ( field(1:5)                           .EQ. 'SOILM' ) ) THEN
+---
+>                             ( ( field(1:5) .EQ. 'SOILM' ) .OR. ( field(1:5) .EQ. 'SOILW' ) ) ) THEN
+729c751
+<                             ( field(1:8) .EQ. 'SEAICE  ' ) ) THEN
+---
+>                             ( field(1:6) .EQ. 'SEAICE'   ) ) THEN
+754c776,778
+<                             ( ( field(1:5) .EQ. 'SOILT' ) .OR. ( field(1:7) .EQ. 'SOILHGT' ) ) ) THEN
+---
+>                             ( ( field(1:5) .EQ. 'SOILT'    ) .OR. ( field(1:7) .EQ. 'SOILHGT'  ) .OR. &
+>                               ( field(1:6) .EQ. 'MONALB'   ) .OR. ( field(1:8) .EQ. 'ALBSNOMX' ) .OR. &
+>                               ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) ) ) THEN
+773c797,813
+<                      IF      ( close_count .GT. 0 ) THEN
+---
+>                      !  But wait, if this is the albedo field, and we are over water, who CARES
+>                      !  how many points are valid, we set this to a default value of 8%.
+> 
+>                      IF      ( ( close_count .GT. 0 ) .AND. ( field(1:6) .EQ. 'MONALB'   ) .AND. &
+>                                ( ter_data(land_mask_index)%array(j,i) .EQ. 0 ) ) THEN
+>                         dum2d(j,i) = 8.
+> 
+>                      ELSE IF ( ( close_count .GT. 0 ) .AND. ( field(1:8) .EQ. 'ALBSNOMX' ) .AND. &
+>                                ( ter_data(land_mask_index)%array(j,i) .EQ. 0 ) ) THEN
+>                         dum2d(j,i) = 8.
+> 
+>                      ELSE IF ( ( close_count .GT. 0 ) .AND. &
+>                                ( ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) ) .AND. &
+>                                ( ter_data(land_mask_index)%array(j,i) .EQ. 0 ) ) THEN
+>                         dum2d(j,i) = 0.
+> 
+>                      ELSE IF ( close_count .GT. 0 ) THEN
+804a845,875
+>                      !  This is an island type situation, and we are setting the maximum albedo.
+>                      !  Very few sub-grid scale islands are covered with snow, so let's just set
+>                      !  a value of 16% for each month and a max of 60%.  If we are over water,
+>                      !  set the albedo to 8%.
+> 
+>                      ELSE IF ( ( close_count .EQ. 0 ) .AND. ( field(1:6) .EQ. 'MONALB'   ) .AND. &
+>                                ( ter_data(land_mask_index)%array(j,i) .EQ. 1 ) ) THEN
+>                         dum2d(j,i) = 16.
+> 
+>                      ELSE IF ( ( close_count .EQ. 0 ) .AND. ( field(1:6) .EQ. 'MONALB'   ) .AND. &
+>                                ( ter_data(land_mask_index)%array(j,i) .EQ. 0 ) ) THEN
+>                         dum2d(j,i) = 8.
+> 
+>                      ELSE IF ( ( close_count .EQ. 0 ) .AND. ( field(1:8) .EQ. 'ALBSNOMX' ) .AND. &
+>                                ( ter_data(land_mask_index)%array(j,i) .EQ. 1 ) ) THEN
+>                         dum2d(j,i) = 60.
+> 
+>                      ELSE IF ( ( close_count .EQ. 0 ) .AND. ( field(1:8) .EQ. 'ALBSNOMX' ) .AND. &
+>                                ( ter_data(land_mask_index)%array(j,i) .EQ. 0 ) ) THEN
+>                         dum2d(j,i) = 8.
+> 
+>                      ELSE IF ( ( close_count .EQ. 0 ) .AND. &
+>                                ( ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) ) .AND. &
+>                                ( ter_data(land_mask_index)%array(j,i) .EQ. 1 ) ) THEN
+>                         dum2d(j,i) = 0.
+> 
+>                      ELSE IF ( ( close_count .EQ. 0 ) .AND. &
+>                                ( ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) ) .AND. &
+>                                ( ter_data(land_mask_index)%array(j,i) .EQ. 0 ) ) THEN
+>                         dum2d(j,i) = 0.
+> 
+815c886
+<                             ( field(1:5) .EQ. 'SOILM' ) ) THEN
+---
+>                             ( ( field(1:5) .EQ. 'SOILM' ) .OR. ( field(1:5) .EQ. 'SOILW' ) ) ) THEN
+868c939
+<                             ( field(1:8) .EQ. 'SEAICE  ' ) ) THEN
+---
+>                             ( field(1:6) .EQ. 'SEAICE'   ) ) THEN
+895c966
+<                      ELSE IF ( ( close_count .EQ. 0 ) .AND. ( field(1:8) .EQ. 'SEAICE  ' ) ) THEN
+---
+>                      ELSE IF ( ( close_count .EQ. 0 ) .AND. ( field(1:6) .EQ. 'SEAICE'   ) ) THEN
+913c984,986
+<                               ( ( field(1:5) .EQ. 'SOILT' ) .OR. ( field(1:7) .EQ. 'SOILHGT' ) ) ) THEN
+---
+>                               ( ( field(1:5) .EQ. 'SOILT'    ) .OR. ( field(1:7) .EQ. 'SOILHGT'  ) .OR. &
+>                                 ( field(1:6) .EQ. 'MONALB'   ) .OR. ( field(1:8) .EQ. 'ALBSNOMX' ) .OR. &
+>                                 ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) ) ) THEN
+940c1013
+<                             ( field(1:5) .EQ. 'SOILM' ) ) THEN
+---
+>                             ( ( field(1:5) .EQ. 'SOILM' ) .OR. ( field(1:5) .EQ. 'SOILW' ) ) ) THEN
+1010c1083
+<                             ( ( field(1:8) .EQ. 'SEAICE  ' ) ) ) THEN
+---
+>                             ( ( field(1:6) .EQ. 'SEAICE'   ) ) ) THEN
+1262,1268d1334
+<          !  Since the input data can have different sizes for each level
+<          !  (such as with the surface compared to the upper-air levels),
+<          !  we need to DEALLOCATE and ALLOCATE the input array for each
+<          !  slice. 
+< 
+<          DEALLOCATE (array)
+< 
+1296a1363,1368
+> 
+>    !  Is this array still allocated?  If so, deallocate it at your earliest convenience.
+> 
+>    IF ( ALLOCATED ( array ) ) THEN
+>       DEALLOCATE (array)
+>    END IF
+===================================================================
+regridder/src/proc_list_to_array.F
+diff -r3.8 -r3.9
+423c423,424
+<                   !  pressure.
+---
+>                   !  pressure (for horiz winds and RH), or linear in ln(p) (for temperature
+>                   !  and height).
+429,431c430,446
+<                      slab_middle = ( (pressure_bottom-pressure_middle)*slab_top      + &               
+<                                      (pressure_middle-pressure_top   )*slab_bottom ) / &               
+<                                      (pressure_bottom-pressure_top   )
+---
+> 
+>                      IF      ( ( current_var%name(1:8) .EQ. 'U       ' ) .OR. &
+>                                ( current_var%name(1:8) .EQ. 'V       ' ) .OR. &
+>                                ( current_var%name(1:8) .EQ. 'RH      ' )      ) THEN
+>                         slab_middle = ( (pressure_bottom-pressure_middle)*slab_top      + &               
+>                                         (pressure_middle-pressure_top   )*slab_bottom ) / &               
+>                                         (pressure_bottom-pressure_top   )
+>                      ELSE IF ( ( current_var%name(1:8) .EQ. 'T       ' ) .OR. &
+>                                ( current_var%name(1:8) .EQ. 'HGT     ' )      ) THEN
+>                         slab_middle = ( (LOG(pressure_bottom)-LOG(pressure_middle))*slab_top      + &               
+>                                         (LOG(pressure_middle)-LOG(pressure_top   ))*slab_bottom ) / &               
+>                                         (LOG(pressure_bottom)-LOG(pressure_top   ))
+>                      ELSE
+>                         slab_middle = ( (pressure_bottom-pressure_middle)*slab_top      + &               
+>                                         (pressure_middle-pressure_top   )*slab_bottom ) / &               
+>                                         (pressure_bottom-pressure_top   )
+>                      END IF
+===================================================================
+regridder/src/proc_make_big_header.F
+diff -r3.1 -r3.2
+18c18
+<    bhi ( 3, 2 ) = 5
+---
+>    bhi ( 3, 2 ) = 6
+===================================================================
+regridder/src/proc_make_dot_point_data.F
+diff -r3.12 -r3.13
+22a23
+>               index_soilw010 , index_soilw040 , index_soilw100 , index_soilw200 , index_soilw400 , &
+25a27,31
+>    INTEGER :: index_monalb01 , index_monalb02 , index_monalb03 , index_monalb04 , &
+>               index_monalb05 , index_monalb06 , index_monalb07 , index_monalb08 , &
+>               index_monalb09 , index_monalb10 , index_monalb11 , index_monalb12 , &
+>               index_albsnomx , index_albedo
+> 
+288a295,299
+>    index_soilw010 = -1
+>    index_soilw040 = -1
+>    index_soilw100 = -1
+>    index_soilw200 = -1
+>    index_soilw400 = -1
+299a311,326
+>   
+>    index_monalb01 = -1
+>    index_monalb02 = -1
+>    index_monalb03 = -1
+>    index_monalb04 = -1
+>    index_monalb05 = -1
+>    index_monalb06 = -1
+>    index_monalb07 = -1
+>    index_monalb08 = -1
+>    index_monalb09 = -1
+>    index_monalb10 = -1
+>    index_monalb11 = -1
+>    index_monalb12 = -1
+>    index_albsnomx = -1
+>    index_albedo   = -1
+> 
+320a348,357
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'SOILW010' ) THEN
+>          index_soilw010 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'SOILW040' ) THEN
+>          index_soilw040 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'SOILW100' ) THEN
+>          index_soilw100 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'SOILW200' ) THEN
+>          index_soilw200 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'SOILW400' ) THEN
+>          index_soilw400 = i   
+334a372,399
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB01' ) THEN
+>          index_monalb01 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB02' ) THEN
+>          index_monalb02 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB03' ) THEN
+>          index_monalb03 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB04' ) THEN
+>          index_monalb04 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB05' ) THEN
+>          index_monalb05 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB06' ) THEN
+>          index_monalb06 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB07' ) THEN
+>          index_monalb07 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB08' ) THEN
+>          index_monalb08 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB09' ) THEN
+>          index_monalb09 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB10' ) THEN
+>          index_monalb10 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB11' ) THEN
+>          index_monalb11 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'MONALB12' ) THEN
+>          index_monalb12 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'ALBSNOMX' ) THEN
+>          index_albsnomx = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'ALBEDO  ' ) THEN
+>          index_albedo   = i   
+345a411,483
+>    !  All of the albedo fields need to have a water value of 8%.
+> 
+>    IF ( index_monalb01 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb01) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_monalb02 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb02) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_monalb03 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb03) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_monalb04 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb04) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_monalb05 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb05) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_monalb06 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb06) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_monalb07 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb07) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_monalb08 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb08) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_monalb09 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb09) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_monalb10 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb10) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_monalb11 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb11) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_monalb12 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_monalb12) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_albsnomx .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_albsnomx) = 8.
+>       END WHERE
+>    END IF
+>    IF ( index_albedo   .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_albedo  ) = 8.
+>       END WHERE
+>    END IF
+>       
+571a710,739
+>       END WHERE
+>    END IF
+> 
+>    IF ( index_soilw010 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) ) 
+>          all_2d(:,:,index_soilw010) = 1.
+>       END WHERE
+>    END IF
+> 
+>    IF ( index_soilw040 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) ) 
+>          all_2d(:,:,index_soilw040) = 1.
+>       END WHERE
+>    END IF
+> 
+>    IF ( index_soilw100 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) ) 
+>          all_2d(:,:,index_soilw100) = 1.
+>       END WHERE
+>    END IF
+> 
+>    IF ( index_soilw200 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) ) 
+>          all_2d(:,:,index_soilw200) = 1.
+>       END WHERE
+>    END IF
+> 
+>    IF ( index_soilw400 .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) ) 
+>          all_2d(:,:,index_soilw400) = 1.
+===================================================================
+regridder/src/proc_namelist.F
+diff -r3.5 -r3.9
+34,35c34,36
+<    INTEGER                :: num_storm
+<    REAL , DIMENSION(num_max)  :: latc_loc , lonc_loc , vmax
+---
+>    INTEGER                :: num_storm , vert_variation
+>    REAL , DIMENSION(num_max)  :: latc_loc , lonc_loc , vmax_meters_per_second
+>    REAL                   :: rmax , r_search , r_vor , humidity_max , beta , devpc , vmax_ratio
+48c49,50
+<    NAMELIST / record5 / insert_bogus_storm , num_storm , latc_loc , lonc_loc , vmax
+---
+>    NAMELIST / record5 / insert_bogus_storm , num_storm , latc_loc , lonc_loc , vmax_meters_per_second , &
+>                         rmax , r_search , r_vor , humidity_max , beta , devpc ,  vert_variation , vmax_ratio
+61c63
+<    INTEGER :: new_levels_index
+---
+>    INTEGER :: new_levels_index , skip5 , storm_loop
+103a106,116
+>    !  Hidden values for the TC bogus scheme.
+> 
+>    rmax           =   90000.0
+>    r_search       =  400000.0
+>    r_vor          =  300000.0
+>    humidity_max   =      95.0 
+>    vmax_ratio     =       0.75
+>    beta           =       0.5
+>    devpc          =      40.0
+>    vert_variation =       1
+> 
+110c123
+<    READ ( UNIT = namelist_file , NML = record5 )
+---
+>    READ ( UNIT = namelist_file , NML = record5 , IOSTAT=skip5 )
+172a186,217
+>    IF ( print_echo ) THEN
+>       IF ( skip5 .EQ. 0 ) THEN
+>          WRITE ( UNIT = 6 , FMT='(A)' ) ' &RECORD5'
+>          WRITE ( UNIT = 6 , FMT='(A,L)' ) ' INSERT_BOGUS_STORM = ',insert_bogus_storm
+>          WRITE ( UNIT = 6 , FMT='(A,I3)' ) ' NUM_STORM = ',num_storm
+>          WRITE ( UNIT = 6 , ADVANCE='NO' , FMT='(A)' ) ' LATC_LOC = '
+>          DO storm_loop = 1 , num_storm-1
+>             WRITE ( UNIT = 6 , ADVANCE = 'NO' , FMT='(F9.4,A)' ) latc_loc(storm_loop) , ","
+>          END DO
+>          WRITE ( UNIT = 6 , FMT='(F9.4)' ) latc_loc(num_storm)
+>          WRITE ( UNIT = 6 , ADVANCE='NO' , FMT='(A)' ) ' LONC_LOC = '
+>          DO storm_loop = 1 , num_storm-1
+>             WRITE ( UNIT = 6 , ADVANCE = 'NO' , FMT='(F9.4,A)' ) lonc_loc(storm_loop) , ","
+>          END DO
+>          WRITE ( UNIT = 6 , FMT='(F9.4)' ) lonc_loc(num_storm)
+>          WRITE ( UNIT = 6 , ADVANCE='NO' , FMT='(A)' ) ' VMAX_METERS_PER_SECOND = '
+>          DO storm_loop = 1 , num_storm-1
+>             WRITE ( UNIT = 6 , ADVANCE = 'NO' , FMT='(F9.4,A)' ) vmax_meters_per_second(storm_loop) , ","
+>          END DO
+>          WRITE ( UNIT = 6 , FMT='(F9.4)' ) vmax_meters_per_second(num_storm)
+>          WRITE ( UNIT = 6 , FMT='(A,F8.1)' ) ' RMAX = ',rmax
+>          WRITE ( UNIT = 6 , FMT='(A,F8.1)' ) ' R_SEARCH = ',r_search
+>          WRITE ( UNIT = 6 , FMT='(A,F8.1)' ) ' R_VOR = ',r_vor
+>          WRITE ( UNIT = 6 , FMT='(A,F6.2)' ) ' HUMIDITY_MAX ',humidity_max
+>          WRITE ( UNIT = 6 , FMT='(A,F4.2)' ) ' VMAX_RATIO = ',vmax_ratio
+>          WRITE ( UNIT = 6 , FMT='(A,F3.1)' ) ' BETA = ',beta
+>          WRITE ( UNIT = 6 , FMT='(A,F4.1)' ) ' DEVPC = ',devpc
+>          WRITE ( UNIT = 6 , FMT='(A,I1)' ) ' VERT_VARIATION = ',vert_variation
+>          WRITE ( UNIT = 6 , FMT='(A)' ) ' /'
+>       END IF
+>    END IF
+> 
+219c264,275
+<    rec5%vmax                      = vmax
+---
+>    rec5%vmax                      = vmax_meters_per_second
+>    rec5%rmax                      = rmax
+>    rec5%r_search                  = r_search
+>    rec5%r_vor                     = r_vor
+>    rec5%humidity_max              = humidity_max
+>    rec5%vmax_ratio                = vmax_ratio
+>    rec5%beta                      = beta
+>    rec5%devpc                     = devpc
+>    rec5%vert_variation            = vert_variation
+>    IF ( skip5 .GT. 0 ) THEN
+>       rec5%insert_bogus_storm = .FALSE.
+>    END IF
+277,282c333,340
+<    IF ( rec2%ptop .GT. rec2%new_levels(rec2%number_of_new_levels) ) THEN
+<       PRINT '(A,F7.1,A,F7.1,A)','You asked for a PTOP_in_Pa, ',rec2%ptop, &
+<                                 ', which is above a new level, ',rec2%new_levels(rec2%number_of_new_levels),'.'
+<       PRINT '(A,F7.1,A,F7.1,A)','Either set the PTOP_in_Pa value to ',rec2%new_levels(rec2%number_of_new_levels), &
+<                                 ', or remove all new_level_in_Pa above ',rec2%ptop,'.'
+<       STOP 'PTOP_larger_than_new_levels'
+---
+>    IF ( rec2%number_of_new_levels .GT. 0 ) THEN
+>       IF ( rec2%ptop .GT. rec2%new_levels(rec2%number_of_new_levels) ) THEN
+>          PRINT '(A,F7.1,A,F7.1,A)','You asked for a PTOP_in_Pa, ',rec2%ptop, &
+>                                    ', which is above a new level, ',rec2%new_levels(rec2%number_of_new_levels),'.'
+>          PRINT '(A,F7.1,A,F7.1,A)','Either set the PTOP_in_Pa value to ',rec2%new_levels(rec2%number_of_new_levels), &
+>                                    ', or remove all new_level_in_Pa above ',rec2%ptop,'.'
+>          STOP 'PTOP_larger_than_new_levels'
+>       END IF

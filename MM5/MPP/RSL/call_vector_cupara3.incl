@@ -1,0 +1,50 @@
+          CALL VECGATH( T3D,VEC_T3D,IBNES,IENES-1,
+     +                  JBNES,JENES-1,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( PP3D,VEC_PP3D,IBNES,IENES-1,
+     +                  JBNES,JENES-1,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( QV3D,VEC_QV3D,IBNES,IENES-1,
+     +                  JBNES,JENES-1,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( T3DTEN,VEC_T3DTEN,IBNES,IENES-1,
+     +                  JBNES,JENES-1,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( QV3DTEN,VEC_QV3DTEN,IBNES,IENES-1,
+     +                  JBNES,JENES-1,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( RAINC,VEC_RAINC,IBNES,IENES-1,
+     +                  JBNES,JENES-1,1,MIX,MJX,1,IP)
+          CALL VECGATH( PSB,VEC_PSB,IBNES,IENES-1,
+     +                  JBNES,JENES-1,1,MIX,MJX,1,IP)
+          CALL VECGATH( RPSB,VEC_RPSB,IBNES,IENES-1,
+     +                  JBNES,JENES-1,1,MIX,MJX,1,IP)
+          CALL VECGATH( HT,VEC_HT,IBNES,IENES-1,
+     +                  JBNES,JENES-1,1,MIX,MJX,1,IP)
+
+          DO K=1,KL
+            DO J=1,JLX
+              DO I=1,ILX
+                U3DCRS(I,J,K) = 0.25*(U3D(I,J,K)+U3D(I+1,J,K)+
+     +                                U3D(I,J+1,K)+U3D(I+1,J+1,K))
+                V3DCRS(I,J,K) = 0.25*(V3D(I,J,K)+V3D(I+1,J,K)+
+     +                                V3D(I,J+1,K)+V3D(I+1,J+1,K))
+              ENDDO
+            ENDDO
+          ENDDO
+
+          CALL VECGATH( U3DCRS,VEC_U3DCRS,IBNES,IENES-1,
+     +                  JBNES,JENES-1,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( V3DCRS,VEC_V3DCRS,IBNES,IENES-1,
+     +                  JBNES,JENES-1,MKX,MIX,MJX,MKX,IP)
+
+
+      CALL CUPARA3(VEC_T3D,VEC_QV3D,VEC_PSB,
+     +             VEC_T3DTEN,VEC_QV3DTEN,VEC_RAINC,VEC_CLDFRA3D,
+     +             VEC_HT,VEC_U3DCRS,VEC_V3DCRS,VEC_PP3D,
+     +             VEC_RPSB,DT,DX,R,CP,G,TO,XLV,RV,A,PTOP,
+     +             INEST,1,1,IP,0)
+
+          CALL VECSCAT( VEC_QV3DTEN,QV3DTEN,IBNES,IENES-1,
+     +                  JBNES,JENES-1,MKX,MIX,MJX,MKX,IP)
+          CALL VECSCAT( VEC_T3DTEN,T3DTEN,IBNES,IENES-1,
+     +                  JBNES,JENES-1,MKX,MIX,MJX,MKX,IP)
+          CALL VECSCAT( VEC_CLDFRA3D,CLDFRA3D,IBNES,IENES-1,
+     +                  JBNES,JENES-1,MKX,MIX,MJX,MKX,IP)
+          CALL VECSCAT( VEC_RAINC,RAINC,IBNES,IENES-1,
+     +                  JBNES,JENES-1,1,MIX,MJX,1,IP)

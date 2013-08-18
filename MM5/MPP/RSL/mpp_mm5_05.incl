@@ -1,0 +1,11 @@
+CSTART   mpp_mm5_05.incl
+C Set the state arrays to non-zero values to prevent floating point
+C exceptions on the parallel boundaries.
+      do j=1,MAXNES
+        do i=1,IRHUGE
+          ALLARR(i,j) = 1.
+        enddo
+      enddo
+
+
+CEND   mpp_mm5_05.incl

@@ -1,0 +1,851 @@
+#!/bin/csh
+## for serial job
+# @ environment = COPY_ALL;
+# @ job_name   = REGRID.job
+# @ output     = regrid.out
+# @ error      = regrid.err
+# @ checkpoint = no
+# @ wall_clock_limit = 1500 
+# @ class      = com_reg 
+# @ queue
+
+
+if ( ! -e /ptmp/$USER ) then
+   mkdir /ptmp/$USER
+endif
+set TMPDIR=/ptmp/$USER
+
+
+###############################################################################
+###############################################################################
+#####                                                                     #####
+#####   This script is a IBM script for the REGRID package.  It is        #####
+#####   designed to run on NCAR's IBM machines.  If you are not           #####
+#####   working with NCAR's IBM machines, this script will not be of      #####
+#####   much help to you.                                                 #####
+#####                                                                     #####
+#####   This script is set up for only a few specific data sets that are  #####
+#####   archived at NCAR and easily accessible from NCAR's IBM machines.  #####
+#####   If you want to use other data sets, you will likely need to set   #####
+#####   up the "pregrid" and "regridder" portions of REGRID yourself, and #####
+#####   run interactively.                                                #####
+#####                                                                     #####
+#####   This script is still in the experimental phase.                   #####
+#####   Capabilities and options are likely to change.                    #####
+#####               Please be patient.                                    #####
+#####                                                                     #####
+#####   Questions and comments should be directed to:                     #####
+#####                        mesouser@ucar.edu                            #####
+#####                                                                     #####
+###############################################################################
+###############################################################################
+#####   To run interactively, type "./ibm-regrid.deck >& log"             #####
+#####   To submit as a batch job, type "llsubmit ibm-regrid.deck"         #####
+###############################################################################
+###############################################################################
+
+#
+#       this should be the user's case or experiment (used in MS name)
+#
+  set ExpName = MM5V3/TEST              # MSS path name for output
+  set InName  = MM5V3/TEST              # MSS path name for input: TERRAIN_DOMAINx
+  set RetPd   = 365                     # MSS retention period in days
+
+
+# 3D Data Source
+
+   set SRC3D = ON84  # Old ON84-formatted NCEP GDAS analyses (though 1997-03-31)
+#  set SRC3D = NCEP  # Newer GRIB-formatted NCEP GDAS analyses (beginning 1997-04-01)
+#  set SRC3D = NNRP  # NCER/NCAR Reanalysis Project
+#  set SRC3D = TOGA  # ECMWF Global Analysis 
+#  set SRC3D = ERA   # ECMWF Reanalysis Project
+
+
+#
+# Specify the source of SST analyses
+#
+#  set SRCSST = ON84
+#  set SRCSST = NCEP
+   set SRCSST = $SRC3D
+
+#
+# Select the source of snow-cover analyses (entirely optional)
+#
+#  set SRCSNOW = ON84
+#  set SRCSNOW = NCEP
+#  set SRCSNOW = NNRP
+   set SRCSNOW = $SRC3D
+
+#
+# Select the source of soil model analyses (entirely optional)
+#
+#  set SRCSOIL = NNRP
+
+
+#
+# Set the starting date of the time period you want to process:
+#
+ set START_YEAR  = 1993   # Year (Four digits)
+ set START_MONTH = 03     # Month ( 01 - 12 )
+ set START_DAY   = 13     # Day ( 01 - 31 )
+ set START_HOUR  = 00     # Hour ( 00 - 23 )
+
+ set END_YEAR  = 1993   # Year (Four digits)
+ set END_MONTH = 03     # Month ( 01 - 12 )
+ set END_DAY   = 14     # Day ( 01 - 31 )
+ set END_HOUR  = 00     # Hour ( 00 - 23 )
+#
+# Define the time interval to process.
+#
+ set INTERVAL =  43200 # Time interval (seconds) to process.
+ 		       # This is most sanely the same as the time interval for
+                       # which the analyses were archived, but you can really
+                       # set this to just about anything, and pregrid will
+                       # interpolate in time and/or skip over time periods for
+                       # your regridding pleasure.
+
+#
+# Regridder NameList options
+#
+set PTOP = 10000                    # Top of Analysis
+set NewLevels = 95000,92500,90000,80000,75000,65000,60000,55000,45000,35000
+                                    # Which new levels to add to first guess 
+set SSTtoIceThreshold = -9999       # SST Temperature Threshold
+set LinearInterpolation = .FALSE.   # Linear (4-point) Interpolation
+
+
+set Terrain = ( TERRAIN_DOMAIN2 )   # Terrain Input File on mass storage
+
+
+#
+# Print options for Regridder
+#
+ set Print_Echo            = .FALSE.
+ set Print_Debug           = .FALSE.
+ set Print_Mask            = .FALSE.
+ set Print_Interp          = .FALSE.
+ set Print_Link_List_Store = .FALSE.
+ set Print_Array_Store     = .FALSE.
+ set Print_Header          = .FALSE.
+ set Print_Output          = .FALSE.
+ set Print_File            = .FALSE.
+ set Print_Tc              = .FALSE.
+ set Print_F77_Info        = .TRUE.
+
+#
+# Tropical Storm Bogus for Regridder
+#
+ set Insert_Bogus_Storm    = .FALSE.
+ set Num_Storm             =    1
+ set Latc_Loc              =   36.
+ set Lonc_Loc              =  -35.
+ set Vmax                  =   50. 
+
+
+########################################################################
+########################################################################
+######                                                            ######
+######                  END USER MODIFICATION                     ######
+######                                                            ######
+########################################################################
+########################################################################
+
+set DataDir = $TMPDIR
+set WD = ` pwd `
+cd $DataDir
+
+#
+#  Get the REGRID tarfile
+#
+cp /fs/othrorgs/home0/mesouser/MM5V3/REGRID.TAR.gz REGRID.TAR.gz
+if ( ! -e REGRID.TAR.gz ) then
+   msread REGRID.TAR.gz /MESOUSER/MM5V3/REGRID.TAR.gz
+endif
+if ( ! -e REGRID.TAR.gz ) then
+   echo "The REGRID.TAR.gz file does not exist.  Stopping."
+   exit ( 1 )
+endif
+gunzip REGRID.TAR.gz
+tar xf REGRID.TAR
+rm REGRID.TAR
+
+cd REGRID
+set TOPDIR = ` pwd `
+
+echo " "
+echo "RUN make"
+echo " "
+                     make 
+
+cd pregrid
+
+#
+#  Build the pregrid Namelist
+#
+if ( -e ./pregrid.namelist ) then
+   rm ./pregrid.namelist
+endif
+cat << End_Of_Namelist | sed -e 's/#.*//; s/  *$//' > ./pregrid.namelist
+&record1
+#
+# Set the starting date of the time period you want to process:
+#
+ START_YEAR  = $START_YEAR      # Year (Four digits)
+ START_MONTH = $START_MONTH     # Month ( 01 - 12 )
+ START_DAY   = $START_DAY       # Day ( 01 - 31 )
+ START_HOUR  = $START_HOUR      # Hour ( 00 - 23 )
+
+ END_YEAR  = $END_YEAR          # Year (Four digits)
+ END_MONTH = $END_MONTH         # Month ( 01 - 12 )
+ END_DAY   = $END_DAY           # Day ( 01 - 31 )
+ END_HOUR  = $END_HOUR          # Hour ( 00 - 23 )
+#
+# Define the time interval to process.
+#
+ INTERVAL =  $INTERVAL # Time interval (seconds) to process.
+		       # This is most sanely the same as the time interval for
+                       # which the analyses were archived, but you can really
+                       # set this to just about anything, and pregrid will
+                       # interpolate in time and/or skip over time periods for
+                       # your regridding pleasure.
+
+/
+End_Of_Namelist
+
+
+if ( ! $?SRC3D ) then
+   set SRC3D
+endif
+if ( ! $?SRCSST ) then
+   set SRCSST
+endif
+if ( ! $?SRCSNOW ) then
+   set SRCSNOW
+endif
+if ( ! $?SRCSOIL ) then
+   set SRCSOIL
+endif
+if ( ! $?VTSOIL ) then
+   set VTSOIL
+endif
+if ( ! $?VTSNOW ) then
+   set VTSNOW
+endif
+if ( ! $?VTSST ) then
+   set VTSST
+endif
+if ( ! $?VT3D ) then
+   set VT3D
+endif
+
+
+#### DOWNLOAD DATA FROM NCAR MASS STORAGE
+
+
+
+echo "DOWNLOADING DATA"
+
+   set START_DATE = ` echo $START_YEAR"-"$START_MONTH"-"$START_DAY"_"$START_HOUR `
+   set END_DATE = ` echo $END_YEAR"-"$END_MONTH"-"$END_DAY"_"$END_HOUR `
+
+if ( $SRC3D == ON84 || $SRCSST == ON84 || $SRCSNOW == ON84 ) then
+   cd ./on84
+   pwd
+   echo "Downloading ON84 Data"
+   chmod +x get_on84.csh
+   get_on84.csh ${START_DATE} ${END_DATE} 12
+   cd ..
+endif
+if ( $SRC3D == NCEP || $SRCSST == NCEP || $SRCSNOW == NCEP ) then
+   cd ./ncep.grib
+   pwd
+   echo "Downloading NCEP Data"
+   chmod +x get_ncep.csh
+   get_ncep.csh ${START_DATE} ${END_DATE} 12 
+   cd ..
+endif
+if ( $SRC3D == NNRP || $SRCSST == NNRP || $SRCSNOW == NNRP || $SRCSOIL == NNRP ) then
+   cd ./nnrp
+   pwd
+   echo "Downloading NNRP Data"
+   chmod +x get_nnrp.csh
+   get_nnrp.csh ${START_DATE} ${END_DATE} 6 
+      if ( $SRC3D == NNRP ) then
+        set InFiles = ( $TOPDIR/pregrid/nnrp/pgb* $TOPDIR/pregrid/nnrp/SFCNNRP* ) 
+      endif
+      if ( $SRCSST == NNRP ) then
+        set InSST = ( $TOPDIR/pregrid/nnrp/pgb* $TOPDIR/pregrid/nnrp/SFCNNRP* ) 
+      endif
+      if ( $SRCSNOW == NNRP ) then
+        set InSnow = ( $TOPDIR/pregrid/nnrp/pgb* $TOPDIR/pregrid/nnrp/SFCNNRP* ) 
+      endif
+      if ( $SRCSOIL == NNRP ) then
+        set InSoil = ( $TOPDIR/pregrid/nnrp/pgb* $TOPDIR/pregrid/nnrp/SFCNNRP* ) 
+      endif
+   cd ..
+endif
+if ( $SRC3D == TOGA || $SRCSST == TOGA || $SRCSNOW == TOGA ) then
+   cd ./toga
+   pwd
+   echo "Downloading TOGA Data"
+   chmod +x get_toga.csh
+   get_toga.csh ${START_DATE} ${END_DATE} 12 
+      if ( $SRC3D == TOGA ) then
+        set InFiles = ( $TOPDIR/pregrid/toga/TOGA_GRIB* ) 
+      endif
+      if ( $SRCSST == TOGA ) then
+        set InSST = ( $TOPDIR/pregrid/toga/TOGA_GRIB* ) 
+      endif
+      if ( $SRCSNOW == TOGA ) then
+        set InSnow = ( $TOPDIR/pregrid/toga/TOGA_GRIB* ) 
+      endif
+   cd ..
+endif
+if ( $SRC3D == ERA || $SRCSST == ERA || $SRCSNOW == ERA ) then
+   cd ./era
+   pwd
+   echo "Downloading ERA Data"
+   chmod +x get_era.csh
+   get_era.csh ${START_DATE} ${END_DATE} 6 
+      if ( $SRC3D == ERA ) then
+        set InFiles = ( $TOPDIR/pregrid/era/ERA_GRIB_UPA* $TOPDIR/pregrid/era/ERA_GRIB_SFC* ) 
+      endif
+      if ( $SRCSST == ERA ) then
+        set InSST = ( $TOPDIR/pregrid/era/ERA_GRIB_UPA* $TOPDIR/pregrid/era/ERA_GRIB_SFC* ) 
+      endif
+      if ( $SRCSNOW == ERA ) then
+        set InSnow = ( $TOPDIR/pregrid/era/ERA_GRIB_UPA* $TOPDIR/pregrid/era/ERA_GRIB_SFC* ) 
+      endif
+   cd ..
+endif
+
+#### END DOWNLOAD
+
+
+
+if ( $SRC3D == NNRP || $SRC3D == TOGA || $SRC3D == ERA || $SRC3D == GRIB ) then
+   set d3src
+endif
+if ( $SRCSST == NNRP || $SRCSST == TOGA || $SRCSST == ERA || $SRCSST == GRIB ) then
+   set sstsrc
+endif
+if ( $SRCSNOW == NNRP || $SRCSNOW == TOGA || $SRCSNOW == ERA || $SRCSNOW == GRIB ) then
+   set snowsrc
+endif
+if ( $SRCSOIL == NNRP || $SRCSOIL == GRIB ) then
+   set soilsrc
+endif
+
+set LETTERS = ( A B C D E F G H I J K L M N O P Q R S T U V W X Y Z )
+
+###############################################################################
+
+### Run pregrid
+
+echo "Run pregrid"
+
+###############################################################################
+
+foreach SourceType ( 3D SST SNOW SOIL) 
+
+  printf "\nProcessing for SourceType = %s\n\n" $SourceType
+
+  if ( ( $SourceType == SOIL ) && ( $SRCSOIL == ON84) ) then
+    printf "\n\nSoil fields not available in ON84 Dataset.\n"
+    printf "Do not request soil fields or select another source for soil fields.\n\n"
+    exit (1)
+  endif
+
+  if ( ( $SourceType == SOIL ) && ( $SRCSOIL == NCEP) ) then
+    printf "\n\nSoil fields not available in NCEP GDAS Dataset."
+    printf "Do not request soil fields or select another source for soil fields.\n\n"
+    exit (1)
+  endif
+
+###############################################################################
+
+  if ( ( ( $SourceType == 3D   ) && ( $SRC3D   == ON84) ) || \
+       ( ( $SourceType == SST  ) && ( $SRCSST  == ON84) ) || \
+       ( ( $SourceType == SNOW ) && ( $SRCSNOW == ON84) ) ) then
+
+    printf "\n\nStarting ON84 processing for type %s\n\n" $SourceType 
+#
+#  Go down to the "on84" directory.
+#
+    printf "cd %s\n\n" `pwd`/on84
+    cd on84
+#
+#  Remove whatever files may be leftover from a prior job.  Redirect 
+#  printout to supress warnings if there is nothing to remove.
+#
+    rm ON84FILE* >&! /dev/null
+    rm PSST:*    >&! /dev/null
+    rm PSNOW:*   >&! /dev/null
+    rm -f pregrid.namelist
+    rm -f Vtable
+
+    set InFiles = ( $TOPDIR/pregrid/on84/NCEP_ON84* ) 
+    set InSST = ( $TOPDIR/pregrid/on84/NCEP_ON84* ) 
+    set InSnow = ( $TOPDIR/pregrid/on84/NCEP_ON84* ) 
+#
+#  Build the Vtable:
+#
+    touch Vtable
+    if ($SourceType == 3D) then
+       cat Vtable.ON84 >> Vtable
+    else if ($SourceType == SST) then
+       cat Vtable.SST >> Vtable
+    else if ($SourceType == SNOW) then
+       cat Vtable.SNOW >> Vtable
+    endif
+#
+#  Link the requested input files to "ON84FILE.A", "ON84FILE.B", etc.
+#
+    set Num = 0
+    if ($SourceType == 3D) then
+       foreach file ( $InFiles )
+          @ Num ++
+	  printf "       ln -s   %s   %s\n" $file ON84FILE${LETTERS[$Num]}
+          ln -s $file ON84FILE${LETTERS[$Num]}
+       end
+    endif
+
+    if ($SourceType == SST) then
+       foreach file ( $InSST )
+          @ Num ++
+	  printf "       ln -s   %s   %s\n" $file ON84FILE${LETTERS[$Num]}
+          ln -s $file ON84FILE${LETTERS[$Num]}
+       end
+    endif
+
+    if ($SourceType == SNOW) then
+       foreach file ( $InSnow )
+          @ Num ++
+	  printf "       ln -s   %s   %s\n" $file ON84FILE${LETTERS[$Num]}
+          ln -s $file ON84FILE${LETTERS[$Num]}
+       end
+    endif
+#
+# Link the pregrid.namelist file and run the program.
+#
+    ln -s ../pregrid.namelist pregrid.namelist
+    ./pregrid_on84.exe 
+#
+# Move the output up to the "pregrid" directory.
+#
+    if ($SourceType == 3D) then
+       foreach file ( ON84:* )
+	  printf "       mv %s ../%s\n" $file $file
+          mv $file ..
+       end
+       set root1 = ON84
+    else if ($SourceType == SST) then
+       foreach file ( SST:* )
+	  printf "       mv %s ../ON84_%s\n" $file $file
+          mv $file ../ON84_$file
+       end
+       set root2 = ON84_SST
+    else if ($SourceType == SNOW) then
+       foreach file ( SNOW:* )
+	  printf "       mv %s ../ON84_%s\n" $file $file
+          mv $file ../ON84_$file
+       end
+       set root3 = ON84_SNOW
+    endif
+#
+# Go back up to the "pregrid" directory.
+#
+    printf "\ncd %s\n" `pwd`/..
+    cd ..
+
+    printf "\nDone with ON84 processing for type %s\n\n" $SourceType 
+  endif
+
+###############################################################################
+
+  if ( ( ( $SourceType == 3D   ) && ( $SRC3D   == NCEP) ) || \
+       ( ( $SourceType == SST  ) && ( $SRCSST  == NCEP) ) || \
+       ( ( $SourceType == SNOW ) && ( $SRCSNOW == NCEP) ) ) then
+#
+#  Go down to the "ncep.grib" directory.
+#
+    printf "\ncd %s\n" `pwd`/ncep.grib
+    cd ncep.grib
+#
+#  Remove whatever files may be leftover from a prior job.  Redirect 
+#  printout to supress warnings if there is nothing to remove.
+#
+    rm GRIBFILE*             >&! /dev/null
+    rm -f pregrid.namelist
+    rm -f Vtable
+
+    set InFiles = ( $TOPDIR/pregrid/ncep.grib/NCEP_GRIB* ) 
+    set InSST = ( $TOPDIR/pregrid/ncep.grib/NCEP_GRIB* ) 
+    set InSnow = ( $TOPDIR/pregrid/ncep.grib/NCEP_GRIB* ) 
+#
+#  Build the Vtable:
+#
+    touch Vtable
+    if ($SourceType == 3D) then
+       cat Vtable.NCEP >> Vtable
+    else if ($SourceType == SST) then
+       cat Vtable.SST >> Vtable
+    else if ($SourceType == SNOW) then
+       cat Vtable.SNOW >> Vtable
+    endif
+#
+#  Link the requested input files to "GRIBFILE.A", "GRIBFILE.B", etc.
+#
+    set Num = 0
+    if ( $SourceType == 3D ) then
+       foreach file ( $InFiles )
+          @ Num ++
+          ln -s $file GRIBFILE${LETTERS[$Num]}
+       end
+    endif
+    if ($SourceType == SST) then
+       foreach file ( $InSST )
+          @ Num ++
+          ln -s $file GRIBFILE${LETTERS[$Num]}
+       end
+    endif
+    if ($SourceType == SNOW) then
+       foreach file ( $InSnow )
+          @ Num ++
+          ln -s $file GRIBFILE${LETTERS[$Num]}
+       end
+    endif
+#
+# Link the pregrid.namelist file and run the program.
+#
+    ln -s ../pregrid.namelist pregrid.namelist
+    ./pregrid_ncep.exe 
+#
+# Move the output up to the "pregrid" directory.
+#
+    if ($SourceType == 3D) then
+       mv NCEP:* ..
+       set root1 = NCEP
+    else if ($SourceType == SST) then
+       foreach file ( SST:* )
+          mv $file ../NCEP_$file
+       end
+       set root2 = NCEP_SST
+    else if ($SourceType == SNOW) then 
+       foreach file ( SNOW:* )
+          mv $file ../NCEP_$file
+       end
+       set root3 = NCEP_SNOW
+    endif
+#
+# Go back up to the "pregrid" directory.
+#
+    echo "cd `pwd`/.."
+    cd ..
+
+  endif
+
+###############################################################################
+
+  if ( ( ( $SourceType == 3D   ) && ( $?d3src ) ) || \
+       ( ( $SourceType == SST  ) && ( $?sstsrc ) ) || \
+       ( ( $SourceType == SNOW ) && ( $?snowsrc ) ) || \
+       ( ( $SourceType == SOIL ) && ( $?soilsrc ) ) ) then
+
+     printf "\n\nStarting GRIB processing for type %s\n\n" $SourceType 
+
+#
+#  Go down to the "grib.misc" directory.
+#
+     echo "cd `pwd`/grib.misc"
+     cd grib.misc
+#
+#  Remove whatever files may be leftover from a prior job.  Redirect 
+#  printout to supress warnings if there is nothing to remove.
+#
+     rm FILE:*              >&! /dev/null
+     rm GRIBFILE*           >&! /dev/null
+     rm -f Vtable
+     rm -f pregrid.namelist
+#
+#  Build the Vtable:
+#
+     touch Vtable
+     if ( $SourceType == 3D ) then
+      if ( $SRC3D == NNRP ) then
+        cat Vtable.NNRP3D >> Vtable
+      else if ( $SRC3D == TOGA ) then
+        cat Vtable.TOGA3D >> Vtable
+      else if ( $SRC3D == ERA ) then
+        cat Vtable.ERA3D >> Vtable
+      else if ( $SRC3D == GRIB) then
+        foreach file ( $VT3D )
+           cat ../$file >> Vtable
+        end
+      endif
+     else if ( $SourceType == SST ) then
+      if ( $SRCSST == NNRP ) then
+        cat Vtable.NNRPSST >> Vtable
+      else if ( $SRCSST == TOGA ) then
+        cat Vtable.TOGASST >> Vtable
+      else if ( $SRCSST == ERA ) then
+        cat Vtable.ERASST >> Vtable
+      else if ( $SRCSST == GRIB) then
+        foreach file ( $VTSST )
+           cat ../$file >> Vtable
+        end
+      endif
+     else if ( $SourceType == SNOW ) then
+      if ( $SRCSNOW == NNRP ) then
+        cat Vtable.NNRPSNOW >> Vtable
+      else if ( $SRCSNOW == TOGA ) then
+        cat Vtable.TOGASNOW >> Vtable
+      else if ( $SRCSNOW == ERA ) then
+        cat Vtable.ERASNOW >> Vtable
+      else if ( $SRCSNOW == GRIB) then
+        foreach file ( $VTSNOW )
+           cat ../$file >> Vtable
+        end
+      endif
+     else if ( $SourceType == SOIL ) then
+      if ( $SRCSOIL == NNRP ) then
+        cat Vtable.NNRPSOIL >> Vtable
+      else if ( $SRCSOIL == GRIB) then
+        foreach file ( $VTSOIL ) 
+           cat ../$file >> Vtable
+        end
+      endif
+     endif
+#
+#  Link the requested files to "GRIBFILE.AA", "GRIBFILE.AB", etc.
+#
+     set NUM = 0
+     set num = 1
+
+     if ( $SourceType == 3D ) then
+        foreach file ( $InFiles ) 
+           @ NUM ++
+           if ( $NUM == 27 ) then
+              set NUM = 1
+              @ num ++
+           endif
+	   printf "       ln -s   %s   %s\n" $file GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+           ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+        end
+     else if ( $SourceType == SST ) then
+        foreach file ( $InSST ) 
+           @ NUM ++
+           if ( $NUM == 27 ) then
+              set NUM = 1
+              @ num ++
+           endif
+	   printf "       ln -s   %s   %s\n" $file GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+           ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+        end
+     else if ( $SourceType == SNOW ) then
+        foreach file ( $InSnow ) 
+           @ NUM ++
+           if ( $NUM == 27 ) then
+              set NUM = 1
+              @ num ++
+           endif
+	   printf "       ln -s   %s   %s\n" $file GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+           ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+        end
+     else if ( $SourceType == SOIL ) then
+        foreach file ( $InSoil ) 
+           @ NUM ++
+           if ( $NUM == 27 ) then
+              set NUM = 1
+              @ num ++
+           endif
+	   printf "       ln -s   %s   %s\n" $file GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+           ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+        end
+     endif
+#
+# Link the pregrid.namelist file and run the program.
+#
+     ln -s ../pregrid.namelist pregrid.namelist
+     ./pregrid_grib.exe
+#
+# Move the output files up to the "pregrid" directory.
+#
+     if ( $SourceType == 3D ) then
+        mv FILE:* ..
+        set root1 = FILE
+     else
+        foreach file ( FILE:* )
+	  printf "mv %s   %s\n" $file ../${SourceType}_${file}
+          mv $file ../${SourceType}_${file}
+        end
+        if ( $SourceType == SST) then
+          set root2 = SST_FILE
+        endif
+        if ( $SourceType == SNOW) then
+          set root3 = SNOW_FILE
+        endif
+        if ( $SourceType == SOIL) then
+          set root4 = SOIL_FILE
+        endif
+     endif
+#
+# Go back to the "pregrid" directory.
+#
+     echo "cd `pwd`/.."
+     cd ..
+
+     printf "\n\nDone with GRIB processing for type %s\n\n" $SourceType 
+   endif
+
+#
+# Print out five lines of # as a delimiter between ${SourceType}s
+#
+   repeat 5 printf \
+"################################################################################\n"
+
+end
+printf "\n"
+
+
+############################################################################
+
+cd $TOPDIR/regridder
+
+#
+#  Build the regridder Namelist
+#
+if ( -e ./namelist.input ) then
+   rm ./namelist.input
+endif
+cat << End_Of_Namelist | sed -e 's/#.*//; s/  *$//' > ./namelist.input
+&record1
+#
+# Set the starting date of the time period you want to process:
+#
+ START_YEAR  = $START_YEAR      # Year (Four digits)
+ START_MONTH = $START_MONTH     # Month ( 01 - 12 )
+ START_DAY   = $START_DAY       # Day ( 01 - 31 )
+ START_HOUR  = $START_HOUR      # Hour ( 00 - 23 )
+
+ END_YEAR  = $END_YEAR          # Year (Four digits)
+ END_MONTH = $END_MONTH         # Month ( 01 - 12 )
+ END_DAY   = $END_DAY           # Day ( 01 - 31 )
+ END_HOUR  = $END_HOUR          # Hour ( 00 - 23 )
+#
+# Define the time interval to process.
+#
+ INTERVAL =  $INTERVAL # Time interval (seconds) to process.
+		       # This is most sanely the same as the time interval for
+                       # which the analyses were archived, but you can really
+                       # set this to just about anything, and pregrid will
+                       # interpolate in time and/or skip over time periods for
+                       # your regridding pleasure.
+
+/
+
+
+&record2
+ ptop_in_Pa                      = $PTOP
+ new_levels_in_Pa                = $NewLevels
+ sst_to_ice_threshold            = $SSTtoIceThreshold
+ linear_interpolation            = $LinearInterpolation
+/
+
+&record3
+ root                            = '../pregrid/$root1' ,
+                                   '../pregrid/$root2' ,
+End_Of_Namelist
+if ( $?root3 ) then
+   echo "                                   '../pregrid/$root3' ," >> ./namelist.input
+endif
+if ($?root4 ) then
+   echo "                                   '../pregrid/$root4'" >> ./namelist.input
+endif
+
+
+cat << End_Of_Namelist | sed -e 's/#.*//; s/  *$//' >> ./namelist.input
+
+ terrain_file_name               = './$Terrain' 
+/
+
+&record4
+ print_echo                      = $Print_Echo
+ print_debug                     = $Print_Debug
+ print_mask                      = $Print_Mask
+ print_interp                    = $Print_Interp
+ print_link_list_store           = $Print_Link_List_Store
+ print_array_store               = $Print_Array_Store
+ print_header                    = $Print_Header
+ print_output                    = $Print_Output
+ print_file                      = $Print_File
+ print_tc                        = $Print_Tc
+ print_f77_info                  = $Print_F77_Info 
+/
+
+&record5
+ insert_bogus_storm              = $Insert_Bogus_Storm
+ num_storm                       = $Num_Storm
+ latc_loc                        = $Latc_Loc
+ lonc_loc                        = $Lonc_Loc
+ vmax                            = $Vmax 
+/
+
+End_Of_Namelist
+
+
+##############################################################################
+
+echo "Get Terrain file from mass storage"
+msread $Terrain $InName/$Terrain
+
+### Run regridder
+echo "RUN regridder"
+
+regridder
+
+##############################################################################
+
+### Move Files to mass storage
+
+ls -ls
+echo " "
+echo "Move REGRID file and regridder Input files to mass storage"
+echo " "
+foreach file ( REGRID_DOMAIN* )
+  echo "mswrite " $file
+  mswrite -t $RetPd $file $ExpName/$file
+end
+
+
+cd $TOPDIR/pregrid
+if ($?root4 ) then
+foreach file ( ${root4}:* )
+  echo "mswrite " $file
+  mswrite -t $RetPd $file $ExpName/$file
+end
+endif
+if ($?root3 ) then
+foreach file ( ${root3}:* )
+  echo "mswrite " $file
+  mswrite -t $RetPd $file $ExpName/$file
+end
+endif
+foreach file ( ${root2}:* )
+  echo "mswrite " $file
+  mswrite -t $RetPd $file $ExpName/$file
+end
+foreach file ( ${root1}:* )
+  echo "mswrite " $file
+  mswrite -t $RetPd $file $ExpName/$file
+end
+
+###Clean up temportary directory
+##cd $TMPDIR/..
+##rm -r $TMPDIR
+##cd $WD
+##pwd
+
+echo "DONE"
+
+exit

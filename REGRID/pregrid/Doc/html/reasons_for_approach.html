@@ -1,0 +1,63 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; OSF1 V4.0 alpha) [Netscape]">
+</head>
+<body text="#000000" bgcolor="#CCFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+The approach of partitioning the functional pieces of REGRID into two sections
+was selected for several reasons:
+<br>&nbsp;
+<ol>
+<li>
+Separation of input tasks from the interpolation tasks removes the complicated
+code handling many types of input from the relatively straightforward task
+of interpolation.</li>
+
+<li>
+Access programs could be (and have been) written for individual data sets,
+keeping the code for the input tasks relatively focused.</li>
+
+<li>
+Data from different sources are easy to combine.&nbsp; This is most applicable
+to surface and soil data sets which are not archived in all atmospheric
+analysis data sets.</li>
+
+<li>
+All fields output from the pregrid programs are interpolated by REGRIDDER
+and passed along to the rest of the modeling system.</li>
+
+<li>
+Separate programs and the simple intermediate format allow users to readily
+introduce into the MM5 modeling system data&nbsp; sets which are not included
+in the set of supported data sources.</li>
+
+<li>
+Users introducing data from unsupported sources need only be concerned
+with the parts of the package required to decode their own particular data
+sets.</li>
+
+<li>
+When user intervention is necessary, the modifications are located solely
+in an area where the user is a presumed expert: with the new data source.</li>
+</ol>
+Regarding the last few points above:
+<p>There are many, many gridded data sets out there, from many different
+sources, in many different formats, and intented for many different users.&nbsp;
+If the MM5 system developers tried to support every data set or every format
+that comes along, our programs would soon grow to unusable complexity.&nbsp;
+Therefore, only a few widely available and frequently used data sets are
+"officially" supported for use in REGRID.&nbsp; If a user desires to use
+a different data set, the user needs only to write a program to put the
+original data into the <a href="intermediate_format.html">intermediate
+format</a> (i.e., their own pregrid program).&nbsp; The <i>regridder</i>
+program can most likely be used as is.
+<hr WIDTH="100%">
+<br><a href="Documentation_Home.html">Documentation HOME</a>
+<p>
+<!-- hhmts start -->
+Last modified: Tue Jun  6 13:57:19 MDT 2000
+<!-- hhmts end -->
+</p>
+</body>
+</html>

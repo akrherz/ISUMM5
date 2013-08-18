@@ -1,0 +1,7 @@
+CSTART   mpp_bdyval_10.incl
+C mpp_bdyval_10
+      IF(IEXEC.EQ.1)THEN
+        CALL RSL_EXCH_STENCIL(DOMAINS(IN),STEN_INIT(IN))
+      ENDIF
+      CALL RSL_EXCH_STENCIL(DOMAINS(IN),STEN_BDY(IN))
+CEND   mpp_bdyval_10.incl

@@ -1,0 +1,54 @@
+CBEGIN mpp_init_05.incl
+
+C Code to put the interiors of some arrays that could be read in
+C by rdinit to 0.; the MPP code has already set everything else
+C to 1. (by iterating through allarr in mpp_mm5_05.incl.  In the
+C case of Sea Ice (XICE) and perhaps a couple other fields the
+C model assumes that if the field is not in the input file that
+C it is zero.
+
+      IF (MIXL.GT.1) THEN
+        DO J = 1, JL
+        DO I = 1, IL
+	  SFCEXC(I,J) = 0.
+	  SMSTAV(I,J) = 0.
+	  SMSTOT(I,J) = 0.
+	  GRNFLX(I,J) = 0.
+	  ISLOPE(I,J) = 0
+	  VEGFRC(I,J) = 0.
+	  XVEGMN(I,J) = 0.
+	  SSROFF(I,J) = 0.
+	  BGROFF(I,J) = 0.
+	  ACSNOM(I,J) = 0.
+	  ACEVAP(I,J) = 0.
+	  ACSNOW(I,J) = 0.
+	  SFCEVP(I,J) = 0.
+	  SNOPCX(I,J) = 0.
+	  XICE(I,J) = 0.
+	  CMCA(I,J) = 0.
+	  SNOA(I,J) = 0.
+	  CMCB(I,J) = 0.
+	  SNOB(I,J) = 0.
+	  IVGTYP(I,J) = 0
+	  ISLTYP(I,J) = 0
+          SNOWHA(I,J) = 0.
+          SNOWHB(I,J) = 0.
+          ALBMAX(I,J) = 0.
+          ALBEDO(I,J) = 0.
+        ENDDO
+        ENDDO
+        DO K = 1, MLX
+        DO J = 1, JL
+        DO I = 1, IL
+	  SWCA(I,J,K) = 0.
+	  SMCA(I,J,K) = 0.
+	  STCA(I,J,K) = 0.
+	  SWCB(I,J,K) = 0.
+	  SMCB(I,J,K) = 0.
+	  STCB(I,J,K) = 0.
+        ENDDO
+        ENDDO
+        ENDDO
+      ENDIF
+
+CEND mpp_init_05.incl

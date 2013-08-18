@@ -1,0 +1,2 @@
+undefined:
+	@echo "Go to the REGRID directory when first making the pregrid executables."

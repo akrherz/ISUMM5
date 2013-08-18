@@ -1,0 +1,34 @@
+#execute  these commands in the top level directory to
+#make symlinks in a new 'work' directory
+set MPP_LAYER=$1
+set MPP_TARGET=$2
+set DIRS=(Run domain dynamics fdda include memory physics MPP/RSL/parallel_src MPP/*.c MPP/*.F)
+if ( ! -d ./MPP/build ) then
+  if ( -d ../work ) then
+    echo 'MPP/Makelinks: There already exists a directory above this one'
+    echo '               that is named "work."  It must be moved or deleted'
+    echo '               for correct installation.  Stopping.'
+  endif
+  mkdir ../work
+  foreach f ( `find $DIRS -name \*.F -print` )
+  ln -s ../../$f ../work
+  end
+  foreach f ( `find $DIRS -name \*.c -print` )
+  ln -s ../../$f ../work
+  end
+  mv ../work ./MPP/build
+#  ln -s ../nan.c ./MPP/build
+#  ln -s ../milliclock.c ./MPP/build
+#  ln -s ../mhz.c ./MPP/build
+#  ln -s ../lb_alg.c ./MPP/build
+#  if ( "$MPP_TARGET" == "sp2" ) then
+#    echo "linking to $MPP_LAYER/Makefile.$MPP_LAYER.$MPP_TARGET"
+#    ln -s ../$MPP_LAYER/Makefile.$MPP_LAYER.$MPP_TARGET ./MPP/build/Makefile.$MPP_LAYER
+#  else
+    echo "linking to $MPP_LAYER/Makefile.$MPP_LAYER"
+    ln -s ../$MPP_LAYER/Makefile.$MPP_LAYER ./MPP/build
+#  endif
+else
+  echo Makelinks: ./MPP/build directory exists.  No action taken.
+endif
+

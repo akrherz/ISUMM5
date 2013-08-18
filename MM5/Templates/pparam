@@ -1,0 +1,13 @@
+ ;
+ ;      ************* MISCELLANEOUS OPTIONS *****************
+ ;
+ ; The values for the following 5 variables are only used if ISFPAR = 0
+ ;     (i.e. only land/water surface catagories)
+ ;
+ ZZLND  = 0.1,          ; roughness length over land in meters
+ ZZWTR  = 0.0001,       ; roughness length over water in meters
+ ALBLND = 0.15,         ; albedo
+ THINLD = 0.04,         ; surface thermal inertia
+ XMAVA  = 0.3,          ; moisture availability over land as a decimal fraction of one
+ ;
+ CONF   = 1.0,          ; non-convective precipitation saturation threshold (=1: 100%)

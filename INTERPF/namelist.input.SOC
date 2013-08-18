@@ -1,0 +1,36 @@
+&record0
+ input_file     = '../RAWINS/RAWINS_DOMAIN1' /
+
+&record1
+ start_year     =  1993
+ start_month    =    03
+ start_day      =    13
+ start_hour     =    00
+ end_year       =  1993
+ end_month      =    03
+ end_day        =    14
+ end_hour       =    00
+ interval       = 43200  
+ less_than_24h  = .FALSE. /
+
+&record2
+ sigma_f_bu     = 1.00,0.99,0.98,0.96,0.93,0.89,
+                  0.85,0.80,0.75,0.70,0.65,0.60,
+                  0.55,0.50,0.45,0.40,0.35,0.30,
+                  0.25,0.20,0.15,0.10,0.05,0.00
+ isfc           = 0 /
+
+&record3
+ p0             = 1.e5
+ tlp            = 50.
+ ts0            = 275.
+ tiso           =  00./
+
+&record4
+ removediv      = .TRUE.
+ usesfc         = .TRUE.
+ wrth2o         = .TRUE. 
+ psfc_method    = 0 /
+
+&record5
+ ifdatim        = -1 /

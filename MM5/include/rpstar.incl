@@ -1,0 +1,16 @@
+C                                                                                RPSTAR.1
+C --- COMMON BLOCK RPSTAR, 1/PSTAR                                               RPSTAR.2
+C                                                                                RPSTAR.3
+      REAL CRX,DMDX,DMDY,DPSDXM,DPSDYM,EX,PDOTA,PDOTB,RPDOTA,RPDOTB,             RPSTAR.4
+     1 RPSA,RPSB,RPSC,SRX                                                        RPSTAR.5
+      POINTER (IAPDA, PDOTA(MIX,MJX)), (IAPDB, PDOTB(MIX,MJX)),                  RPSTAR.6
+     1        (IARPA,  RPSA(MIX,MJX)), (IARPB,  RPSB(MIX,MJX)),                  RPSTAR.7
+     2       (IARPDA,RPDOTA(MIX,MJX)),(IARPDB,RPDOTB(MIX,MJX)),                  RPSTAR.8
+     3        (IARPC,  RPSC(MIX,MJX)),                                           RPSTAR.9
+     4     (IADPSDXM,DPSDXM(MIX,MJX)),(IADPSDYM,DPSDYM(MIX,MJX)),                RPSTAR.10
+     5       (IADMDX,  DMDX(MIX,MJX)),    (IADMDY,DMDY(MIX,MJX)),                RPSTAR.11
+     6         (IAEX,    EX(MIX,MJX)),                                           RPSTAR.12
+     7        (IACRX,   CRX(MIX,MJX)),    (IASRX, SRX(MIX,MJX))                  RPSTAR.13
+      COMMON /RPSTAR/ IAPDA,IAPDB,IARPA,IARPB,IARPDA,IARPDB,                     RPSTAR.14
+     1                IARPC,IADPSDXM,IADPSDYM,IADMDX,IADMDY,                     RPSTAR.15
+     2                IAEX, IACRX,   IASRX                                       RPSTAR.16

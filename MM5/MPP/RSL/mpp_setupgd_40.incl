@@ -1,0 +1,47 @@
+CSTART   mpp_setupgd_40.incl
+      IF ( RSL_IAMMONITOR() ) THEN
+          DO J = 1, JL
+            DO I = 1, IL
+              DMI_G(I,J)=DMSCR_G(J,I)
+              IF(DMI_G(I,J).GT.0.5)THEN
+                DMI_G(I,J)=1.0
+              ELSE
+                DMI_G(I,J)=0.0
+              ENDIF
+              IPRE_G(I,J)=IPSCR_G(J,I)
+            ENDDO
+          ENDDO
+C SET WEIGHTS TO 1.0 OVER ENTIRE GRID
+          IF(IN.EQ.1)THEN
+            DO I=1,IL
+              DO J=1,JL
+                WQ_G(I,J) = 1.
+              ENDDO
+            ENDDO
+          ENDIF
+C SET IGRID TO 0 FOR DOT POINT FIELD AND 1 FOR CROSS
+          IGRID=0
+          RINDX=RINP*1000./DX
+          DO 210 I=1,IL
+            DO 210 J=1,JL
+              IF((IPRE_G(I,J).NE.0.AND.DMI_G(I,J).LT.0.5)
+     +          .OR.DMI_G(I,J).GT.0.5) THEN
+                MAXJ=J+IFIX(RINDX+0.99)
+                MAXJ=MIN0(JL-IGRID,MAXJ)
+                MINJ=J-IFIX(RINDX+0.99)
+                MINJ=MAX0(1,MINJ)
+                MAXI=I+IFIX(RINDX+0.99)
+                MAXI=MIN0(IL-IGRID,MAXI)
+                MINI=I-IFIX(RINDX+0.99)
+                MINI=MAX0(1,MINI)
+                DO 220 II=MINI,MAXI
+                  DO 220 JJ=MINJ,MAXJ
+                    WQ_G(II,JJ)=0.0
+  220             CONTINUE
+              ENDIF
+  210       CONTINUE
+      ENDIF
+      CALL RSL_READ ( WQ_G, IO2D_IJ_INTERNAL,
+     +                WQ,   DOMAINS(IN), RSL_REAL, GLEN, LLEN )
+
+CEND   mpp_setupgd_40.incl

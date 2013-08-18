@@ -1,0 +1,64 @@
+Since version 3.6, REGRID can process fractional seaice data as well.
+Fractional seaice data is used in MM5 if the polar physics option is
+activated with IPOLAR = 1 in configure.user.
+
+The source used for the fractional seaice data is:
+National Snow and Ice Data Center, Boulder, CO, USA
+
+This data can be obtained by anyone from the National Snow and Ice
+Data Center at no charge (They only require users to register
+with them before downloading data).
+
+To download data, first register at:
+http://nsidc.org/data/nise1.html (Near the top it says "Register for Data")
+Once you are a registered user, you will be supplied with a user name
+and password to download data.
+
+If you use the data, there is a citation at the bottom of the 
+same web page that you should stick in your references:
+Nolin, A., R.L. Armstrong, and J. Maslanik. 1998 - [insert date of data acquisition]. 
+Near Real-Time SSM/I EASE-Grid Daily Global Ice Concentration and Snow Extent. 
+Boulder, CO, USA: National Snow and Ice Data Center. Digital media.
+
+Questions about the original data?
+nsidc@nsidc.org
+(303) 492-6199
+
+Where do you get the HDFEOS fractional seaice data?
+
+Once you have registered, use the user name and password provided to go
+to their ftp site:
+
+ftp sidads.colorado.edu
+user: provided-user-name
+passwd: provided-pass-word
+
+get the NISE_SSMIF13*.HDFEOS file for that date (name as of Nov 2002)
+
+How to run?
+1) Fill in the date in the namelist.input file.
+2) Put the NISE*HDFEOS file in the current working directory.
+3) Run the sea ice fraction executable:
+	# seaicefr
+4) Move the generated file (SEAICEFR_FILE:YYYY-MM-DD_HH) up a 
+directory
+	# mv SEAICEFR_FILE:* ..
+5) This file is to be used as one of the "CONSTANTS_FULL_NAME"
+files in the regridder namelist.input file.  
+
+Only when the MM5 polar mods are used is fractional seaice required. 
+
+Note that this conversion program only converts one date at
+a time. This is normally enough, since regridder only needs
+one time period of SEAICEFR data. (This data is ingested by
+regridder via the "constants_full_name" variable in
+regridder/namelist.input.)
+
+If desired a user may use more than one time for SEAICEFR as input.
+In this case, the pregrid/nise converter needs to be run separately for
+each time period, and the data must be supplied to regridder via the
+"root" variable in regridder/namelist.input.
+
+
+Questions about use of the data in the MM5 system?
+mesouser@ucar.edu

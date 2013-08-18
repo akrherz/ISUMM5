@@ -1,0 +1,9 @@
+      SUBROUTINE FKILL_MODEL( MESS )
+      CHARACTER*(*) MESS
+      WRITE(0,*)'STOP: ',MESS
+      PRINT*,   'STOP: ',MESS
+      WRITE(0,*)'CALLING MPI_ABORT'
+      PRINT*,   'CALLING MPI_ABORT'
+      CALL KILL_MODEL
+      END
+

@@ -1,0 +1,7 @@
+      REAL TMASK                                                                 UPRAD.1
+      POINTER (IUPR,TMASK(-6:6,-6:6))                                            UPRAD.2
+      COMMON /UPRAD/IUPR                                                         UPRAD.3
+      REAL WTIJ                                                                  UPRAD.4
+      INTEGER INSI,JNSJ                                                          UPRAD.5
+      COMMON /UPRWIJ/ WTIJ(MIX,MJX,MAXNES),                                      UPRAD.6
+     1                INSI(MIX,-6:6,MAXNES),JNSJ(MJX,-6:6,MAXNES)                UPRAD.7

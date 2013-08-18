@@ -1,0 +1,17 @@
+C                                                                                NAVYPB.1
+C----------------------------------------------------------------------          NAVYPB.2
+C                                                                                NAVYPB.3
+C                                                                                NAVYPB.4
+      REAL PQWSB,PTHLQWB,PTHLSB,QCTENV,QVTENV,TTENV,TURKE,UTENV,VTENV            NAVYPB.5
+      POINTER ( IATURK,TURKE(MIXV,MJXV,MKXV)),                                   NAVYPB.6
+     1        (IATHSB,PTHLSB(MIXV2,MJXV2,MKXV2)),                                NAVYPB.7
+     1        (IATHQW,PTHLQWB(MIXV2,MJXV2,MKXV2)),                               NAVYPB.8
+     1        (IAQWSB,PQWSB(MIXV2,MJXV2,MKXV2)),                                 NAVYPB.9
+     1        (IAUTV,UTENV(MIXV3,MJXV3,MKXV3)),                                  NAVYPB.10
+     1        (IAVTV,VTENV(MIXV3,MJXV3,MKXV3)),                                  NAVYPB.11
+     1        (IATTV,TTENV(MIXV3,MJXV3,MKXV3)),                                  NAVYPB.12
+     1        (IAQVTV,QVTENV(MIXV3,MJXV3,MKXV3)),                                NAVYPB.13
+     1        (IAQCTV,QCTENV(MIXV3,MJXV3,MKXV3))                                 NAVYPB.14
+C                                                                                NAVYPB.15
+      COMMON/ADDRV/ IATURK,IATHSB,IATHQW,IAQWSB,IAUTV,IAVTV,IATTV,               NAVYPB.16
+     1   IAQVTV,IAQCTV                                                           NAVYPB.17

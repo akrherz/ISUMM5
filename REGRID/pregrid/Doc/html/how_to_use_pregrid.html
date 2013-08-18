@@ -1,0 +1,255 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.75 [en] (X11; U; OSF1 V4.0 alpha) [Netscape]">
+<style type="text/css">
+      body {color: black; background: #CCFFFF}
+      div.code {color: #FF0000; background: #FFFFFF; 
+              border: solid black; border-width: 1}
+    </style>
+</head>
+<body text="#000000" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<h1>
+How to use <i>pregrid</i></h1>
+The pregrid programs take several different kinds of input:
+<ol>
+<li>
+The <a href="#Pregrid Namelist">namelist</a>, defining times you want to
+process.</li>
+
+<li>
+The archived analysis files.</li>
+
+<li>
+The Vtable file, which describes which fields to extract from the archive
+files, and what variable names are assigned.&nbsp; Vtables are explained
+in more detail <a href="Vtables.html">here</a>.</li>
+</ol>
+The pregrid program scans through each of the input analysis files, checking
+on the dates.&nbsp; For any dates which fall between your start time and
+end time (inclusive), pregrid scans through the archived fields and pulls
+out those which have been specified in the Vtable.&nbsp; From these fields,
+pregrid builds (or adds to) preliminary output files, and the moves on
+to the next input file.&nbsp; When all input files have been processed,
+and all pertinent data between the start time and end time have been written
+to the preliminary output files, pregrid rereads the output files, and
+builds in certain fields which may be missing.&nbsp; The pregrid program
+then scans through all the files, searching for dates which are missing.&nbsp;
+If it finds a missing date, it fills it in by temporal interpolation.&nbsp;
+Then the final output files are written.
+<br>&nbsp;
+<h3>
+pregrid.csh c-shell script:</h3>
+In the following discussion, examples of what may be set in the pregrid.csh
+script are in the following style:
+<blockquote>
+<div class = "code">sample code</div>
+</blockquote>
+The pregrid shell "pregrid.csh", is provided to run pregrid interactively
+on a workstation.&nbsp; It is found in the directory REGRID/pregrid.&nbsp;
+This shell is written in c-shell script language.&nbsp; To use this shell
+effectively, some familiarity with c-shell script language is recommended.
+<p>To run the "pregrid.csh" script interactively:
+<ol>
+<li>
+Get the analysis archives and put them in some directory on your local
+machine.</li>
+
+<li>
+Set the <a href="#Script variables">script variables</a>.</li>
+
+<li>
+Fill out the <a href="#Pregrid Namelist">namelist</a>.</li>
+
+<li>
+Make sure you've got the right <a href="Vtables.html">Vtables</a>, especially
+if you're getting analyses other than the standard ones.</li>
+
+<li>
+Make sure "pregrid.csh" is executable ("chmod u+x pregrid.csh").</li>
+
+<li>
+Run pregrid.csh, by entering "pregrid.csh"</li>
+</ol>
+For notes on slightly more advanced use of the pregrid.csh shell script,
+go <a href="Advanced_csh.html">here</a>. But first, read the rest of this
+page and be sure you understand the basic use of the pregrid.csh shell
+script and Vtables.
+<h3>
+<a NAME="Script variables"></a>Script variables</h3>
+<b><font face="Courier New,Courier">DataDir</font></b>:&nbsp; The local
+directory where you've placed the original analysis archive files.&nbsp;
+The DataDir script variable is simply a convenience, referenced only in
+the InFiles, InSST, InSnow, and InSoil script variables below, and only
+if you so desire to use it in setting InFiles, InSST, InSnow, or InSoil.
+<blockquote>Example:&nbsp; Your username is "smith", and you've got a directory
+"/users/smith/Data".&nbsp; In this directory, you have put the analysis
+files you expect REGRID to read.&nbsp; The "set DataDir" statement should
+look like:
+<blockquote>
+<div class="code">set DataDir = /users/smith/Data</div>
+</blockquote>
+</blockquote>
+<b><font face="Courier New,Courier">SRC3D</font></b>:&nbsp; The source
+of 3D analyses.&nbsp; Select from one of the following:
+<blockquote><b><font face="Courier New,Courier">ON84</font></b> : NCEP
+GDAS analyses, in ON84 format (before 1997 Mar).
+<br><b><font face="Courier New,Courier">NCEP</font></b> : NCEP GDAS analyses,
+in GRIB format (beginning 1997 Mar).
+<br><b><font face="Courier New,Courier">GRIB</font></b> : A catch-all for
+many other datasets in the GRIB format.
+<p>Example:&nbsp; You've got meteorological analyses in GRIB format.&nbsp;
+The "set SRC3D" statement should look like:
+<blockquote>
+<div class="code">set SRC3D = GRIB</div>
+</blockquote>
+</blockquote>
+<b><font face="Courier New,Courier">InFiles</font></b>:&nbsp; Full pathname
+to the files with 3D Analyses.
+<blockquote>Example:&nbsp; You've put GRIB files containing pressure-level
+analyses in the directory "/users/smith/Data".&nbsp; The archives have
+been separated by surface and upper-air, and by date.&nbsp; The files are
+called GRIBUPA.2400, GRIBUPA.2412,&nbsp; GRIBSFC.2400, and GRIBSFC.2412.&nbsp;
+The "set InFiles" statement might look like:
+<blockquote>
+<div class="code">set InFiles = ( ${DataDir}/GRIBUPA.2400 ${DataDir/GRIBSFC.2400
+\
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+${DataDir}/GRIBUPA.2412 ${DataDir/GRIBSFC.2412 )</div>
+</blockquote>
+The order of the listing of the files should not matter.&nbsp; Wild cards
+may be used, if you're careful. So the statement could look like:
+<blockquote>
+<div class="code">set InFiles = ( ${DataDir}/GRIBUPA.24* ${DataDir}/GRIBSFC.24*
+)</div>
+</blockquote>
+or even something like:
+<blockquote>
+<div class="code">set InFiles = ( ${DataDir}/GRIB*.24* )</div>
+</blockquote>
+If you've opted not to set the DataDir script variable above, you could
+still set Infiles like this:
+<blockquote>
+<div class="code">set InFiles = ( /users/smith/Data/GRIB*.24* )</div>
+</blockquote>
+</blockquote>
+
+<p><br><b><font face="Courier New,Courier">SRCSST</font></b>:&nbsp; Source
+of the SST Analyses.&nbsp; Select from among the following:
+<blockquote><b><font face="Courier New,Courier">ON84</font></b>: NCEP GDAS
+analyses, in ON84 format.
+<br><b><font face="Courier New,Courier">NCEP</font></b>: NCEP GDAS analyses,
+in GRIB format.
+<br><b><font face="Courier New,Courier">NAVY</font></b>: Low-resolution
+Navy archives (roughly 2.5x2.5 degrees)
+<br><b><font face="Courier New,Courier">GRIB</font></b>: A catch-all for
+many other datasets in the GRIB format.
+<br><b><font face="Courier New,Courier">$SCR3D</font></b>: Same type as
+the 3D analyses
+<p>Example:&nbsp; Your SST fields come from the ON84-formatted NCEP GDAS
+analyses.&nbsp; In this case, your set SRCSST statement would look like:
+<blockquote>
+<div class = "code">set SRCSST = ON84</div>
+</blockquote>
+</blockquote>
+<b><font face="Courier New,Courier">InSST</font></b>:&nbsp; Full pathname
+to the files with SST analyses.
+<blockquote>Example:&nbsp; Your SST fields come from the ON84-formatted
+NCEP GDAS analyses.&nbsp; You have put those analysis files in the directory
+/users/smith/Data, in a file called ON84.DATA.&nbsp; In this case, the
+"set InSST" statement might look like:
+<blockquote>
+<div class = "code">set InSST = ( ${DataDir}/ON84.DATA )</div>
+</blockquote>
+</blockquote>
+<b><font face="Courier New,Courier">SRCSNOW</font></b>: Source of snow-cover
+analyses.&nbsp; The snow-cover field is optional in mm5, so you may choose
+not to retrieve snow-cover data.
+<p><b><font face="Courier New,Courier">InSnow</font></b>: Full pathname
+to the files with Snow-cover analyses.
+<p><b><font face="Courier New,Courier">SRCSOIL</font></b>:&nbsp; Source
+of soil (i.e. ground) analyses (e.g., soil moisture, ground temperature,
+etc.)
+<p><b><font face="Courier New,Courier">InSoil</font></b>: Full pathname
+to the files with soil-data analyses.
+<p>Next, there are a few script variables you need to set if you have set
+any of the above to GRIB.&nbsp; These script variables denote the tables
+which&nbsp; the GRIB pregridder is going to need in order to know which
+variables to extract from the GRIB files.&nbsp; See <a href="Vtables.html">Vtables</a>
+for details on what exactly is in the Vtable files.
+<p><b><font face="Courier New,Courier">VT3D</font></b>:&nbsp;&nbsp; The
+Vtables for the files specified in InFiles.
+<br><b><font face="Courier New,Courier">VTSST</font></b>:&nbsp; The Vtables
+for the files specified in InSST.
+<br><b><font face="Courier New,Courier">VTSNOW</font></b>: The Vtables
+for the files specified in InSnow.
+<br><b><font face="Courier New,Courier">VTSOIL</font></b>: The Vtables
+for the files specified in InSoil.
+<h3>
+<a NAME="Pregrid Namelist"></a>Namelist:</h3>
+There is a small namelist built by the "pregrid.csh" script.&nbsp; This
+namelist file is named "pregrid.namelist", and defines the dates you want
+to process:
+<p>The starting date of the time period you want to process is set by&nbsp;
+START_YEAR, START_MONTH, START_DAY, and START_HOUR.
+<p>The starting date of the time period you want to process is set by&nbsp;
+END_YEAR, END_MONTH, END_DAY, and END_HOUR.
+<p>The time interval for which you want to process files is set by INTERVAL.
+<br>&nbsp;
+<blockquote>
+<div class = "code">&nbsp;START_YEAR&nbsp; = 1987&nbsp;&nbsp; # Year (YYYY)
+<br>&nbsp;START_MONTH = 08&nbsp;&nbsp;&nbsp;&nbsp; # Month ( 01 - 12 )
+<br>&nbsp;START_DAY&nbsp;&nbsp; = 02&nbsp;&nbsp;&nbsp;&nbsp; # Day ( 01
+- 31 )
+<br>&nbsp;START_HOUR&nbsp; = 12&nbsp;&nbsp;&nbsp;&nbsp; # Hour ( 00 - 23
+)
+<p>&nbsp;END_YEAR&nbsp; = 1987&nbsp;&nbsp;&nbsp;&nbsp; # Year (Four digits)
+<br>&nbsp;END_MONTH = 08&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # Month (
+01 - 12 )
+<br>&nbsp;END_DAY&nbsp;&nbsp; = 04&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# Day ( 01 - 31 )
+<br>&nbsp;END_HOUR&nbsp; = 00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # Hour
+( 00 - 23 )
+<p>&nbsp;INTERVAL =&nbsp; 43200 # Time interval (seconds) to process.
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# This is most sanely the same as the time interval for
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# which the analyses were archived, but you can really
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# set this to just about anything, and pregrid will
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# interpolate in time and/or skip over time periods for
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# your regridding pleasure.</div>
+</blockquote>
+
+<p><br>In addition to the above namelist parameters, there are a few "hidden"
+namelist parameters.&nbsp; They are "hidden" in that they are not included
+in the default "pregrid.csh" file, but have default values set for them
+in the program.&nbsp; If you need to change the default values, you can
+add them to the namelist yourself:
+<br>&nbsp;
+<blockquote>DEBUG_PRINT:&nbsp; Default value is .FALSE.&nbsp; For additional
+printout, which may or may not be useful for diagnosing problems when pregrid
+fails, add the following line to the namelist:</blockquote>
+
+<blockquote>
+<blockquote>
+<div class = "code">DEBUG_PRINT = .TRUE.</div>
+</blockquote>
+
+<p><br>ORDERED_BY_DATE:&nbsp; Default value is .TRUE.&nbsp; If your fields
+are not ordered in time in a GRIB-formatted dataset, add the following
+line to the namelist:
+<blockquote>
+<div class = "code">ORDERED_BY_DATE = .FALSE.</div>
+</blockquote>
+</blockquote>
+
+<hr WIDTH="100%">
+<br><a href="Documentation_Home.html">Documentation HOME</a>
+<p><!-- hhmts start -->Last modified: Tue Jun 6 13:54:34 MDT 2000<!-- hhmts end -->
+</body>
+</html>

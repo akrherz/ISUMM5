@@ -1,0 +1,162 @@
+Some rules for determining information about symbolic identifiers
+in a FORTRAN program module.
+
+
+TYPES OF SYMBOLIC IDENTIFIERS:
+
+The following are lists of things that an identifier may potentially
+be within a FORTRAN program.  If two things are listed in the same
+column, it implies that the identifier may be only one of these
+things, if any, within a particular module.
+
+    A		     B		    C 		     D
+Common Name	Structure Name	Variable Name	S-Funct Dummy
+				Array Name
+				I-Funct Name
+				E-Funct	Name
+				S-Funct Name
+				Subroutine Name
+				Return Id
+				Unknown
+Category C
+
+TO BE A VARIABLE NAME
+
+    1.  Must be neither explicitly dimensioned, intrinsic'd, or
+    	externalized.  
+
+    2.  There must be no references to the identifier which include
+	any subscript or argument.
+
+TO BE AN ARRAY NAME
+
+    1.	It must be explicitly dimensioned, either with a DIMENSION
+	statement, or within a type declaration, or a common statement.
+
+    2.  Except for appearing in input and output lists and as arguments
+	to subroutine and function calls, the identifier must be
+	subscripted when appearing in an expression or when appearing
+	on the LHS of an assignment.
+
+    3.  An array assignment can always be distinguished from a statement
+	function because arrays must be explicitly dimensioned.
+
+TO BE AN I-FUNCT
+
+    1.  An identifier will be considered the name of an intrinsic function
+	either if:
+	
+	a.  it is explicitly declared as such using an INTRINSIC
+	    statement, and may not appear on LHS of assignment or
+	    within the input list of a READ statement;  or...
+
+	b.  it is not explicitly declared as intrinsic but meets all 
+	    criteria specified in 2 below.
+
+    2.  An identifer is considered to be the name of an intrinsic function
+	without a specific INTRINSIC declaration if all of the following
+	are met:
+
+	a.  it never appears with or without arguments on
+	    LHS of assignment or in the input-list of a read; i.e.
+	    in any position where a value would be assigned to it.
+
+	b.  it is NOT explicitly dimensioned anywhere in the module.
+
+	c.  it must appear at least once with arguments in an expression.
+	    In other words, there must be a call to the function within
+	    the module and the call must include arguments.
+
+	d.  it may not be a dummy argument if the module in which the
+	    intrinsic call appears is a function or subroutine.  If
+	    it does, then the identifier can reprensent something else
+	    but NOT the intrinsic function of that name.
+
+TO BE AN E-FUNCT
+
+    1.  An identifier will be considered the name of an external function
+	either if:
+	
+	a.  it is explicitly declared as such using an EXTERNAL
+	    statement, and may not appear on LHS of assignment or
+	    within the input list of a READ statement;  or...
+
+	b.  it is not explicitly declared as external but meets all 
+	    criteria specified in 2 below.
+
+    2.  An identifer is considered to be the name of an external function
+	without a specific EXTERNAL declaration if all of the following
+	are met:
+
+	a.  it never appears with or without arguments on
+	    LHS of assignment or in the input-list of a read; i.e.
+	    in any position where a value would be assigned to it.
+
+	b.  it is NOT explicitly dimensioned anywhere in the module.
+
+	c.  it must appear at least once with arguments in an expression.
+	    In other words, there must be a call to the function within
+	    the module and the call must include arguments.  If a function
+	    without arguments is to be called in a program, then it
+	    must have been explicitly declared EXTERNAL; otherwise
+	    the compiler would have no way in which to distinguish
+	    the symbol from a simple variable.
+
+TO BE AN S-FUNCTION
+
+    1. 	A statement function declaration must appear before the
+	first executable statement of the module.
+
+    2.	With the exception of the statement function declaration (which
+	looks like an assignment statment), the identifier may never
+	appear on the LHS of an = or in the input-list of a read statement.
+
+    3.  A statement function declaration is the only instance in a
+	FORTRAN program where a subscripted identifier that has not
+	been explicitly dimensioned may appear on the LHS of an
+	assignment operator.  And then, only when the statement occurs
+	before the first executable.
+
+TO BE A RETURN ID
+
+    1.  This variable can only be assigned; thus, can only appear
+	on the LHS of an assignment statement.
+
+    2.  Cannot be dimensioned, etc.
+
+    3.  Is the name that is assigned in a function of the same name
+	to return a value.  
+
+    4.  Gets the type of the function.
+
+TO BE UNKNOWN
+
+It is possible for an identifier within a program module to be unknown.
+For this to occur, the identifier must meet the following conditions:
+
+    1.  The identifier must appear as a dummy argument in a subroutine
+	or function module.
+
+    2.  The type of the identifier may be declared but the identfier
+	may be neither explicitly dimensioned or externalized.
+
+    3.  The identifier may never be used for anything except as an
+	unsubscripted/unargumented argument to a subroutine or function
+	call within the module.
+
+
+An example of such an identifier would be:
+
+      function fun ( a )
+      call sub ( a )
+      end
+
+The function fun has no way of telling what "a" is -- a simple
+variable, an array, or a function -- nor does it matter.  Whatever it
+is is simply passed on to the subroutine sub, which presumably does
+know what to do with it.
+
+
+
+
+

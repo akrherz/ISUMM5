@@ -1,0 +1,257 @@
+
+RCS file: /home/chammp/CVS/MM5e/MPP/RSL/parallel_src/bcast_size.F,v
+Working file: bcast_size.F
+head: 1.1
+branch: 1.1.1
+locks: strict
+access list:
+symbolic names:
+	release-2-5: 1.1.1.1
+	ANL: 1.1.1
+keyword substitution: kv
+total revisions: 2;	selected revisions: 2
+description:
+----------------------------
+revision 1.1
+date: 1997/12/04 22:02:05;  author: michalak;  state: Exp;
+branches:  1.1.1;
+Initial revision
+----------------------------
+revision 1.1.1.1
+date: 1997/12/04 22:02:06;  author: michalak;  state: Exp;  lines: +0 -0
+MM5e V2 release-2-5
+=============================================================================
+
+RCS file: /home/chammp/CVS/MM5e/MPP/RSL/parallel_src/define_comms.F,v
+Working file: define_comms.F
+head: 1.2
+branch:
+locks: strict
+access list:
+symbolic names:
+	release-2-5: 1.1.1.1
+	ANL: 1.1.1
+keyword substitution: kv
+total revisions: 3;	selected revisions: 3
+description:
+----------------------------
+revision 1.2
+date: 1997/12/04 23:50:40;  author: michalak;  state: Exp;  lines: +5 -0
+Adding communication, etc for THA in solve3 (v2.r6)
+----------------------------
+revision 1.1
+date: 1997/12/04 22:02:05;  author: michalak;  state: Exp;
+branches:  1.1.1;
+Initial revision
+----------------------------
+revision 1.1.1.1
+date: 1997/12/04 22:02:06;  author: michalak;  state: Exp;  lines: +0 -0
+MM5e V2 release-2-5
+=============================================================================
+
+RCS file: /home/chammp/CVS/MM5e/MPP/RSL/parallel_src/merge_size.F,v
+Working file: merge_size.F
+head: 1.1
+branch: 1.1.1
+locks: strict
+access list:
+symbolic names:
+	release-2-5: 1.1.1.1
+	ANL: 1.1.1
+keyword substitution: kv
+total revisions: 2;	selected revisions: 2
+description:
+----------------------------
+revision 1.1
+date: 1997/12/04 22:02:05;  author: michalak;  state: Exp;
+branches:  1.1.1;
+Initial revision
+----------------------------
+revision 1.1.1.1
+date: 1997/12/04 22:02:06;  author: michalak;  state: Exp;  lines: +0 -0
+MM5e V2 release-2-5
+=============================================================================
+
+RCS file: /home/chammp/CVS/MM5e/MPP/RSL/parallel_src/mp_feedbk.F,v
+Working file: mp_feedbk.F
+head: 1.1
+branch: 1.1.1
+locks: strict
+access list:
+symbolic names:
+	release-2-5: 1.1.1.1
+	ANL: 1.1.1
+keyword substitution: kv
+total revisions: 2;	selected revisions: 2
+description:
+----------------------------
+revision 1.1
+date: 1997/12/04 22:02:06;  author: michalak;  state: Exp;
+branches:  1.1.1;
+Initial revision
+----------------------------
+revision 1.1.1.1
+date: 1997/12/04 22:02:07;  author: michalak;  state: Exp;  lines: +0 -0
+MM5e V2 release-2-5
+=============================================================================
+
+RCS file: /home/chammp/CVS/MM5e/MPP/RSL/parallel_src/mp_initdomain.F,v
+Working file: mp_initdomain.F
+head: 1.1
+branch: 1.1.1
+locks: strict
+access list:
+symbolic names:
+	release-2-5: 1.1.1.1
+	ANL: 1.1.1
+keyword substitution: kv
+total revisions: 2;	selected revisions: 2
+description:
+----------------------------
+revision 1.1
+date: 1997/12/04 22:02:06;  author: michalak;  state: Exp;
+branches:  1.1.1;
+Initial revision
+----------------------------
+revision 1.1.1.1
+date: 1997/12/04 22:02:07;  author: michalak;  state: Exp;  lines: +0 -0
+MM5e V2 release-2-5
+=============================================================================
+
+RCS file: /home/chammp/CVS/MM5e/MPP/RSL/parallel_src/mp_shemi.F,v
+Working file: mp_shemi.F
+head: 1.1
+branch: 1.1.1
+locks: strict
+access list:
+symbolic names:
+	release-2-5: 1.1.1.1
+	ANL: 1.1.1
+keyword substitution: kv
+total revisions: 2;	selected revisions: 2
+description:
+----------------------------
+revision 1.1
+date: 1997/12/04 22:02:06;  author: michalak;  state: Exp;
+branches:  1.1.1;
+Initial revision
+----------------------------
+revision 1.1.1.1
+date: 1997/12/04 22:02:07;  author: michalak;  state: Exp;  lines: +0 -0
+MM5e V2 release-2-5
+=============================================================================
+
+RCS file: /home/chammp/CVS/MM5e/MPP/RSL/parallel_src/mp_stotndt.F,v
+Working file: mp_stotndt.F
+head: 1.1
+branch: 1.1.1
+locks: strict
+access list:
+symbolic names:
+	release-2-5: 1.1.1.1
+	ANL: 1.1.1
+keyword substitution: kv
+total revisions: 2;	selected revisions: 2
+description:
+----------------------------
+revision 1.1
+date: 1997/12/04 22:02:06;  author: michalak;  state: Exp;
+branches:  1.1.1;
+Initial revision
+----------------------------
+revision 1.1.1.1
+date: 1997/12/04 22:02:07;  author: michalak;  state: Exp;  lines: +0 -0
+MM5e V2 release-2-5
+=============================================================================
+
+RCS file: /home/chammp/CVS/MM5e/MPP/RSL/parallel_src/mpbdyin.F,v
+Working file: mpbdyin.F
+head: 1.1
+branch: 1.1.1
+locks: strict
+access list:
+symbolic names:
+	release-2-5: 1.1.1.1
+	ANL: 1.1.1
+keyword substitution: kv
+total revisions: 2;	selected revisions: 2
+description:
+----------------------------
+revision 1.1
+date: 1997/12/04 22:02:06;  author: michalak;  state: Exp;
+branches:  1.1.1;
+Initial revision
+----------------------------
+revision 1.1.1.1
+date: 1997/12/04 22:02:07;  author: michalak;  state: Exp;  lines: +0 -0
+MM5e V2 release-2-5
+=============================================================================
+
+RCS file: /home/chammp/CVS/MM5e/MPP/RSL/parallel_src/mpin4dgd.F,v
+Working file: mpin4dgd.F
+head: 1.1
+branch: 1.1.1
+locks: strict
+access list:
+symbolic names:
+	release-2-5: 1.1.1.1
+	ANL: 1.1.1
+keyword substitution: kv
+total revisions: 2;	selected revisions: 2
+description:
+----------------------------
+revision 1.1
+date: 1997/12/04 22:02:06;  author: michalak;  state: Exp;
+branches:  1.1.1;
+Initial revision
+----------------------------
+revision 1.1.1.1
+date: 1997/12/04 22:02:07;  author: michalak;  state: Exp;  lines: +0 -0
+MM5e V2 release-2-5
+=============================================================================
+
+RCS file: /home/chammp/CVS/MM5e/MPP/RSL/parallel_src/mpouttap.F,v
+Working file: mpouttap.F
+head: 1.1
+branch: 1.1.1
+locks: strict
+access list:
+symbolic names:
+	release-2-5: 1.1.1.1
+	ANL: 1.1.1
+keyword substitution: kv
+total revisions: 2;	selected revisions: 2
+description:
+----------------------------
+revision 1.1
+date: 1997/12/04 22:02:07;  author: michalak;  state: Exp;
+branches:  1.1.1;
+Initial revision
+----------------------------
+revision 1.1.1.1
+date: 1997/12/04 22:02:08;  author: michalak;  state: Exp;  lines: +0 -0
+MM5e V2 release-2-5
+=============================================================================
+
+RCS file: /home/chammp/CVS/MM5e/MPP/RSL/parallel_src/mprdinit.F,v
+Working file: mprdinit.F
+head: 1.1
+branch: 1.1.1
+locks: strict
+access list:
+symbolic names:
+	release-2-5: 1.1.1.1
+	ANL: 1.1.1
+keyword substitution: kv
+total revisions: 2;	selected revisions: 2
+description:
+----------------------------
+revision 1.1
+date: 1997/12/04 22:02:07;  author: michalak;  state: Exp;
+branches:  1.1.1;
+Initial revision
+----------------------------
+revision 1.1.1.1
+date: 1997/12/04 22:02:08;  author: michalak;  state: Exp;  lines: +0 -0
+MM5e V2 release-2-5
+=============================================================================

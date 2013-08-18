@@ -1,0 +1,16 @@
+
+This Templates directory contains example configure.user
+files for your convenience.  Currently, we have examples
+for...
+
+*)	configure.user.SESAME.linuxPGF77
+	This configuration is for the traditional SESAME
+	benchmark case.  It is meant to be a template
+	for runs on Linux boxes.  It has been tested using
+	Redhat 4.2 and the Portland Group Compiler.
+*)	configure.user.WS.sgi.mpi
+	This configuration is designed to use the World
+	Series benchmark case.  It is an example of a
+    	run using the distributed memory option.
+	Files associated with it: mm5.deck.o2k, oparam.WS,
+				  lparam.WS, pparam.WS

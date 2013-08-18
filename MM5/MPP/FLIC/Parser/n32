@@ -1,0 +1,59 @@
+#!/bin/csh -f
+# n32 SCCS(4.1 91/02/18 15:40:05)
+
+if ( ! $?N32DIR) then
+    echo n32 : N32DIR environment variable not set.  Abort.
+    exit 1
+endif
+
+set scanner=${N32DIR}/bin/n32.scanner
+set parser=${N32DIR}/bin/n32.parser
+
+#scanner switches
+set sw_extend
+
+#parser switches 
+set sw_notree="-tree"
+set sw_debug
+set sw_notype
+set sw_ansi
+
+foreach arg ($argv)
+         if ( "$arg" == "-extend" ) then
+	     shift argv
+	     set sw_extend="-extend"
+    else if ( "$arg" == "-ansi" ) then
+	     shift argv
+	     set sw_ansi="-ansi"
+    else if ( "$arg" == "-notree" ) then
+	     shift argv
+	     set sw_notree="-notree"
+    else if ( "$arg" == "-debug" ) then
+	     shift argv
+	     set sw_debug="-parsetrace"
+    else if ( "$arg" == "-notype" ) then
+	     shift argv
+	     set sw_notype="-notype"
+    else if ( "$arg" == "-h" ) then
+	     shift argv
+	     echo ""
+	     echo "Usage:  $0 options files"
+	     echo ""
+	     echo "    Options:"
+	     echo ""
+	     echo "        -ansi          Ignore VMS intrinsics"
+	     echo "        -extend	  Allow source lines greater than 72 chars"
+	     echo "        -notree        Do not print a syntax tree"
+	     echo "        -debug         Print a trace of the parse"
+	     echo "        -notype        Suppress typechecking pass"
+	     echo "        -h             print this summary"
+	     echo ""
+	     exit(0)
+    endif
+end
+
+
+echo scanning and parsing $1
+
+$scanner $sw_extend $1 | $parser $sw_ansi $sw_debug $sw_notree $sw_notype > $1.par
+

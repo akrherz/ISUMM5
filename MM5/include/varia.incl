@@ -1,0 +1,13 @@
+      INTEGER KPBL2D                                                             07NOV00.1178
+      COMMON/PBLDIM/KPBL2D                                                       07NOV00.1179
+      DIMENSION KPBL2D(MIX,MJX)                                                  VARIA.3
+#ifndef VECTOR                                                                   07NOV00.1180
+      REAL HSCR1,HSCR2,HSCR3,HSCR4,PTEN                                          07NOV00.1181
+      COMMON /MIC/HSCR4,                                                         VARIA.6
+     1                      PTEN,HSCR1,HSCR2,HSCR3                               07NOV00.1182
+C                                                                                VARIA.8
+      DIMENSION                                                                  07NOV00.1183
+     1         HSCR1(MIX,MJX),HSCR2(MIX,MJX),                                    VARIA.11
+     2         HSCR3(MIX,MJX),HSCR4(MIX,MJX),                                    VARIA.12
+     3          PTEN(MIX,MJX)                                                    VARIA.13
+#endif                                                                           07NOV00.1184

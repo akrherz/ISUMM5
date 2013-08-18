@@ -1,0 +1,6 @@
+GRIB | Level| Level| Level| REGRID   |  REGRID  | REGRID                                      |
+Code | Code |   1  |   2  | Name     |  Units   | Description                                 |
+-----+------+------+------+----------+----------+---------------------------------------------+
+172  |  1   |   0  |      | LANDSEA  | 0/1 Flag | Land/Sea flag                               |
+129  | 109  |   1  |      | SOILHGT  | m        | Terrain field of source analysis            |
+-----+------+------+------+----------+----------+---------------------------------------------+

@@ -1,0 +1,3577 @@
+===================================================================
+CHANGES
+diff -r3.2 -r3.7
+6c6
+< The current release is 3.3 (February 11, 2000)
+---
+> The current release is 3.4 (November 6, 2000)
+10c10,124
+< Updated 2/11/00:
+---
+> 1. Bug fixes and updates:
+> 
+> - Update the shell script to run pregrid. (Change in tar file since 6/7/00.)
+>   The script allows combination of input datasets.
+> 
+>   Affected file:
+>   pregrid/pregrid.csh
+> 
+> - Correct a problem in regridder when a domain center is in one side of dateline,
+>   and the domain's lower left corner point is on the other side. 
+> 
+>   Affected file:
+>   regridder/src/module_first_guess_map.F
+> 
+> - Correct parameter 'staggering' for field WEASD in small header.
+>   It is a cross-point field. (Change in tar file since 3/8/00.)
+> 
+>   Affected file:
+>   regridder/src/proc_make_small_header.F
+> 
+> - correct lines with more than 132 columns. (Change in tar file since 2/14/00.)
+> 
+>   Affected files:
+>   regridder/src/module_first_guess_map.F, proc_ingest_first_guess.F
+> 
+> - update make rules for HP. (Change in tar file since 2/14/00.)
+> 
+>   Affected file:
+>   Makefile
+> 
+> - Able to generate LSM data over (unresolved) islands better. Many input
+>   datasets (such as NNRP, which is 2.5x 2.5 degree resolution) cannot 
+>   resolve small islands, e.g. Islands of Hawaii. Special interpolation 
+>   must therefore be carried out to generate appropriate data for thess 
+>   islands. Previously the soil temperature was corrected twice over 
+>   these islands, once in regridder, and once in MM5. This has been 
+>   corrected since 7/18/00.
+> 
+>   Soil temperature is now adjusted in regridder, based on the difference 
+>   between the MM5 terrain and terrain of the incoming data. Since 
+>   the adjustment is done in regridder, SOIL HEIGHT is no longer needed 
+>   in the subsequent program, MM5, therefore it is removed from REGRID output.
+> 
+> 
+> 2. Changes and improvements
+> 
+> - Simplify the way make is done. Now one needs only to type 'make'
+>   to compile on one's machine. (Change in tar file since 6/7/00.)
+> 
+>   Affected files:
+>   All Makefile
+>   macros_pregrid, macros_regridder (new)
+> 
+> - add a note of data availability period in the deck, and a check 
+>   to exit the shell script if the dates requested are not available.
+>   (Change in tar file since 4/1/00.)
+> 
+>   Affected files:
+>   pregrid/era/get_era.deck, get_era.csh
+> 
+> - TOGA data option is added to Cray batch job deck. A user may use
+>   get_toga.deck to get TOGA data similar to the usage of decks like
+>   get_nnrp.deck, and get_on84.deck.
+> 
+>   Affected files:
+>   regrid.deck
+>   pregrid/toga/get_toga.csh, get_toga.deck
+> 
+> - Pregrid is now able to handle thinned grid (a form of GRIB data) in
+>   a single tile. An example of such dataset is WAFS. When the domain
+>   crosses tiles, one needs to merge the data before running regridder
+>   by running a utility program, build_mosaic, in pregrid/util directory.
+>   (Thanks in part to Oren Duer of the Hebrew University of Jerusalem, Israel.)
+> 
+>   Affected file:
+>   pregrid/grib.misc/rd_grib.F
+>   pregrid/util/Makefile, build_mosaic.F
+> 
+> - Distinguish real SST and skin temperature. The difference between the
+>   definitions of the two temperature and how they are used in MM5 system 
+>   are described in pregrid/Doc/html/sst_note.html.
+> 
+>   In release-3-4, MM5 model will allow SST to be updated during a model
+>   integration. This capability requires true SST. Hence we start to make
+>   distinction in pre-processing programs between SST and skin temp. Skin
+>   temperature may be used in MM5 as 'SST', but it cannot be used to update
+>   SST in MM5. Therefore if you are inputing your own dataset to pregrid,
+>   you must be aware what SST you are getting.
+> 
+>   Based on our knowledge and judgement, we have changed the SST for the
+>   following datasets to SKINTEMP in corresponding Vtables in pregrid: 
+>   NNRP, AWIP, TOGA and ERA. 
+> 
+>   Affected files:
+>   pregrid/grib.misc/Vtable.AWIPSST, Vtable.ERASST, Vtable.NNRPSST, Vtable.TOGASST
+> 
+>   The regridder program will take either SST or SKINTEMP as one of the 
+>   required field.
+> 
+> - Add capability to generate surface data if the input data do not contain them.
+>   Previously when this happens, regridder simply fill the surface data arrays with
+>   1000 mb data. Now regridder will use surrounding pressure level data to
+>   interpolate to the surface. This will provide a much better first guess fields
+>   for objective analysis programs (Rawins and Little_r).
+> 
+> - Change the constant of acceleration due to gravity to be consistent
+>   throughout the MM5 modeling system (from 9.8 to 9.81).
+> 
+>   Affected file:
+>   src/module_diags.F
+> 
+> 
+> ========================================
+> 
+> Updated 2/11/00: (Release-3-3)
+===================================================================
+Makefile
+diff -r3.1 -r3.10
+4a5,6
+> .IGNORE:
+> 
+15,234c17,298
+< 	@echo " "
+< 	@echo "Type one of the following:"
+< 	@echo "make cray                 for running on SGI Cray J/C/T9"
+< 	@echo "make dec                  for running on Compaq Digital"
+< 	@echo "make hp                   for running on Hewlett Packard"
+< 	@echo "make ibm                  for running on IBM"
+< 	@echo "make sgi                  for running on Silicon Graphics"
+< 	@echo "make sun                  for running on Sun"
+< 	@echo "make clean                to remove all .o files, the core file and the executable"
+< 	@echo " "
+< 
+< cray:
+< 	( $(CD) pregrid ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	cpp"				\
+< 	"CPPFLAGS		=	-I. -C -P -DCRAY -DBIT64"	\
+< 	"FC			=	f90"				\
+< 	"FCFLAGS		=	-f free -p ../util"		\
+< 	"LDFLAGS		=	-Ca"				\
+< 	"CCFLAGS		=	-DCRAY -DBIT64 -I."		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		)
+< 	( $(CD) regridder ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	cpp"				\
+< 	"CPPFLAGS		=	-I. -C -P -DCRAY -DBIT64"	\
+< 	"FC			=	f90"				\
+< 	"FCFLAGS		=	-f free"			\
+< 	"LDFLAGS		=	-Ca"				\
+< 	"CCFLAGS		=	-DCRAY -DBIT64 -I."		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		\
+< 	"MODDIR                 ="                                      )
+< 
+< dec:
+< 	( $(CD) pregrid ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	/usr/bin/cpp"			\
+< 	"CPPFLAGS		=	-I. -C -P -DDEC -DBIT32"	\
+< 	"FC			=	f90"				\
+< 	"FCFLAGS1		=	-automatic -convert big_endian -fast -fpe -free -std -u"\
+< 	"FCFLAGS		=	-automatic -convert big_endian -fast -assume accuracy_sensitive -fpe -free -I../util " \
+< 	"LDFLAGS		=	-fast"				\
+< 	"CCFLAGS		=	-DDEC -DBIT32 -I."		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		)
+< 	( $(CD) regridder ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	/usr/bin/cpp"			\
+< 	"CPPFLAGS		=	-I. -C -P -DDEC -DBIT32"	\
+< 	"FC			=	f90"				\
+< 	"FCFLAGS1		=	-automatic -convert big_endian -fast -fpe -free -std -u"\
+< 	"FCFLAGS		=	-automatic -convert big_endian -fast -fpe -free"\
+< 	"LDFLAGS		=	-fast"				\
+< 	"CCFLAGS		=	-DDEC -DBIT32 -I."		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		\
+< 	"MODDIR                 ="                                      )
+< 
+< hp:
+< 	( $(CD) pregrid ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	/opt/langtools/lbin/cpp"	\
+< 	"CPPFLAGS		=	-I. -C -P -DHP -DBIT32"		\
+< 	"FC			=	f90"				\
+< 	"FCFLAGS		=	-c +langlvl=90 +source=free -I../util"\
+< 	"LDFLAGS		=	" 				\
+< 	"CCFLAGS		=	-DHP -DBIT32 -I."		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		)
+< 	( $(CD) regridder ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	/opt/langtools/lbin/cpp"	\
+< 	"CPPFLAGS		=	-I. -C -P -DHP -DBIT32"		\
+< 	"FC			=	f90"				\
+< 	"FCFLAGS		=	-c +langlvl=90 +source=free"	\
+< 	"LDFLAGS		=	" 				\
+< 	"CCFLAGS		=	-DHP -DBIT32 -I."		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		\
+< 	"MODDIR                 ="                                      )
+< 
+< ibm:
+< 	( $(CD) pregrid ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	/usr/lib/cpp"			\
+< 	"CPPFLAGS		=	-I. -C -P -DIBM -DBIT32"	\
+< 	"FC			=	xlf90"				\
+< 	"FCFLAGS		=	-c -qfree=f90 -qlanglvl=90pure -I../util"	\
+< 	"LDFLAGS		=	" 				\
+< 	"CCFLAGS		=	-DIBM -DBIT32 -I."		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		)
+< 	( $(CD) regridder ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	/usr/lib/cpp"			\
+< 	"CPPFLAGS		=	-I. -C -P -DIBM -DBIT32"	\
+< 	"FC			=	xlf90"				\
+< 	"FCFLAGS		=	-c -qfree=f90 -qlanglvl=90pure -u"	\
+< 	"LDFLAGS		=	" 				\
+< 	"CCFLAGS		=	-DIBM -DBIT32 -I."		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		)
+< 
+< sgi:
+< 	( $(CD) pregrid ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	/lib/cpp"			\
+< 	"CPPFLAGS		=	-I. -C -P -DSGI -DBIT32"	\
+< 	"FC			=	f90"				\
+< 	"FCFLAGS		=	-freeform -n32 -I../util"	\
+< 	"LDFLAGS		=	-n32" 				\
+< 	"CCFLAGS		=	-DSGI -DBIT32 -I. -n32"		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		)
+< 	( $(CD) regridder ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	/lib/cpp"			\
+< 	"CPPFLAGS		=	-I. -C -P -DSGI -DBIT32"	\
+< 	"FC			=	f90"				\
+< 	"FCFLAGS		=	-freeform -n32 -I $(MODDIR)"	\
+< 	"LDFLAGS		=	-n32" 				\
+< 	"CCFLAGS		=	-DSGI -DBIT32 -I. -n32"		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		)
+< 
+< sun:
+< 	( $(CD) pregrid ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	/usr/ccs/lib/cpp"		\
+< 	"CPPFLAGS		=	-I. -C -P -DSUN -DBIT32"	\
+< 	"FC			=	f90"				\
+< 	"FCFLAGS		=	-ansi -free -stackvar -M../util" \
+< 	"LDFLAGS		=	" 				\
+< 	"CCFLAGS		=	-DSUN -DBIT32 -I."		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		)
+< 	( $(CD) regridder ; $(MAKE) all					\
+< 	"AR			=	$(AR)"				\
+< 	"RM			=	$(RM)"				\
+< 	"RM_LIST		=	$(RM_LIST)"			\
+< 	"CD			=	$(CD)"				\
+< 	"LN			=	$(LN)"				\
+< 	"MAKE			=	$(MAKE)"			\
+< 	"SHELL			=	/bin/sh"			\
+< 	"TOUCH			=	touch"				\
+< 	"CPP			=	/usr/ccs/lib/cpp"		\
+< 	"CPPFLAGS		=	-I. -C -P -DSUN -DBIT32"	\
+< 	"FC			=	f90"				\
+< 	"FCFLAGS		=	-ansi -free -stackvar"		\
+< 	"LDFLAGS		=	" 				\
+< 	"CCFLAGS		=	-DSUN -DBIT32 -I."		\
+< 	"LOCAL_LIBRARIES	=	../util/libpgu.a"		\
+< 	"MODDIR                 ="                                      )
+---
+> 	uname -a > .tmpfile
+> 	@grep CRAY .tmpfile ; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for Cray"							; \
+> 		echo "AR		=	$(AR)"				>  macros_pregrid	; \
+> 		echo "RM		=	$(RM)"				>> macros_pregrid	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_pregrid	; \
+> 		echo "CD		=	$(CD)"				>> macros_pregrid	; \
+> 		echo "LN		=	$(LN)"				>> macros_pregrid	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_pregrid	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_pregrid	; \
+> 		echo "TOUCH		=	touch"				>> macros_pregrid	; \
+> 		echo "CPP		=	cpp"				>> macros_pregrid	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DCRAY -DBIT64"	>> macros_pregrid	; \
+> 		echo "FC		=	f90"				>> macros_pregrid	; \
+> 		echo "FCFLAGS		=	-f free -x omp -p ../util"	>> macros_pregrid	; \
+> 		echo "LDFLAGS		=	-Ca"				>> macros_pregrid	; \
+> 		echo "CCFLAGS		=	-DCRAY -DBIT64 -I."		>> macros_pregrid	; \
+> 		echo "LOCAL_LIBRARIES	=	../util/libpgu.a"		>> macros_pregrid	; \
+> 		( $(CD) pregrid ; $(MAKE) all )								; \
+> 		echo "AR		=	$(AR)"				>  macros_regridder	; \
+> 		echo "RM		=	$(RM)"				>> macros_regridder	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_regridder	; \
+> 		echo "CD		=	$(CD)"				>> macros_regridder	; \
+> 		echo "LN		=	$(LN)"				>> macros_regridder	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_regridder	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_regridder	; \
+> 		echo "TOUCH		=	touch"				>> macros_regridder	; \
+> 		echo "CPP		=	cpp"				>> macros_regridder	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DCRAY -DBIT64"	>> macros_regridder	; \
+> 		echo "FC		=	f90"				>> macros_regridder	; \
+> 		echo "FCFLAGS		=	-f free -x omp"			>> macros_regridder	; \
+> 		echo "LDFLAGS		=	-Ca"				>> macros_regridder	; \
+> 		echo "CCFLAGS		=	-DCRAY -DBIT64 -I."		>> macros_regridder	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_regridder	; \
+> 		( $(CD) regridder ; $(MAKE) all )							; \
+> 	else grep OSF .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for Compaq"						; \
+> 		echo "AR		=	$(AR)"				>  macros_pregrid	; \
+> 		echo "RM		=	$(RM)"				>> macros_pregrid	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_pregrid	; \
+> 		echo "CD		=	$(CD)"				>> macros_pregrid	; \
+> 		echo "LN		=	$(LN)"				>> macros_pregrid	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_pregrid	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_pregrid	; \
+> 		echo "TOUCH		=	touch"				>> macros_pregrid	; \
+> 		echo "CPP		=	/usr/bin/cpp"			>> macros_pregrid	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DDEC -DBIT32"	>> macros_pregrid	; \
+> 		echo "FC		=	f90"				>> macros_pregrid	; \
+> 		echo "FCFLAGS		=	-automatic -convert big_endian -fast -assume accuracy_sensitive -fpe -free -I../util " >> macros_pregrid	; \
+> 		echo "LDFLAGS		=	-fast"				>> macros_pregrid	; \
+> 		echo "CCFLAGS		=	-DDEC -DBIT32 -I."		>> macros_pregrid	; \
+> 		echo "LOCAL_LIBRARIES	=	../util/libpgu.a"		>> macros_pregrid	; \
+> 		( $(CD) pregrid ; $(MAKE) all )								; \
+> 		echo "AR		=	$(AR)"				>  macros_regridder	; \
+> 		echo "RM		=	$(RM)"				>> macros_regridder	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_regridder	; \
+> 		echo "CD		=	$(CD)"				>> macros_regridder	; \
+> 		echo "LN		=	$(LN)"				>> macros_regridder	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_regridder	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_regridder	; \
+> 		echo "TOUCH		=	touch"				>> macros_regridder	; \
+> 		echo "CPP		=	/usr/bin/cpp"			>> macros_regridder	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DDEC -DBIT32"	>> macros_regridder	; \
+> 		echo "FC		=	f90"				>> macros_regridder	; \
+> 		echo "FCFLAGS		=	-automatic -convert big_endian -fast -fpe -free" >> macros_regridder	; \
+> 		echo "LDFLAGS		=	-fast"				>> macros_regridder	; \
+> 		echo "CCFLAGS		=	-DDEC -DBIT32 -I."		>> macros_regridder	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_regridder	; \
+> 		( $(CD) regridder ; $(MAKE) all )							; \
+> 	else grep HP .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for HP"							; \
+> 		echo "AR		=	$(AR)"				>  macros_pregrid	; \
+> 		echo "RM		=	$(RM)"				>> macros_pregrid	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_pregrid	; \
+> 		echo "CD		=	$(CD)"				>> macros_pregrid	; \
+> 		echo "LN		=	$(LN)"				>> macros_pregrid	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_pregrid	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_pregrid	; \
+> 		echo "TOUCH		=	touch"				>> macros_pregrid	; \
+> 		echo "CPP		=	/opt/langtools/lbin/cpp"	>> macros_pregrid	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DHP -DBIT32"		>> macros_pregrid	; \
+> 		echo "FC		=	f90"				>> macros_pregrid	; \
+> 		echo "FCFLAGS		=	+langlvl=90 +source=free -I../util">> macros_pregrid	; \
+> 		echo "LDFLAGS		=	" 				>> macros_pregrid	; \
+> 		echo "CCFLAGS		=	-DHP -DBIT32 -I."		>> macros_pregrid	; \
+> 		echo "LOCAL_LIBRARIES	=	../util/libpgu.a"		>> macros_pregrid	; \
+> 		( $(CD) pregrid ; $(MAKE) all )								; \
+> 		echo "AR		=	$(AR)"				>  macros_regridder	; \
+> 		echo "RM		=	$(RM)"				>> macros_regridder	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_regridder	; \
+> 		echo "CD		=	$(CD)"				>> macros_regridder	; \
+> 		echo "LN		=	$(LN)"				>> macros_regridder	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_regridder	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_regridder	; \
+> 		echo "TOUCH		=	touch"				>> macros_regridder	; \
+> 		echo "CPP		=	/opt/langtools/lbin/cpp"	>> macros_regridder	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DHP -DBIT32"		>> macros_regridder	; \
+> 		echo "FC		=	f90"				>> macros_regridder	; \
+> 		echo "FCFLAGS		=	+langlvl=90 +source=free"	>> macros_regridder	; \
+> 		echo "LDFLAGS		=	" 				>> macros_regridder	; \
+> 		echo "CCFLAGS		=	-DHP -DBIT32 -I."		>> macros_regridder	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_regridder	; \
+> 		( $(CD) regridder ; $(MAKE) all )							; \
+> 	else grep AIX .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for IBM"							; \
+> 		echo "AR		=	$(AR)"				>  macros_pregrid	; \
+> 		echo "RM		=	$(RM)"				>> macros_pregrid	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_pregrid	; \
+> 		echo "CD		=	$(CD)"				>> macros_pregrid	; \
+> 		echo "LN		=	$(LN)"				>> macros_pregrid	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_pregrid	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_pregrid	; \
+> 		echo "TOUCH		=	touch"				>> macros_pregrid	; \
+> 		echo "CPP		=	/usr/lib/cpp"			>> macros_pregrid	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DIBM -DBIT32"	>> macros_pregrid	; \
+> 		echo "FC		=	xlf90"				>> macros_pregrid	; \
+> 		echo "FCFLAGS		=	-qfree=f90 -qlanglvl=90pure -I../util"	>> macros_pregrid	; \
+> 		echo "LDFLAGS		=	" 				>> macros_pregrid	; \
+> 		echo "CCFLAGS		=	-DIBM -DBIT32 -I."		>> macros_pregrid	; \
+> 		echo "LOCAL_LIBRARIES	=	../util/libpgu.a"		>> macros_pregrid	; \
+> 		( $(CD) pregrid ; $(MAKE) all )								; \
+> 		echo "AR		=	$(AR)"				>  macros_regridder	; \
+> 		echo "RM		=	$(RM)"				>> macros_regridder	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_regridder	; \
+> 		echo "CD		=	$(CD)"				>> macros_regridder	; \
+> 		echo "LN		=	$(LN)"				>> macros_regridder	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_regridder	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_regridder	; \
+> 		echo "TOUCH		=	touch"				>> macros_regridder	; \
+> 		echo "CPP		=	/usr/lib/cpp"			>> macros_regridder	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DIBM -DBIT32"	>> macros_regridder	; \
+> 		echo "FC		=	xlf90"				>> macros_regridder	; \
+> 		echo "FCFLAGS		=	-qfree=f90 -qlanglvl=90pure -u"	>> macros_regridder	; \
+> 		echo "LDFLAGS		=	" 				>> macros_regridder	; \
+> 		echo "CCFLAGS		=	-DIBM -DBIT32 -I."		>> macros_regridder	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_regridder	; \
+> 		( $(CD) regridder ; $(MAKE) all )							; \
+> 	else grep IRIX .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for SGI"							; \
+> 		echo "AR		=	$(AR)"				>  macros_pregrid	; \
+> 		echo "RM		=	$(RM)"				>> macros_pregrid	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_pregrid	; \
+> 		echo "CD		=	$(CD)"				>> macros_pregrid	; \
+> 		echo "LN		=	$(LN)"				>> macros_pregrid	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_pregrid	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_pregrid	; \
+> 		echo "TOUCH		=	touch"				>> macros_pregrid	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_pregrid	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DSGI -DBIT32"	>> macros_pregrid	; \
+> 		echo "FC		=	f90"				>> macros_pregrid	; \
+> 		echo "FCFLAGS		=	-freeform -n32 -I../util"	>> macros_pregrid	; \
+> 		echo "LDFLAGS		=	-n32" 				>> macros_pregrid	; \
+> 		echo "CCFLAGS		=	-DSGI -DBIT32 -I. -n32"		>> macros_pregrid	; \
+> 		echo "LOCAL_LIBRARIES	=	../util/libpgu.a"		>> macros_pregrid	; \
+> 		( $(CD) pregrid ; $(MAKE) all )								; \
+> 		echo "AR		=	$(AR)"				>  macros_regridder	; \
+> 		echo "RM		=	$(RM)"				>> macros_regridder	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_regridder	; \
+> 		echo "CD		=	$(CD)"				>> macros_regridder	; \
+> 		echo "LN		=	$(LN)"				>> macros_regridder	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_regridder	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_regridder	; \
+> 		echo "TOUCH		=	touch"				>> macros_regridder	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_regridder	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DSGI -DBIT32"	>> macros_regridder	; \
+> 		echo "FC		=	f90"				>> macros_regridder	; \
+> 		echo "FCFLAGS		=	-freeform -n32 -I."		>> macros_regridder	; \
+> 		echo "LDFLAGS		=	-n32" 				>> macros_regridder	; \
+> 		echo "CCFLAGS		=	-DSGI -DBIT32 -I. -n32"		>> macros_regridder	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_regridder	; \
+> 		( $(CD) regridder ; $(MAKE) all )							; \
+> 	else grep SUN .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for SUN"							; \
+> 		echo "AR		=	$(AR)"				>  macros_pregrid	; \
+> 		echo "RM		=	$(RM)"				>> macros_pregrid	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_pregrid	; \
+> 		echo "CD		=	$(CD)"				>> macros_pregrid	; \
+> 		echo "LN		=	$(LN)"				>> macros_pregrid	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_pregrid	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_pregrid	; \
+> 		echo "TOUCH		=	touch"				>> macros_pregrid	; \
+> 		echo "CPP		=	/usr/ccs/lib/cpp"		>> macros_pregrid	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DSUN -DBIT32"	>> macros_pregrid	; \
+> 		echo "FC		=	f90"				>> macros_pregrid	; \
+> 		echo "FCFLAGS		=	-ansi -free -stackvar -M../util" >> macros_pregrid	; \
+> 		echo "LDFLAGS		=	" 				>> macros_pregrid	; \
+> 		echo "CCFLAGS		=	-DSUN -DBIT32 -I."		>> macros_pregrid	; \
+> 		echo "LOCAL_LIBRARIES	=	../util/libpgu.a"		>> macros_pregrid	; \
+> 		( $(CD) pregrid ; $(MAKE) all )								; \
+> 		echo "AR		=	$(AR)"				>  macros_regridder	; \
+> 		echo "RM		=	$(RM)"				>> macros_regridder	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_regridder	; \
+> 		echo "CD		=	$(CD)"				>> macros_regridder	; \
+> 		echo "LN		=	$(LN)"				>> macros_regridder	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_regridder	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_regridder	; \
+> 		echo "TOUCH		=	touch"				>> macros_regridder	; \
+> 		echo "CPP		=	/usr/ccs/lib/cpp"		>> macros_regridder	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DSUN -DBIT32"	>> macros_regridder	; \
+> 		echo "FC		=	f90"				>> macros_regridder	; \
+> 		echo "FCFLAGS		=	-ansi -free -stackvar"		>> macros_regridder	; \
+> 		echo "LDFLAGS		=	" 				>> macros_regridder	; \
+> 		echo "CCFLAGS		=	-DSUN -DBIT32 -I."		>> macros_regridder	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_regridder	; \
+> 		( $(CD) regridder ; $(MAKE) all	) 							; \
+> 	else grep Linux .tmpfile									; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for Linux"						; \
+> 		echo "AR		=	$(AR)"				>  macros_pregrid	; \
+> 		echo "RM		=	$(RM)"				>> macros_pregrid	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_pregrid	; \
+> 		echo "CD		=	$(CD)"				>> macros_pregrid	; \
+> 		echo "LN		=	$(LN)"				>> macros_pregrid	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_pregrid	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_pregrid	; \
+> 		echo "TOUCH		=	touch"				>> macros_pregrid	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_pregrid	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DDEC -DBIT32 -traditional"	>> macros_pregrid	; \
+> 		echo "FC		=	pgf90"				>> macros_pregrid	; \
+> 		echo "FCFLAGS		=	-Mfreeform -byteswapio -I../util" >> macros_pregrid	; \
+> 		echo "LDFLAGS		=	" 				>> macros_pregrid	; \
+> 		echo "CCFLAGS		=	-DDEC -DBIT32 -I."		>> macros_pregrid	; \
+> 		echo "LOCAL_LIBRARIES	=	../util/libpgu.a"		>> macros_pregrid	; \
+> 		( $(CD) pregrid ; $(MAKE) all )								; \
+> 		echo "AR		=	$(AR)"				>  macros_regridder	; \
+> 		echo "RM		=	$(RM)"				>> macros_regridder	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_regridder	; \
+> 		echo "CD		=	$(CD)"				>> macros_regridder	; \
+> 		echo "LN		=	$(LN)"				>> macros_regridder	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_regridder	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_regridder	; \
+> 		echo "TOUCH		=	touch"				>> macros_regridder	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_regridder	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DDEC -DBIT32 -traditional"	>> macros_regridder	; \
+> 		echo "FC		=	pgf90"				>> macros_regridder	; \
+> 		echo "FCFLAGS		=	-Mfreeform -pc 32 -byteswapio"	>> macros_regridder	; \
+> 		echo "LDFLAGS		=	" 				>> macros_regridder	; \
+> 		echo "CCFLAGS		=	-DDEC -DBIT32 -I."		>> macros_regridder	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_regridder	; \
+> 		( $(CD) regridder ; $(MAKE) all	) 							; \
+> 	else grep UXP .tmpfile										; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for Fujitsu"						; \
+> 		echo "AR		=	$(AR)"				>  macros_pregrid	; \
+> 		echo "RM		=	$(RM)"				>> macros_pregrid	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_pregrid	; \
+> 		echo "CD		=	$(CD)"				>> macros_pregrid	; \
+> 		echo "LN		=	$(LN)"				>> macros_pregrid	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_pregrid	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_pregrid	; \
+> 		echo "TOUCH		=	touch"				>> macros_pregrid	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_pregrid	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DVPP -DBIT32"	>> macros_pregrid	; \
+> 		echo "FC		=	frt"				>> macros_pregrid	; \
+> 		echo "FCFLAGS		=	-Free -X9 -Am -sc -Kfast -Kfreealloc -Karraystack3 -I../util"	>> macros_pregrid	; \
+> 		echo "LDFLAGS		=	-J" 				>> macros_pregrid	; \
+> 		echo "CCFLAGS		=	-DVPP -DBIT32 -I."		>> macros_pregrid	; \
+> 		echo "LOCAL_LIBRARIES	=	../util/libpgu.a"		>> macros_pregrid	; \
+> 		( $(CD) pregrid ; $(MAKE) all )								; \
+> 		echo "AR		=	$(AR)"				>  macros_regridder	; \
+> 		echo "RM		=	$(RM)"				>> macros_regridder	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_regridder	; \
+> 		echo "CD		=	$(CD)"				>> macros_regridder	; \
+> 		echo "LN		=	$(LN)"				>> macros_regridder	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_regridder	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_regridder	; \
+> 		echo "TOUCH		=	touch"				>> macros_regridder	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_regridder	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DVPP -DBIT32"	>> macros_regridder	; \
+> 		echo "FC		=	frt"				>> macros_regridder	; \
+> 		echo "FCFLAGS		=	-Free -X9 -Am -sc -Kfast -Kfreealloc -Karraystack3"	>> macros_regridder	; \
+> 		echo "LDFLAGS		=	-J" 				>> macros_regridder	; \
+> 		echo "CCFLAGS		=	-DVPP -DBIT32 -I."		>> macros_regridder	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_regridder	; \
+> 		( $(CD) regridder ; $(MAKE) all	) 							; \
+> 	else echo "Do not know how to compile for the `cat .tmpfile` machine." 				; \
+> 	fi ; \
+> 	fi ; \
+> 	fi ; \
+> 	fi ; \
+> 	fi ; \
+> 	fi ; \
+> 	fi ; \
+> 	fi
+239c303
+< 	$(RM) $(RM_LIST)
+---
+> 	$(RM) $(RM_LIST) .tmpfile
+===================================================================
+README
+diff -r3.3 -r3.5
+27a28,34
+> REGRID is a Fortran 90 program, and requires Fortran 90 compiler.
+> 
+> REGRID is supported for Cray, Alpha, HP, IBM, SGI, SUN, and Fujitsu with
+> their native compilers, and PC running Linux using Portland Group Fortran
+> 90 compiler. If your machine isn't one of the ones supported or the
+> compiler isn't the native one from the vendor, you need to edit the Makefile.
+> 
+29a37,41
+> ***************************************************************
+> Also see the online self-tutorial at
+> http://www.mmm.ucar.edu/mm5/mm5v3/tutorial/teachyourself.html
+> ***************************************************************
+> 
+32c44
+< - Type make in this directory to see what you should do next
+---
+> - Type 'make' in the REGRID directory to compile.
+36d47
+< 
+===================================================================
+regrid.deck
+diff -r3.2 -r3.6
+53c53
+<     set ARCHIVE = GDAS    # NCEP Global Data Assimilation System, 
+---
+> #   set ARCHIVE = GDAS     # NCEP Global Data Assimilation System, 
+56c56
+< #   set ARCHIVE = ON84     # NCEP GDAS Archives through 1997-03-31
+---
+>     set ARCHIVE = ON84     # NCEP GDAS Archives through 1997-03-31
+59a60,63
+> #   set ARCHIVE = TOGA     # ECMWF Global analysis 
+> 
+> #   set ARCHIVE = ERA      # ECMWF Reanalysis Project
+> 
+67c71
+<  START_DAY   = 12      # Day ( 01 - 31 )
+---
+>  START_DAY   = 13      # Day ( 01 - 31 )
+72c76
+<  END_DAY   = 15        # Day ( 01 - 31 )
+---
+>  END_DAY   = 14        # Day ( 01 - 31 )
+104c108,112
+< # Set your terrain file name: ID is the domain ID for this terrain input
+---
+> # Set your terrain MSS file name.  If the terrain file name or path name 
+> # has the string "ieee" (not case sensitive), then the script will later
+> # tell the regridder program to interpret this file as 32-bit IEEE 
+> # fortran file.  Otherwise, this file will be interpreted as a Cray binary
+> # fortran file.
+107d114
+<    set ID     = `echo $InTerr | sed 's/.*\(.\)/\1/'`
+163a171,178
+> else if ( $ARCHIVE == TOGA ) then
+>    cd ${TOPDIR}/pregrid/toga
+>    chmod +x get_toga.csh
+>    get_toga.csh ${START_DATE} ${END_DATE} 12
+> else if ( $ARCHIVE == ERA ) then
+>    cd ${TOPDIR}/pregrid/era
+>    chmod +x get_era.csh
+>    get_era.csh ${START_DATE} ${END_DATE} 6
+181c196
+<   make cray >&! make.print.out
+---
+>   make >&! make.print.out
+215a231,289
+> else if ( $ARCHIVE == TOGA ) then
+>      cd grib.misc
+>      rm -f FILE:*
+>      rm -f GRIBFILE*
+> 
+>      ln -s ${TOPDIR}/pregrid.namelist pregrid.namelist
+> 
+>      if ( -e Vtable ) then
+>         rm Vtable
+>      endif
+>      cp Vtable.TOGA3D Vtable
+>      cat Vtable.TOGASST >> Vtable
+>      cat Vtable.TOGASNOW >> Vtable
+> 
+>      set NUM = 0
+>      set num = 1
+>      foreach file ( ../toga/TOGA_GRIB* )
+>         @ NUM ++
+>         if ( $NUM == 27 ) then
+>            set NUM = 1
+>            @ num ++
+>         endif
+>         ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+>      end
+> 
+>      pregrid_grib.exe
+> 
+>      set ROOT = `pwd`
+>      set ROOT = ( \'${ROOT}/FILE\' )
+> 
+> else if ( $ARCHIVE == ERA ) then
+>      cd grib.misc
+>      rm -f FILE:*
+>      rm -f GRIBFILE*
+> 
+>      ln -s ${TOPDIR}/pregrid.namelist pregrid.namelist
+> 
+>      if ( -e Vtable ) then
+>         rm Vtable
+>      endif
+>      touch Vtable
+>      cat Vtable.ERA >> Vtable
+> 
+>      set NUM = 0
+>      set num = 1
+>      foreach file ( ../era/ERA_GRIB_UPA* ../era/ERA_GRIB_SFC* ) 
+>         @ NUM ++
+>         if ( $NUM == 27 ) then
+>            set NUM = 1
+>            @ num ++
+>         endif
+>         ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+>      end
+> 
+>      pregrid_grib.exe
+> 
+>      set ROOT = `pwd`
+>      set ROOT = ( \'${ROOT}/FILE\' )
+> 
+313a388,393
+> set Itest = `echo ${InTerr} | grep -i ieee`
+> if ( $#Itest ) then
+>    assign -N ieee -F f77 ./terrain
+> endif
+> unset Itest
+> 
+317c397,399
+<    /fs/othrorgs/home0/mesouser/MM5V3/Util/ieeev3.csh REGRID_DOMAIN$ID
+---
+>    foreach file ( REGRID_DOMAIN? )
+>       /fs/othrorgs/home0/mesouser/MM5V3/Util/ieeev3.csh ${file}
+>    end
+322c404,408
+<       mswrite -t $RetPd REGRID_DOMAIN$ID.ieee ${MssPath}/REGRID_DOMAIN${ID}_IEEE
+---
+>       foreach file ( REGRID_DOMAIN?.ieee )
+>          set Remote = `echo ${file} | cut -b 1-14`_IEEE
+>          mswrite -t $RetPd ${file} ${MssPath}/${Remote}
+>          unset Remote
+>       end
+324c410,412
+<       mswrite -t $RetPd REGRID_DOMAIN$ID ${MssPath}/REGRID_DOMAIN$ID
+---
+>       foreach file ( REGRID_DOMAIN? )
+>          mswrite -t $RetPd ${file} ${MssPath}/${file}
+>       end
+330c418,420
+<       rcp REGRID_DOMAIN$ID.ieee ${SEND_LOCAL}
+---
+>       foreach file ( REGRID_DOMAIN?.ieee )
+>          rcp ${file} ${SEND_LOCAL}
+>       end
+332c422,424
+<       rcp REGRID_DOMAIN$ID ${SEND_LOCAL}
+---
+>       foreach file ( REGRID_DOMAIN? )
+>          rcp $file ${SEND_LOCAL}
+>       end
+===================================================================
+pregrid/Makefile
+diff -r3.0 -r3.1
+3,4c3
+< default:
+< 	@echo "Go up a directory to make the pregrid program."
+---
+> include ../macros_pregrid
+===================================================================
+pregrid/pregrid.csh
+diff -r3.1 -r3.6
+3c3,21
+< set echo
+---
+> #############################################################################
+> #############################################################################
+> ####                                                                     ####
+> ####   NOTE:  2000-06-06:                                                ####
+> ####          This version of the pregrid.csh shell script has some      ####
+> ####          differences from prior versions.  Users who are familiar   ####
+> ####          with earlier versions should pay special attention to the  ####
+> ####          use of VT3D, VTSST, VTSNOW, and VTSOIL script variables,   ####
+> ####          which are now interpreted as lists of one or more          ####
+> ####          individual Vtable files.  For further information on this  ####
+> ####          new script, see the HTML documentation files:              ####
+> ####                 REGRID/pregrid/Doc/html/how_to_use_pregrid.html     ####
+> ####                 REGRID/pregrid/Doc/html/Advanced_csh.html           ####
+> ####                                                                     ####
+> #############################################################################
+> #############################################################################
+> #
+> 
+> #  set echo
+12c30
+< # Select the source of 3-d analyses
+---
+> # Specify the source of 3-d analyses
+14a33
+> 
+19,23d37
+< #
+< #  Tell the program where you have put the analysis files, and what you have
+< #  called them:
+< #
+<    set InFiles = ( ${DataDir}/NCEP* )
+24a39,44
+> #  InFiles:  Tell the program where you have put the analysis files, 
+> #  and what you have called them.   If SRC3D has the value "GRIB", 
+> #  then the Vtables you specify below in the script variable VT3D will 
+> #  be used to interpret the files you specify in the ${InFiles} variable.
+> 
+>    set InFiles = ( ${DataDir}/NCEP* )
+26c46
+< # Select the source of SST analyses
+---
+> # Specify the source of SST analyses
+35,36c55,59
+< #  Tell the program where the files with SST analyses are.  Do this only if SST
+< #  analyses are coming from files not named above in InFiles.
+---
+> #  InSST: Tell the program where the files with SST analyses are.  Do 
+> #  this only if SST analyses are coming from files not named above in
+> #  InFiles.  If SRCSST has the value "GRIB", then the Vtables you 
+> #  specify below in the script variable VTSST will be used to interpret 
+> #  the files you specify in the ${InSST} variable.
+49,50c72,75
+< #  Set InSnow only if the snow-cover analyses are from files not listed
+< #  in InData
+---
+> #  InSnow:  Set InSnow only if the snow-cover analyses are from files 
+> #  not listed in InFiles.  If SRCSNOW has the value "GRIB", then the 
+> #  Vtables you specify below in the script variable VTSNOW will be used 
+> #  to interpret the files you specify in the ${InSnow} variable.
+58c83
+<    set SRCSOIL = $SRC3D
+---
+> #   set SRCSOIL = $SRC3D
+60c85,88
+< #  Set InSoil only if the soil analyses are from files not listed in InData
+---
+> #  InSoil:  Set InSoil only if the soil analyses are from files 
+> #  not listed in InFiles.  If SRCSOIL has the value "GRIB", then the 
+> #  Vtables you specify below in the script variable VTSOIL will be
+> #  used to interpret the files you specify in the ${InSoil} variable.
+62c90
+<    set InSoil = ()
+---
+> #   set InSoil = ()
+96a125,147
+> #
+> #  Tell the pregrid programs which Vtables to use.  Do this only 
+> #  if you have selected GRIB-formatted input using SRC___ = GRIB above.
+> #  The directories referenced here are relative to REGRID/pregrid/.  
+> #
+> #  The Vtable files specified in VT3D will be applied to the files
+> #  specified in the InFiles variable.  Similarly, the Vtable files 
+> #  specified in VTSST, VTSNOW, and VTSOIL will be applied to the files 
+> #  listed above in InSST, InSNOW, and InSoil, respectively.
+> #  
+>    set VT3D = ( grib.misc/Vtable.NNRP3D )
+>    set VTSST = ( grib.misc/Vtable.NNRPSST )
+>    set VTSNOW = ( grib.misc/Vtable.xxxxSNOW )
+>    set VTSOIL = ( grib.misc/Vtable.xxxxSOIL )
+> 
+> ########################################################################
+> ########################################################################
+> ######                                                            ######
+> ######                  END USER MODIFICATION                     ######
+> ######                                                            ######
+> ########################################################################
+> ########################################################################
+> 
+100,102d150
+< if ( ! $?SRCSNOW ) then
+<    set SRCSNOW
+< endif
+105a154,156
+> if ( ! $?SRCSNOW ) then
+>    set SRCSNOW
+> endif
+109,116c160,167
+< 
+< #
+< #  Tell the pregrid programs which Vtables to use.  Note that this is done
+< #  only if you have selected GRIB-formatted input using SRC3D = GRIB above.
+< #
+< 
+< if ( $SRC3D == GRIB ) then
+<    set VT3D = ../grib.misc/Vtable.NNRP3D
+---
+> if ( ! $?VTSOIL ) then
+>    set VTSOIL
+> endif
+> if ( ! $?VTSNOW ) then
+>    set VTSNOW
+> endif
+> if ( ! $?VTSST ) then
+>    set VTSST
+118,119c169,170
+< if ( $SRCSST == GRIB ) then
+<    set VTSST = ../grib.misc/Vtable.NNRPSST
+---
+> if ( ! $?VT3D ) then
+>    set VT3D
+121,122c172,179
+< if ( $SRCSNOW == GRIB ) then
+<    set VTSNOW = ../grib.misc/Vtable.xxxxSNOW
+---
+> if ( ! $?InFiles ) then
+>    set InFiles = ()
+> endif
+> if ( ! $?InSST ) then
+>    set InSST = ()
+> endif
+> if ( ! $?InSnow ) then
+>    set InSnow = ()
+124,126c181,187
+< if ( $?SRCSOIL ) then
+<    if ( $SRCSOIL == GRIB ) then
+<       set VTSOIL = ../grib.misc/Vtable.xxxxSOIL
+---
+> if ( ! $?InSoil ) then
+>    set InSoil = ()
+> endif
+> 
+> if ( $SRCSST == $SRC3D) then
+>    if ( $#InSST == 0 ) then
+>       set InSST = ( ${InFiles} )
+130,136c191,195
+< ########################################################################
+< ########################################################################
+< ######                                                            ######
+< ######                  END USER MODIFICATION                     ######
+< ######                                                            ######
+< ########################################################################
+< ########################################################################
+---
+> if ( $SRCSNOW == $SRC3D) then
+>    if ( $#InSnow == 0 ) then
+>       set InSnow = ( ${InFiles} )
+>    endif
+> endif
+138,139c197,200
+< if ( ! $?VTSOIL ) then
+<    set VTSOIL
+---
+> if ( $SRCSOIL == $SRC3D) then
+>    if ( $#InSoil == 0 ) then
+>       set InSoil = ( ${InFiles} )
+>    endif
+144,149c205
+< if ( ( $SRC3D == ON84 ) || ( $SRCSST == ON84 ) || ( $SRCSNOW == ON84)) then
+<     cd on84
+<     rm -f ON84FILE*
+<     rm -f PSST:*
+<     rm -f PSNOW:*
+<     ln -s ../pregrid.namelist pregrid.namelist
+---
+> foreach SourceType ( 3D SST SNOW SOIL) 
+151c207,240
+<     # Build the Vtable
+---
+>   printf "\nProcessing for SourceType = %s\n\n" $SourceType
+> 
+>   if ( ( $SourceType == SOIL ) && ( $SRCSOIL == ON84) ) then
+>     printf "\n\nSoil fields not available in ON84 Dataset.\n"
+>     printf "Do not request soil fields or select another source for soil fields.\n\n"
+>     exit (1)
+>   endif
+> 
+>   if ( ( $SourceType == SOIL ) && ( $SRCSOIL == NCEP) ) then
+>     printf "\n\nSoil fields not available in NCEP GDAS Dataset."
+>     printf "Do not request soil fields or select another source for soil fields.\n\n"
+>     exit (1)
+>   endif
+> 
+> ###############################################################################
+> 
+>   if ( ( ( $SourceType == 3D   ) && ( $SRC3D   == ON84) ) || \
+>        ( ( $SourceType == SST  ) && ( $SRCSST  == ON84) ) || \
+>        ( ( $SourceType == SNOW ) && ( $SRCSNOW == ON84) ) ) then
+> 
+>     printf "\n\nStarting ON84 processing for type %s\n\n" $SourceType 
+> #
+> #  Go down to the "on84" directory.
+> #
+>     printf "cd %s\n\n" `pwd`/on84
+>     cd on84
+> #
+> #  Remove whatever files may be leftover from a prior job.  Redirect 
+> #  printout to supress warnings if there is nothing to remove.
+> #
+>     rm ON84FILE* >&! /dev/null
+>     rm PSST:*    >&! /dev/null
+>     rm PSNOW:*   >&! /dev/null
+>     rm -f pregrid.namelist
+152a242,244
+> #
+> #  Build the Vtable:
+> #
+154,155c246
+<     set Num = 0
+<     if ($SRC3D == ON84) then
+---
+>     if ($SourceType == 3D) then
+157c248,257
+<        # Get the input files
+---
+>     else if ($SourceType == SST) then
+>        cat Vtable.SST >> Vtable
+>     else if ($SourceType == SNOW) then
+>        cat Vtable.SNOW >> Vtable
+>     endif
+> #
+> #  Link the requested input files to "ON84FILE.A", "ON84FILE.B", etc.
+> #
+>     set Num = 0
+>     if ($SourceType == 3D) then
+159a260
+> 	  printf "       ln -s   %s   %s\n" $file ON84FILE${LETTERS[$Num]}
+163,165c264,265
+<     if ($SRCSST == ON84) then
+<        cat Vtable.SST >> Vtable
+<        # Get the input files
+---
+> 
+>     if ($SourceType == SST) then
+167a268
+> 	  printf "       ln -s   %s   %s\n" $file ON84FILE${LETTERS[$Num]}
+171,173c272,273
+<     if ($SRCSNOW == ON84) then
+<        cat Vtable.SNOW >> Vtable
+<        # Get the input files
+---
+> 
+>     if ($SourceType == SNOW) then
+175a276
+> 	  printf "       ln -s   %s   %s\n" $file ON84FILE${LETTERS[$Num]}
+179,180c280,283
+< 
+<     # Run the program
+---
+> #
+> # Link the pregrid.namelist file and run the program.
+> #
+>     ln -s ../pregrid.namelist pregrid.namelist
+182,191c285,302
+< 
+<     # Move the output
+<     if ($SRC3D == ON84) then
+<        mv ON84:* ..
+<     endif
+<     if ($SRCSST == ON84) then
+<        mv SST:* ..
+<     endif
+<     if ($SRCSNOW == ON84) then
+<        mv SNOW:* ..
+---
+> #
+> # Move the output up to the "pregrid" directory.
+> #
+>     if ($SourceType == 3D) then
+>        foreach file ( ON84:* )
+> 	  printf "       mv %s ../%s\n" $file $file
+>           mv $file ..
+>        end
+>     else if ($SourceType == SST) then
+>        foreach file ( SST:* )
+> 	  printf "       mv %s ../ON84_%s\n" $file $file
+>           mv $file ../ON84_$file
+>        end
+>     else if ($SourceType == SNOW) then
+>        foreach file ( SNOW:* )
+> 	  printf "       mv %s ../ON84_%s\n" $file $file
+>           mv $file ../ON84_$file
+>        end
+192a304,307
+> #
+> # Go back up to the "pregrid" directory.
+> #
+>     printf "\ncd %s\n" `pwd`/..
+195c310,311
+< endif
+---
+>     printf "\nDone with ON84 processing for type %s\n\n" $SourceType 
+>   endif
+197c313,321
+< if ( ( $SRC3D == NCEP ) || ( $SRCSST == NCEP ) || ( $SRCSNOW == NCEP )) then
+---
+> ###############################################################################
+> 
+>   if ( ( ( $SourceType == 3D   ) && ( $SRC3D   == NCEP) ) || \
+>        ( ( $SourceType == SST  ) && ( $SRCSST  == NCEP) ) || \
+>        ( ( $SourceType == SNOW ) && ( $SRCSNOW == NCEP) ) ) then
+> #
+> #  Go down to the "ncep.grib" directory.
+> #
+>     printf "\ncd %s\n" `pwd`/ncep.grib
+199,200c323,328
+<     rm GRIBFILE*
+<     # Build the Vtable
+---
+> #
+> #  Remove whatever files may be leftover from a prior job.  Redirect 
+> #  printout to supress warnings if there is nothing to remove.
+> #
+>     rm GRIBFILE*             >&! /dev/null
+>     rm -f pregrid.namelist
+201a330,332
+> #
+> #  Build the Vtable:
+> #
+203c334
+<     if ($SRC3D == NCEP) then
+---
+>     if ($SourceType == 3D) then
+205,206c336
+<     endif
+<     if ($SRCSST == NCEP) then
+---
+>     else if ($SourceType == SST) then
+208,209c338
+<     endif
+<     if ($SRCSNOW == NCEP) then
+---
+>     else if ($SourceType == SNOW) then
+212,214c341,343
+< 
+<     # Get the input files
+<     ln -s ../pregrid.namelist pregrid.namelist
+---
+> #
+> #  Link the requested input files to "GRIBFILE.A", "GRIBFILE.B", etc.
+> #
+216,226c345,349
+<     foreach file ( $InFiles )
+<        @ Num ++
+<        ln -s $file GRIBFILE${LETTERS[$Num]}
+<     end
+< 
+<     # Run the program
+<     pregrid_ncep.exe 
+< 
+<     # Move the output
+<     if ($SRC3D == NCEP) then
+<        mv NCEP:* ..
+---
+>     if ( $SourceType == 3D ) then
+>        foreach file ( $InFiles )
+>           @ Num ++
+>           ln -s $file GRIBFILE${LETTERS[$Num]}
+>        end
+228,229c351,355
+<     if ($SRCSST == NCEP) then
+<        mv SST:* ..
+---
+>     if ($SourceType == SST) then
+>        foreach file ( $InSST )
+>           @ Num ++
+>           ln -s $file GRIBFILE${LETTERS[$Num]}
+>        end
+231,232c357,361
+<     if ($SRCSNOW == NCEP) then 
+<        mv SNOW:* ..
+---
+>     if ($SourceType == SNOW) then
+>        foreach file ( $InSnow )
+>           @ Num ++
+>           ln -s $file GRIBFILE${LETTERS[$Num]}
+>        end
+233a363,385
+> #
+> # Link the pregrid.namelist file and run the program.
+> #
+>     ln -s ../pregrid.namelist pregrid.namelist
+>     pregrid_ncep.exe 
+> #
+> # Move the output up to the "pregrid" directory.
+> #
+>     if ($SourceType == 3D) then
+>        mv NCEP:* ..
+>     else if ($SourceType == SST) then
+>        foreach file ( SST:* )
+>           mv $file ../NCEP_$file
+>        end
+>     else if ($SourceType == SNOW) then 
+>        foreach file ( SNOW:* )
+>           mv $file ../NCEP_$file
+>        end
+>     endif
+> #
+> # Go back up to the "pregrid" directory.
+> #
+>     echo "cd `pwd`/.."
+236c388,392
+< endif
+---
+>   endif
+> 
+> ###############################################################################
+> 
+>   if ( ($SourceType == SST) && ( $SRCSST == NAVY ) ) then
+238c394,398
+< if ( $SRCSST == NAVY ) then
+---
+>     printf "\n\nStarting NAVYSST processing.\n\n"
+> #
+> #  Go down to the "navysst" directory.
+> #
+>      echo "cd `pwd`/navysst"
+240,241c400,408
+<      ln -s ../pregrid.namelist pregrid.namelist
+<      rm NAVYFILE*
+---
+> #
+> #  Remove whatever files may be leftover from a prior job.  Redirect 
+> #  printout to supress warnings if there is nothing to remove.
+> #
+>      rm -f pregrid.namelist
+>      rm NAVYFILE*        >&! /dev/null
+> #
+> #  Link the requested files to "NAVYFILE.A", "NAVYFILE.B", etc.
+> #
+246a414,417
+> #
+> # Link the pregrid.namelist file and run the program.
+> #
+>      ln -s ../pregrid.namelist pregrid.namelist
+248c419,429
+<      mv SST:* ..
+---
+> 
+> #
+> # Move the output files up to the "pregrid" directory.
+> #
+>      foreach file ( SST:* )
+>         mv $file ../NAVY_$file
+>      end
+> #
+> # Go back up to the "pregrid" directory.
+> #
+>      echo "cd `pwd`/.."
+250d430
+< endif
+252,256c432
+< if ( $SRC3D == GRIB ) then
+<      cd grib.misc
+<      rm FILE:*
+<      rm GRIBFILE*
+<      ln -s ../pregrid.namelist pregrid.namelist
+---
+>      printf "\n\nDone with NAVYSST processing.\n\n"
+258,260c434,460
+<      if ( -e Vtable ) then
+<         rm Vtable
+<      endif
+---
+>   endif
+> 
+> ###############################################################################
+> 
+>   if ( ( ( $SourceType == 3D   ) && ( $SRC3D   == GRIB) ) || \
+>        ( ( $SourceType == SST  ) && ( $SRCSST  == GRIB) ) || \
+>        ( ( $SourceType == SNOW ) && ( $SRCSNOW == GRIB) ) || \
+>        ( ( $SourceType == SOIL ) && ( $SRCSOIL == GRIB) ) ) then
+> 
+>      printf "\n\nStarting GRIB processing for type %s\n\n" $SourceType 
+> 
+> #
+> #  Go down to the "grib.misc" directory.
+> #
+>      echo "cd `pwd`/grib.misc"
+>      cd grib.misc
+> #
+> #  Remove whatever files may be leftover from a prior job.  Redirect 
+> #  printout to supress warnings if there is nothing to remove.
+> #
+>      rm FILE:*              >&! /dev/null
+>      rm GRIBFILE*           >&! /dev/null
+>      rm -f Vtable
+>      rm -f pregrid.namelist
+> #
+> #  Build the Vtable:
+> #
+262,263c462,477
+<      if ( $SRC3D == GRIB ) then
+<         cat $VT3D >> Vtable
+---
+>      if ( $SourceType == 3D ) then
+>         foreach file ( $VT3D )
+>            cat ../$file >> Vtable
+>         end
+>      else if ( $SourceType == SST ) then
+>         foreach file ( $VTSST )
+>            cat ../$file >> Vtable
+>         end
+>      else if ( $SourceType == SNOW ) then
+>         foreach file ( $VTSNOW )
+>            cat ../$file >> Vtable
+>         end
+>      else if ( $SourceType == SOIL ) then
+>         foreach file ( $VTSOIL ) 
+>            cat ../$file >> Vtable
+>         end
+265,274c479,481
+<      if ( $SRCSST == GRIB ) then
+<         cat $VTSST >> Vtable
+<      endif
+<      if ( $SRCSNOW == GRIB ) then
+<         cat $VTSNOW >> Vtable
+<      endif
+<      if ( $SRCSOIL == GRIB ) then
+<         cat $VTSOIL >> Vtable
+<      endif
+< 
+---
+> #
+> #  Link the requested files to "GRIBFILE.AA", "GRIBFILE.AB", etc.
+> #
+277,284d483
+<      foreach file ( $InFiles ) 
+<         @ NUM ++
+<         if ( $NUM == 27 ) then
+<            set NUM = 1
+<            @ num ++
+<         endif
+<         ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+<      end
+285a485,529
+>      if ( $SourceType == 3D ) then
+>         foreach file ( $InFiles ) 
+>            @ NUM ++
+>            if ( $NUM == 27 ) then
+>               set NUM = 1
+>               @ num ++
+>            endif
+> 	   printf "       ln -s   %s   %s\n" $file GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+>            ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+>         end
+>      else if ( $SourceType == SST ) then
+>         foreach file ( $InSST ) 
+>            @ NUM ++
+>            if ( $NUM == 27 ) then
+>               set NUM = 1
+>               @ num ++
+>            endif
+> 	   printf "       ln -s   %s   %s\n" $file GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+>            ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+>         end
+>      else if ( $SourceType == SNOW ) then
+>         foreach file ( $InSnow ) 
+>            @ NUM ++
+>            if ( $NUM == 27 ) then
+>               set NUM = 1
+>               @ num ++
+>            endif
+> 	   printf "       ln -s   %s   %s\n" $file GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+>            ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+>         end
+>      else if ( $SourceType == SOIL ) then
+>         foreach file ( $InSoil ) 
+>            @ NUM ++
+>            if ( $NUM == 27 ) then
+>               set NUM = 1
+>               @ num ++
+>            endif
+> 	   printf "       ln -s   %s   %s\n" $file GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+>            ln -s ${file} GRIBFILE.${LETTERS[$num]}${LETTERS[$NUM]}
+>         end
+>      endif
+> #
+> # Link the pregrid.namelist file and run the program.
+> #
+>      ln -s ../pregrid.namelist pregrid.namelist
+287c531,545
+<      mv FILE:* ..
+---
+> #
+> # Move the output files up to the "pregrid" directory.
+> #
+>      if ( $SourceType == 3D ) then
+>         mv FILE:* ..
+>      else
+>         foreach file ( FILE:* )
+> 	  printf "mv %s   %s\n" $file ../${SourceType}_${file}
+>           mv $file ../${SourceType}_${file}
+>         end
+>      endif
+> #
+> # Go back to the "pregrid" directory.
+> #
+>      echo "cd `pwd`/.."
+289c547,558
+< endif
+---
+> 
+>      printf "\n\nDone with GRIB processing for type %s\n\n" $SourceType 
+>    endif
+> 
+> #
+> # Print out five lines of # as a delimiter between ${SourceType}s
+> #
+>    repeat 5 printf \
+> "################################################################################\n"
+> 
+> end
+> printf "\n"
+===================================================================
+pregrid/era/get_era.deck
+diff -r3.2 -r3.5
+13a14
+> # Note: The ERA data are only available from Jan 1979 to Dec 1993.
+19c20
+< set Host = kmanning@mmm.mmm.ucar.edu:/mmmtmp/kmanning
+---
+> set Host = username@host.domain:/local_directory
+39,43c40
+< gzip -d regrid.tar.gz
+< tar -xf regrid.tar \
+<     REGRID/pregrid/util/geth_newdate \
+<     REGRID/pregrid/util/newdate.awpr \
+<     REGRID/pregrid/era
+---
+> gzip -cd regrid.tar.gz | tar xf -
+70,71c67,68
+< get datasets/ds115.0/MASTER sfc.master
+< get datasets/ds115.1/MASTER upa.master
+---
+> get datasets/ds115.0/MSS-file-list sfc.master
+> get datasets/ds115.1/MSS-file-list upa.master
+83,84c80,81
+< set MNAM = ( JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC )
+< set NAMM = ( JAN JAN JAN JAN JAN JAN JUL JUL JUL JUL JUL JUL )
+---
+> set MNAM = ( jan feb mar apr may jun jul aug sep oct nov dec )
+> set NAMM = ( jan jan jan jan jan jan jul jul jul jul jul jul )
+===================================================================
+pregrid/era/get_era.sh
+diff -r3.0 -r3.1
+52,53c52,53
+< get datasets/ds115.0/MASTER sfc.master
+< get datasets/ds115.1/MASTER upa.master
+---
+> get datasets/ds115.0/MSS-file-list sfc.master
+> get datasets/ds115.1/MSS-file-list upa.master
+64,66c64,65
+< 
+< set MNAM = ( JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC )
+< set NAMM = ( JAN JAN JAN JAN JAN JAN JUL JUL JUL JUL JUL JUL )
+---
+> set MNAM = ( jan feb mar apr may jun jul aug sep oct nov dec )
+> set NAMM = ( jan jan jan jan jan jan jul jul jul jul jul jul )
+===================================================================
+pregrid/grib.misc/Makefile
+diff -r3.0 -r3.2
+3a4
+> include ../../macros_pregrid
+10,12d10
+< default:
+< 	@echo "Go up a couple of directories to make pregrid (ie. cd ../../ )."
+< 
+28,32c26,34
+< pregrid_grib.o:	gridinfo.o
+< output.o:	gridinfo.o
+< rd_grib.o:	gridinfo.o
+< rrpr.o:		gridinfo.o
+< storage.o:	gridinfo.o
+---
+> pregrid_grib.o:	gridinfo.o ../../macros_pregrid
+> output.o:	gridinfo.o ../../macros_pregrid
+> rd_grib.o:	gridinfo.o ../../macros_pregrid
+> rrpr.o:		gridinfo.o ../../macros_pregrid
+> gridinfo.o:	../../macros_pregrid
+> new_storage.o:	../../macros_pregrid
+> filelist.o:	../../macros_pregrid
+> file_delete.o:	../../macros_pregrid
+> datint.o:	../../macros_pregrid
+===================================================================
+pregrid/grib.misc/Vtable.AWIP3D
+diff -r3.0 -r3.1
+6a7
+>      | 100  |   *  |      | RH       | %        | Relative Humidity                        |
+8d8
+<   52 | 100  |   *  |      | RH       | %        | Relative Humidity                        |
+10a11
+>      | 105  |   2  |      | RH       | %        | Relative Humidity                        | At 2 m
+12,13d12
+<   51 | 116  |  30  |  0   | SPECHUMD | kg kg{-1}|                                          | 
+<   52 | 105  |   2  |      | RH       | %        | Relative Humidity                        | At 2 m
+===================================================================
+pregrid/grib.misc/Vtable.AWIPSOIL
+diff -r3.0 -r3.2
+4a5,7
+>  85  | 112  |  10  |  40  | SOILT040 | K        | T of 10-40 cm ground layer                  |
+>  85  | 112  |  40  | 100  | SOILT100 | K        | T of 40-100 cm ground layer                 |
+>  85  | 112  | 100  | 200  | SOILT200 | K        | T of 100-200 cm ground layer                |
+6d8
+<  85  | 111  | 300  |      | SOILT400 | K        | T of 200-400 cm ground layer                |
+7a10,12
+>  144 | 112  |  10  |  40  | SOILM040 | fraction | Soil Moisture of 10-40 cm ground layer      |
+>  144 | 112  |  40  | 100  | SOILM100 | fraction | Soil Moisture of 40-100 cm ground layer     |
+>  144 | 112  | 100  | 200  | SOILM200 | fraction | Soil Moisture of 100-200 cm ground layer    |
+===================================================================
+pregrid/grib.misc/Vtable.AWIPSST
+diff -r3.0 -r3.1
+4c4
+<   11 |  1   |   0  |      | SST      | K        | Sea-Surface Temperature                  |
+---
+>   11 |  1   |   0  |      | SKINTEMP | K        | Skin Temperature                         |
+===================================================================
+pregrid/grib.misc/Vtable.ERASST
+diff -r3.0 -r3.1
+1c1
+< GRIB | Level| Level| Level| REGRID   |  REGRID  | REGRID                                    |
+---
+> GRIB | Level| Level| Level| REGRID   |  REGRID  | REGRID                                   |
+4c4
+<  139 | 112  |   0  |   7  | SST      | K        | Sea-Surface Temperature                  |
+---
+>  139 | 112  |   0  |   7  | SKINTEMP | K        | Skin Temperature                         |
+===================================================================
+pregrid/grib.misc/Vtable.NNRPSST
+diff -r3.0 -r3.1
+4c4
+<  11  |  1   |   0  |      | SST      | K        | Sea-Surface Temperature                     |
+---
+>  11  |  1   |   0  |      | SKINTEMP | K        | Skin Temperature                            |
+===================================================================
+pregrid/grib.misc/Vtable.TOGASST
+diff -r3.0 -r3.1
+1c1
+< GRIB | Level| Level| Level| REGRID   |  REGRID  | REGRID                                    |
+---
+> GRIB | Level| Level| Level| REGRID   |  REGRID  | REGRID                                   |
+4,5c4,5
+<  139 | 1    |   0  |      | SST      | K        | Sea-Surface Temperature                  |
+<  139 | 112  |   0  |   7  | SST      | K        | Sea-Surface Temperature                  |
+---
+>  139 | 1    |   0  |      | SKINTEMP | K        | Skin Temperature                         |
+>  139 | 112  |   0  |   7  | SKINTEMP | K        | Skin Temperature                         |
+===================================================================
+pregrid/grib.misc/pregrid_grib.F
+diff -r3.6 -r3.7
+31a32,37
+> ! Recent changes:                                                             !
+> !   2000-08-31:  Allow the program to recognize SKINTEMP as something to be   !
+> !                used as a sea-surface temperature.                           !
+> !                                                                             !
+> !*****************************************************************************!
+> !                                                                             !
+211c217,218
+<            if ((field == "SST") .and.(level /= 200100.)) level = 200100.
+---
+>            if (((field == "SST").or.(field == "SKINTEMP")) .and. &
+>                 (level /= 200100.)) level = 200100.
+===================================================================
+pregrid/grib.misc/rd_grib.F
+diff -r3.1 -r3.4
+66a67,71
+> ! 2000-8-10: Added the capability to deal with thinned grids.  The            !
+> !    thinned-grid capability was adapted from modifications provided by       !
+> !    Oren Duer of the Hebrew University of Jerusalem.  Many thanks are due    !
+> !    to him.                                                                  !
+> !                                                                             !
+98a104,112
+> ! Variables for thinned grids:
+>   logical :: lthinned = .FALSE.
+>   real, dimension(alength) :: thinnedDataArray
+>   integer, dimension(74) :: npoints_acc
+>   real :: mj, xmj
+>   integer :: np, ny, nx
+>   real :: Va, Vb, Vc, Vd
+>   real, external :: oned
+> 
+331,332c345,347
+<   if ((icenter.eq.7).and.(iprocess.eq.80)) then   ! Careful! This combination may refer 
+<                                                       ! to other products as well.
+---
+>   if (((icenter.eq.7).and.(iprocess.eq.80)) .or. &
+>       ((icenter.eq.7).and.(iprocess.eq.180))) then  ! Careful! These combination may refer 
+>                                                     ! to other products as well.
+333a349,352
+>         write(*,'(/)')
+>         write(*,'("**** I interpret this as the PSFC field from the NCEP/NCAR")')
+>         write(*,'("**** Reanalysis pgb files, so I am skipping this field. ")')
+>         write(*,'(/)')
+339a359,373
+> ! If nx=65535, assume the grid is a thinned grid. 
+> ! I will deal with it only if the grid ID is 37-44.
+>   if (map%nx.eq.65535) then
+>      if ((KSEC1(5).lt.37).or.(KSEC1(5).gt.44)) then
+>         write(*,'("GRID ID is not 37-44. Aborting.",//)')
+>         write(*,'(" ***** STOP in Subroutine RD_GRIB.",//)')
+>         stop
+>      endif
+>      lthinned = .TRUE.
+>      map%nx = 73
+>      map%dx = 1.25
+>   else
+>      lthinned = .FALSE.
+>   endif
+> 
+353c387,450
+<   call gribdata(DataArray,map%nx*map%ny)
+---
+>   if (lthinned) then
+>     call gribdata(thinnedDataArray,3447)
+> 
+>     ! Calculate how many points for each latitude, and accumulate into array
+>     if ((KSEC1(5).ge.37).and.(KSEC1(5).le.40)) then
+>        ! Northern hemisphere:
+>        npoints_acc(1)=0
+>        npoints_acc(2)=73
+>        do i=1,72
+>           np = int(2.0+(90.0/1.25)*cos(i*1.25*3.1415926/180.0))
+>           npoints_acc(i+2)=npoints_acc(i+1)+np
+>        enddo
+>     else
+>        ! Southern Hemisphere:
+>        npoints_acc(1)=0
+>        npoints_acc(2)=2
+>        do i=1,71
+>           ii = 72-i
+>           np = int(2.0+(90.0/1.25)*cos(ii*1.25*3.1415926/180.0))
+>           npoints_acc(i+2)=npoints_acc(i+1)+np
+>        enddo
+>        npoints_acc(74) = npoints_acc(73) + 73
+>     endif
+>        
+>     ! for row number i (where i=1 is the southern edge of the grid)
+>     !   npoints_acc(i+1)-npoints_acc(i) = number of points in this line
+>     !   npoints_acc(i)+1 = index into thinned array for first point of line
+> 
+>     do ny=1,73
+>        np = npoints_acc(ny+1)-npoints_acc(ny) ! Number of points in this line.
+>        do nx=1,73
+>           ! Calulate the x index (mj) of thinned array (real value)
+>           mj = (nx-1.0)*(np-1.0)/(72.0)
+>           
+>           if (abs(mj - int(mj)) < 1.E-10) then
+>              DataArray((ny-1)*73+nx) = thinnedDataArray(npoints_acc(ny)+1+int(mj))
+>           else
+>              ! Get the 2 closest values from thinned array
+>              Vb = thinnedDataArray(npoints_acc(ny)+1+int(mj))
+>              Vc = thinnedDataArray(npoints_acc(ny)+1+int(mj)+1)
+>              ! Get the next two closest, if available:
+>              Va = -999999.
+>              Vd = -999999.
+>              if (mj > 1.0) then
+>                 Va = thinnedDataArray(npoints_acc(ny)+1+int(mj)-1)
+>              endif
+>              if (mj < np-2) then
+>                 Vd = thinnedDataArray(npoints_acc(ny)+1+int(mj)+2)
+>              endif
+> 
+>              if ((Va < -999998.) .or. (Vd < -999998.)) then
+>                 ! Use 2-point linear interpolation.
+>                 DataArray((ny-1)*73+nx) = Vb*(int(mj)+1.0-mj) + Vc*(mj-int(mj))
+>              else
+>                 ! Use 4-point overlapping parabolic interpolation.
+>                 xmj = mj - float(int(mj))
+>                 DataArray((ny-1)*73+nx) = oned(xmj,Va,Vb,Vc,Vd)
+>              endif
+>           endif
+>        enddo
+>     enddo
+>   else
+>     call gribdata(DataArray,map%nx*map%ny)
+>   endif
+360a458,474
+> 
+> real function oned(x, a, b, c, d) Result (Answer)
+>   implicit none
+>   real :: x ! Proportion of the way between B and C.  Between 0.0 and 1.0
+>   real :: a, b, c, d
+> 
+>   if (abs(x) < 1.E-10) then
+>      Answer = B
+>      return
+>   endif
+>   IF(abs(x-1.) < 1.E-10) then
+>      Answer = C
+>      return
+>   endif
+>   Answer = (1.0-X)*(B+X*(0.5*(C-A)+X*(0.5*(C+A)-B)))+X*(C+(1.0-X)*(0.5 &
+>        *(B-D)+(1.0-X)*(0.5*(B+D)-C)))
+> end function oned
+===================================================================
+pregrid/grib.misc/rrpr.F
+diff -r3.2 -r3.3
+230a231,238
+> ! If we've got a SEAICE field, make sure that it is all Zeros and Ones:
+> 
+>         if (is_there(200100, 'SEAICE')) then
+>            call get_dims(200100, 'SEAICE')
+>            call make_zero_or_one(map%nx, map%ny)
+>         endif
+> 
+> ! Write everything back out:
+236a245,260
+> 
+> subroutine make_zero_or_one(ix, jx)
+> ! Make sure the SEAICE field is zero or one.
+>   use storage_module
+>   implicit none
+>   integer :: ix, jx
+>   real, dimension(ix,jx) :: seaice
+> 
+>   call get_storage(200100, 'SEAICE',seaice, ix, jx)
+>   where(seaice > 0.5)
+>      seaice = 1.0
+>   elsewhere
+>      seaice = 0.0
+>   end where
+>   call put_storage(200100, 'SEAICE',seaice, ix, jx)
+> end subroutine make_zero_or_one
+===================================================================
+pregrid/navysst/Makefile
+diff -r3.0 -r3.1
+3a4
+> include ../../macros_pregrid
+11,13d11
+< default:
+< 	@echo "Go up a couple of directories to make pregrid (ie. cd ../../ )."
+< 
+16c14
+< $(CMD):: $(OBJS) ../util/libpgu.a
+---
+> $(CMD):: $(OBJS) ../util/libpgu.a 
+28c26,33
+< rd_on84.o:	con84.incl
+---
+> 
+> rd_on84.o:	con84.incl ../../macros_pregrid
+> gridinfo.o:	../../macros_pregrid
+> pregrid_navy.o:	../../macros_pregrid
+> rd_navy.o:	../../macros_pregrid
+> output.o:	../../macros_pregrid
+> sstint.o:	../../macros_pregrid
+> storage.o:	../../macros_pregrid
+===================================================================
+pregrid/ncep.grib/Makefile
+diff -r3.1 -r3.2
+3a4
+> include ../../macros_pregrid
+10,12d10
+< default:
+< 	@echo "Go up a couple of directories to make pregrid (ie. cd ../../ )."
+< 
+27,30c25,32
+< datint.o:	storage.o
+< output.o:	storage.o
+< pregrid_ng.o:	storage.o
+< rd_grib.o:	storage.o
+---
+> 
+> datint.o:	storage.o ../../macros_pregrid
+> output.o:	storage.o ../../macros_pregrid
+> pregrid_ng.o:	storage.o ../../macros_pregrid
+> rd_grib.o:	storage.o ../../macros_pregrid
+> gridinfo.o:	../../macros_pregrid
+> storage.o:	../../macros_pregrid
+> sstint.o:	../../macros_pregrid
+===================================================================
+pregrid/ncep.grib/get_ncep.csh
+diff -r3.0 -r3.2
+35c35
+< get datasets/ds083.0/MASTER ncep.master
+---
+> get datasets/ds083.0/MSS-file-list ncep.master
+50,61c50,61
+<    { gsub( "JAN", "01", \$2)
+<      gsub( "FEB", "02", \$2)
+<      gsub( "MAR", "03", \$2)
+<      gsub( "APR", "04", \$2)
+<      gsub( "MAY", "05", \$2)
+<      gsub( "JUN", "06", \$2)
+<      gsub( "JUL", "07", \$2)
+<      gsub( "AUG", "08", \$2)
+<      gsub( "SEP", "09", \$2)
+<      gsub( "OCT", "10", \$2)
+<      gsub( "NOV", "11", \$2)
+<      gsub( "DEC", "12", \$2) }
+---
+>    { gsub( "jan", "01", \$2)
+>      gsub( "feb", "02", \$2)
+>      gsub( "mar", "03", \$2)
+>      gsub( "apr", "04", \$2)
+>      gsub( "may", "05", \$2)
+>      gsub( "jun", "06", \$2)
+>      gsub( "jul", "07", \$2)
+>      gsub( "aug", "08", \$2)
+>      gsub( "sep", "09", \$2)
+>      gsub( "oct", "10", \$2)
+>      gsub( "nov", "11", \$2)
+>      gsub( "dec", "12", \$2) }
+84c84
+<    set local = NCEP_GRIB.${YYYY}${MNAM[$Mm]}
+---
+>    set local = NCEP_GRIB.${YYYY}${Mm}
+===================================================================
+pregrid/ncep.grib/get_ncep.deck
+diff -r3.0 -r3.2
+21c21
+< set Host = kmanning@wahoo.mmm:/mmmtmp/kmanning/
+---
+> set Host = username@host.domain:/local_directory
+41,45c41
+< gzip -d regrid.tar.gz
+< tar -xf regrid.tar \
+<     REGRID/pregrid/util/geth_newdate \
+<     REGRID/pregrid/util/newdate.awpr \
+<     REGRID/pregrid/ncep.grib/
+---
+> gzip -cd regrid.tar.gz | tar xf -
+70c66
+< get datasets/ds083.0/MASTER ncep.master
+---
+> get datasets/ds083.0/MSS-file-list ncep.master
+85,96c81,92
+<    { gsub( "JAN", "01", \$2)
+<      gsub( "FEB", "02", \$2)
+<      gsub( "MAR", "03", \$2)
+<      gsub( "APR", "04", \$2)
+<      gsub( "MAY", "05", \$2)
+<      gsub( "JUN", "06", \$2)
+<      gsub( "JUL", "07", \$2)
+<      gsub( "AUG", "08", \$2)
+<      gsub( "SEP", "09", \$2)
+<      gsub( "OCT", "10", \$2)
+<      gsub( "NOV", "11", \$2)
+<      gsub( "DEC", "12", \$2) }
+---
+>    { gsub( "jan", "01", \$2)
+>      gsub( "feb", "02", \$2)
+>      gsub( "mar", "03", \$2)
+>      gsub( "apr", "04", \$2)
+>      gsub( "may", "05", \$2)
+>      gsub( "jun", "06", \$2)
+>      gsub( "jul", "07", \$2)
+>      gsub( "aug", "08", \$2)
+>      gsub( "sep", "09", \$2)
+>      gsub( "oct", "10", \$2)
+>      gsub( "nov", "11", \$2)
+>      gsub( "dec", "12", \$2) }
+===================================================================
+pregrid/ncep.grib/output.F
+diff -r3.1 -r3.2
+1a2,4
+> ! Recent changes:                                                             !
+> !   2000-08-31:  Allow the program to recognize SKINTEMP as something to be   !
+> !                used as a sea-surface temperature.                           !
+90c93
+<            if (field.eq.'SST') then
+---
+>            if ((field.eq.'SST').or.(field == 'SKINTEMP')) then
+===================================================================
+pregrid/ncep.grib/pregrid_ng.F
+diff -r3.2 -r3.3
+1a2,4
+> ! Recent changes:                                                             !
+> !   2000-08-31:  Allow the program to recognize SKINTEMP as something to be   !
+> !                used as a sea-surface temperature.                           !
+102c105
+<            if (field.eq.'SST     ') then
+---
+>            if ((field.eq.'SST     ').or.(field == "SKINTEMP")) then
+112c115
+<            if (field.ne.'SST     ') then
+---
+>            if ((field.ne.'SST     ').and.(field /= "SKINTEMP")) then
+138c141,142
+<         if (is_there(200100, 'SST     ')) then
+---
+>         if ( (is_there(200100, 'SST     ')) .or. &
+>              (is_there(200100, "SKINTEMP")) ) then
+156c160
+<      if (nameout(n).eq.'SST     ') then
+---
+>      if ((nameout(n).eq.'SST     ').or.(nameout(n) == "SKINTEMP")) then
+===================================================================
+pregrid/ncep.grib/rd_grib.F
+diff -r3.1 -r3.2
+2a3,5
+> ! Recent changes:
+> !    2000-08-31:  Changed the print flag in the call to "copen" to 
+> !                 turn off the error print that was scaring folks.
+42c45
+<      call copen(iunit, nunit, gribflnm, 1, ierr, 1)
+---
+>      call copen(iunit, nunit, gribflnm, 1, ierr, 0)
+===================================================================
+pregrid/nnrp/get_nnrp.csh
+diff -r3.1 -r3.3
+136,137c136,137
+<    if ( $YYYY != $YearSave ) then
+<       set YearSave = $YYYY
+---
+>    if ( $YYMM != $YearSave ) then
+>       set YearSave = $YYMM
+251d250
+< 	mv ./$file ./SFCNNRP_${file}
+253a253
+> 	mv ./$file ./SFCNNRP_${file}
+===================================================================
+pregrid/nnrp/get_nnrp.deck
+diff -r3.1 -r3.4
+5,6c5,6
+< # QSUB -lT 600                          # time limit
+< # QSUB -lt 600                          # time limit
+---
+> # QSUB -lT 1200                         # time limit
+> # QSUB -lt 1200                         # time limit
+20c20
+< set Host = kmanning@wahoo.mmm:/mmmtmp/kmanning
+---
+> set Host = username@host.domain:/local_directory
+40,44c40
+< gzip -d regrid.tar.gz
+< tar -xf regrid.tar \
+<     REGRID/pregrid/util/geth_newdate \
+<     REGRID/pregrid/util/newdate.awpr \
+<     REGRID/pregrid/nnrp/
+---
+> gzip -cd regrid.tar.gz | tar -xf -
+48,50d43
+< # if ( ! -e /tmp/kmanning/NNRP ) mkdir -p /tmp/kmanning/NNRP
+< # cd /tmp/kmanning/NNRP
+< 
+160,161c153,154
+<    if ( $YYYY != $YearSave ) then
+<       set YearSave = $YYYY
+---
+>    if ( $YYMM != $YearSave ) then
+>       set YearSave = $YYMM
+169,170d161
+< 
+< 
+===================================================================
+pregrid/nnrp/get_nnrp.sh
+diff -r3.1 -r3.2
+140,141c140,141
+<    if ( $YYYY != $YearSave ) then
+<       set YearSave = $YYYY
+---
+>    if ( $YYMM != $YearSave ) then
+>       set YearSave = $YYMM
+===================================================================
+pregrid/on84/Makefile
+diff -r3.0 -r3.1
+3a4
+> include ../../macros_pregrid
+11,13d11
+< default:
+< 	@echo "Go up a couple of directories to make pregrid (ie. cd ../../ )."
+< 
+28c26,36
+< rd_on84.o:	con84.incl
+---
+> rd_on84.o:	con84.incl ../../macros_pregrid
+> gridinfo.o: 	../../macros_pregrid
+> new_storage.o:	../../macros_pregrid
+> pregrid_on84.o:	../../macros_pregrid
+> ron84_record.o:	../../macros_pregrid
+> output.o:	../../macros_pregrid
+> sstint.o:	../../macros_pregrid
+> snowprop.o:	../../macros_pregrid
+> unpack_on84.o:	../../macros_pregrid
+> tv_to_t.o:	../../macros_pregrid
+> datint.o:	../../macros_pregrid
+===================================================================
+pregrid/on84/get_on84.csh
+diff -r3.0 get_on84.csh
+36c36
+< get datasets/ds082.0/MASTER on84.master
+---
+> get datasets/ds082.0/MSS-file-list on84.master
+52,63c52,63
+<      gsub( "JAN", "01", \$2)
+<      gsub( "FEB", "02", \$2)
+<      gsub( "MAR", "03", \$2)
+<      gsub( "APR", "04", \$2)
+<      gsub( "MAY", "05", \$2)
+<      gsub( "JUN", "06", \$2)
+<      gsub( "JUL", "07", \$2)
+<      gsub( "AUG", "08", \$2)
+<      gsub( "SEP", "09", \$2)
+<      gsub( "OCT", "10", \$2)
+<      gsub( "NOV", "11", \$2)
+<      gsub( "DEC", "12", \$2) }
+---
+>    { gsub( "jan", "01", \$2)
+>      gsub( "feb", "02", \$2)
+>      gsub( "mar", "03", \$2)
+>      gsub( "apr", "04", \$2)
+>      gsub( "may", "05", \$2)
+>      gsub( "jun", "06", \$2)
+>      gsub( "jul", "07", \$2)
+>      gsub( "aug", "08", \$2)
+>      gsub( "sep", "09", \$2)
+>      gsub( "oct", "10", \$2)
+>      gsub( "nov", "11", \$2)
+>      gsub( "dec", "12", \$2) }
+105c105
+<    set Local = NCEP_ON84.$MssFile[1]
+---
+>    set Local = NCEP_ON84.${YYYY}${Mm}
+===================================================================
+pregrid/on84/get_on84.deck
+diff -r3.1 -r3.3
+20c20
+< set Host = kmanning@wahoo.mmm:/mmmtmp/kmanning/
+---
+> set Host = username@host.domain:/local_directory
+40,44c40
+< gzip -d regrid.tar.gz
+< tar -xf regrid.tar \
+<     REGRID/pregrid/util/geth_newdate \
+<     REGRID/pregrid/util/newdate.awpr \
+<     REGRID/pregrid/on84/
+---
+> gzip -cd regrid.tar.gz | tar xf -
+69c65
+< get datasets/ds082.0/MASTER on84.master
+---
+> get datasets/ds082.0/MSS-file-list on84.master
+85,96c81,92
+<      gsub( "JAN", "01", \$2)
+<      gsub( "FEB", "02", \$2)
+<      gsub( "MAR", "03", \$2)
+<      gsub( "APR", "04", \$2)
+<      gsub( "MAY", "05", \$2)
+<      gsub( "JUN", "06", \$2)
+<      gsub( "JUL", "07", \$2)
+<      gsub( "AUG", "08", \$2)
+<      gsub( "SEP", "09", \$2)
+<      gsub( "OCT", "10", \$2)
+<      gsub( "NOV", "11", \$2)
+<      gsub( "DEC", "12", \$2) }
+---
+>    { gsub( "jan", "01", \$2)
+>      gsub( "feb", "02", \$2)
+>      gsub( "mar", "03", \$2)
+>      gsub( "apr", "04", \$2)
+>      gsub( "may", "05", \$2)
+>      gsub( "jun", "06", \$2)
+>      gsub( "jul", "07", \$2)
+>      gsub( "aug", "08", \$2)
+>      gsub( "sep", "09", \$2)
+>      gsub( "oct", "10", \$2)
+>      gsub( "nov", "11", \$2)
+>      gsub( "dec", "12", \$2) }
+===================================================================
+pregrid/util/Makefile
+diff -r3.0 -r3.2
+3a4
+> include ../../macros_pregrid
+13,15d13
+< default:
+< 	@echo "Go up a couple of directories to make pregrid (ie. cd ../../ )."
+< 
+25a24,27
+> build_mosaic:	build_mosaic.o
+> 	$(FC) -o $(@) $(?:.f=.o) $(LOCAL_LIBRARIES)
+> 	$(RM) build_mosaic.o
+> 
+36a39,49
+> build_hdate.o: 			../../macros_pregrid 
+> geth_newdate.o: 		../../macros_pregrid 
+> geth_idts.o: 			../../macros_pregrid 
+> swap.o: 			../../macros_pregrid 
+> table.o: 			../../macros_pregrid 
+> parse_table.o: 			../../macros_pregrid 
+> gbytesys.o: 			../../macros_pregrid 
+> gribcode.o: 			../../macros_pregrid 
+> pregrid_version.o: 		../../macros_pregrid 
+> read_pregrid_namelist.o: 	../../macros_pregrid 
+> cio.o: 				../../macros_pregrid 
+===================================================================
+pregrid/util/cio.c
+diff -r3.0 -r3.3
+6,7c6,7
+<     cclose
+<     bsrfil */
+---
+>     cclose */
+> /*  bsrfil */
+19c19
+< #if defined (SGI) || defined (SOLARIS) || defined (SUN) || defined (DEC) || defined (ALPHA)
+---
+> #if defined (SGI) || defined (SOLARIS) || defined (SUN) || defined (DEC) || defined (ALPHA) || defined (VPP)
+49,51c49,59
+<   * oflag =  0 : no notification if file opened OK (errors are printed)
+<           =  1 : file name and unit number printed (and errors)
+<           = -1 : no print at all (not even errors)
+---
+>   * oflag = 0 : file name printed (no errors printed)
+>           > 0 : file name printed and errors are printed
+>           < 0 : no print at all (not even errors)
+> 
+> 
+> 
+> RECENT CHANGES:
+> 
+>    2000-08-31:  Change the interpretation of the oflag flag slightly.
+> 
+> 
+64,65c72,73
+<     if (*oflag >= 1)
+< 	printf("Copen: File = %s\nFortran Unit = %d\n", name, *unit);
+---
+>     if (*oflag >= 0)
+> 	printf("Copen: Attempting to open file = %s\nFortran Unit = %d\n", name, *unit);
+86c94
+<     if (*oflag >= 1)
+---
+>     if (*oflag > 0)
+91c99
+<       if (*oflag >= 0){
+---
+>       if (*oflag > 0){
+250,272d257
+<     return(0);
+< }
+< 
+< /* ****************************************************************** */
+< 
+< bsrfil_(fd, reclen, stat, err)
+<     int            *fd, *reclen, *stat, *err;	/* BACK SPACE RECORD ON FILE */
+< {
+<     extern int      errno;	/* I/O error return */
+<     extern char    *sys_errlist[];	/* system I/O error messages */
+<     int             mode, irec, fp;
+< 
+<     mode = 1;			/* relative positioning */
+<     irec = -*reclen;
+<     printf(" bsrfil: file descriptor  = %d\n", *fd);
+<     printf(" bsrfil: irec = %d   mode = %d\n", irec, mode);
+<     printf("File position = %d\n", fp = (lseek(*fd, irec, 1L)));
+<     if (fp < 0) {
+< 	printf(" File error on BSR: %d, %s\n",
+< 	       errno, sys_errlist[errno]);
+< 	exit(1);
+<     };
+< 
+===================================================================
+pregrid/util/gribcode.F
+diff -r3.3 -r3.6
+14a15,25
+> ! Recent changes:                                                             !
+> !    2000-09-07:  A couple of SUN portability issues:                         !
+> !                                                                             !
+> !               - Subroutine GRIBPRINT wasn't building format strings         !
+> !                 quite right.  That has been corrected.                      !
+> !                                                                             !
+> !               - Subroutine GRIBLLG had negative steps in array reference.   !
+> !                 That confused SUN and has been replaced by a do-loop.       !
+> !                                                                             !
+> !*****************************************************************************!
+> !                                                                             !
+900,901c911,912
+<   character(len=11) :: string = 't40,":",i8)'
+<   character(len=14) :: rstring = 't40,":",f12.5)'
+---
+>   character(len=12) :: string = ',t40,":",i8)'
+>   character(len=15) :: rstring = ',t40,":",f12.5)'
+1684,1685c1695
+<           write(*,'(//,"***** No simple unpacking of spherical-harmonic &
+<                &coefficients.")')
+---
+>           write(*,'(//,"***** No simple unpacking of spherical-harmonic coefficients.")')
+1806c1816,1818
+<   latg(NLAT-NZERO+1:NLAT:1) = -latg(NZERO:1:-1)
+---
+>   do i = 1, nzero
+>      latg(nlat-nzero+i) = -latg(nzero+1-i)
+>   enddo
+===================================================================
+pregrid/util/plotfmt.F
+diff -r3.1 -r3.2
+51a52
+>   call gscr(1,2, 0.900, 0.600, 0.600)
+147c148
+<   integer, parameter :: lwrk = 200, liwk = 5000
+---
+>   integer, parameter :: lwrk = 20000, liwk = 50000
+241a243
+>   call cpseti('LLP', 3)
+243a246
+>   call cplbdr(scr2d,rwrk,iwrk)
+===================================================================
+pregrid/util/pregrid_version.F
+diff -r3.5 -r3.12
+4c4
+<   write(*,'(   " **   pregrid version number: 0.16  **")')
+---
+>   write(*,'(   " **   pregrid version number: 0.23  **")')
+===================================================================
+regridder/Makefile
+diff -r3.1 -r3.3
+3,4c3,5
+< default:
+< 		@echo "Go up a directory to make the regridder program."
+---
+> include ../macros_regridder
+> 
+> .IGNORE:
+===================================================================
+regridder/namelist.input
+diff -r3.4 -r3.5
+25c25
+<  root                            = '../pregrid/ON84' '../pregrid/SST' '../pregrid/SNOW'
+---
+>  root                            = '../pregrid/ON84' '../pregrid/ON84_SST' '../pregrid/ON84_SNOW'
+===================================================================
+regridder/src/Makefile
+diff -r3.2 -r3.5
+3a4
+> include ../../macros_regridder
+5,7c6
+< MODULES	=	module_date_pack.o module_diags.o module_file_data.o module_first_guess_data.o module_gridded_data.o \
+< 		module_header_data.o module_horiz_interp.o module_link_list_info.o module_namelist_info.o \
+< 		module_terrain_data.o module_first_guess_map.o module_constants.o
+---
+> .IGNORE:
+9c8,13
+< OBJS = 		crs2dot.o llxy_lam.o llxy_mer.o llxy_ste.o \
+---
+> MODULES	=	module_date_pack.o module_diags.o module_file_data.o module_first_guess_data.o module_gauss.o \
+> 		module_gridded_data.o module_header_data.o module_horiz_interp.o module_link_list_info.o \
+> 		module_namelist_info.o module_terrain_data.o module_first_guess_map.o module_constants.o \
+> 		module_util.o
+> 
+> OBJS = 		llxy_lam.o llxy_mer.o llxy_ste.o \
+16,18d19
+< cray dec hp ibm sgi sun default:
+< 		@echo "Go up a couple of directories to make regridder (ie. cd ../../ )."
+< 
+20c21,22
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		$(OBJS)  $(MODULES) \
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+23c25
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+27c29
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+31c33
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+36,37c38,39
+< 		module_first_guess_map.o module_constants.o \
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		module_first_guess_map.o module_constants.o module_gauss.o \
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+41c43,44
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		module_util.o module_diags.o \
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+43c46
+< proc_make_dot_point_data.o:   module_header_data.o module_namelist_info.o \
+---
+> proc_make_dot_point_data.o:   module_header_data.o module_namelist_info.o module_util.o \
+45c48
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+48c51
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+52c55
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+56c59
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+60c63
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+63c66
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+67c70
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+71c74
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+74c77
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+77,79c80
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+< 
+< crs2dot.o: ../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+82c83
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+85c86
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+88c89
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+90c91
+< module_constants.o:  ../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> module_constants.o:  ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+92c93
+< module_date_pack.o:  ../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> module_date_pack.o:  ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+94c95,96
+< module_diags.o:  ../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> module_diags.o:	module_util.o \
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+96c98
+< module_file_data.o:  ../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> module_file_data.o:  ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+98c100
+< module_first_guess_data.o:  ../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> module_first_guess_data.o:  ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+101c103,105
+< 		../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 		../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+> 
+> module_gauss.o: ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+104c108
+< 			../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 			../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+106c110
+< module_header_data.o:  ../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> module_header_data.o:  ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+108c112
+< module_horiz_interp.o:  ../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> module_horiz_interp.o:  ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+110c114
+< module_link_list_info.o:  ../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> module_link_list_info.o:  ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+112c116
+< module_namelist_info.o:  ../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> module_namelist_info.o:  ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+115c119,121
+< 			../../configure.rules ./Makefile ../Makefile ../../Makefile
+---
+> 			../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+> 
+> module_util.o:  ../../configure.rules ../../macros_regridder ./Makefile ../Makefile ../../Makefile
+118c124
+< 		$(RM) $(RM_LIST)
+---
+> 		$(RM) $(RM_LIST) regridder
+===================================================================
+regridder/src/module_diags.F
+diff -r3.1 -r3.4
+2a3,11
+>    USE util
+> 
+>    REAL, PARAMETER    :: cp          =  1005.7
+>    REAL, PARAMETER    :: g           =     9.81
+>    REAL, PARAMETER    :: r           =   287.04
+>    REAL, PARAMETER    :: rovcp       =  r / cp
+>    REAL, PARAMETER    :: epsilon     = 1.0E-15
+> 
+> 
+5c14,17
+<    SUBROUTINE missing_soil(xlat,tempg)
+---
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE missing_soil(xlat,tempg,elevation)
+12c24
+<       REAL :: xlat , tempg , angle 
+---
+>       REAL :: xlat , tempg , elevation , angle 
+19c31
+<       tempg = c0 + c1*sin(angle) + c2*cos(angle)
+---
+>       tempg = c0 + c1*sin(angle) + c2*cos(angle) - 0.0065 * elevation
+21a34,264
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE mxratprs (rh, t, ppa, ix, jx, kx, q)
+> 
+>       IMPLICIT NONE
+> 
+>       INTEGER                     :: i , ix , j , jx , k , kx 
+> 
+>       REAL                        :: ppa         ( : )
+>       REAL                        :: p           ( KX )
+>       REAL                        :: q           ( : , : , : )
+>       REAL                        :: rh          ( : , : , : )
+>       REAL                        :: t           ( : , : , : )
+> 
+>       REAL                        :: es
+>       REAL                        :: qs
+>       REAL,         PARAMETER     :: eps         = 0.622
+>       REAL,         PARAMETER     :: svp1        = 0.6112
+>       REAL,         PARAMETER     :: svp2        = 17.67
+>       REAL,         PARAMETER     :: svp3        = 29.65
+>       REAL,         PARAMETER     :: svpt0       = 273.15
+> 
+>       !  This function is designed to compute (q) from basic variables
+>       !  p (mb), t(K) and rh(0-100%) to give (q) in (kg/kg).
+> 
+>       p = ppa * 0.01
+> 
+>       DO k = 1, kx
+>          DO j = 1, jx - 1
+>             DO i = 1, ix - 1
+>                   rh(i,j,k) = MIN ( MAX ( rh(i,j,k) , 10. ) , 100. ) 
+>             END DO
+>          END DO
+>       END DO
+> 
+>       rh(ix,:,:) = rh(ix-1,:,:)
+>       rh(:,jx,:) = rh(:,jx-1,:)
+>       t (ix,:,:) = t (ix-1,:,:)
+>       t (:,jx,:) = t (:,jx-1,:)
+> 
+>       DO k = 1, kx
+>          DO j = 1, jx
+>             DO i = 1, ix
+>                es = svp1 * 10. * EXP(svp2 * (t(i,j,k) - svpt0) / (t(i,j,k) - svp3))
+>                qs = eps * es / (p(k) - es)
+>                q(i,j,k) = MAX(0.01 * rh(i,j,k) * qs,0.0)
+>             END DO
+>          END DO
+>       END DO
+> 
+>    END SUBROUTINE mxratprs
+> 
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> 
+>    SUBROUTINE sfcprs (t, q, height, pslv, ter, p, ix, jx, kx, psfc)
+> 
+>       !  Computes the surface pressure using the input height,
+>       !  temperature and q (already computed from relative
+>       !  humidity) on p surfaces.  Sea level pressure is used
+>       !  to extrapolate a first guess.
+> 
+>       IMPLICIT NONE
+> 
+>       REAL,          PARAMETER    :: gamma     = 6.5E-3
+>       REAL,          PARAMETER    :: pconst    = 10000.0
+>       REAL,          PARAMETER    :: gammarg   = gamma * r / g
+> 
+>       INTEGER                     :: I , ix , ixm , j , jx , jxm , k , k500 , k700 , k850 , kx , kinterp
+> 
+>       LOGICAL                     :: l1 , l2 , l3
+> 
+>       REAL                        :: gamma78     ( IX , JX )
+>       REAL                        :: gamma57     ( IX , JX )
+>       REAL                        :: height      ( : , : , : )
+>       REAL                        :: ht          ( IX , JX )
+>       REAL                        :: p           ( : )
+>       REAL                        :: p1          ( IX , JX )
+>       REAL                        :: p57
+>       REAL                        :: p78
+>       REAL                        :: psfc        ( : , : )
+>       REAL                        :: pslv        ( : , : )
+>       REAL                        :: q           ( : , : , : )
+>       REAL, PARAMETER             :: rov2 = r / 2.
+>       REAL                        :: t           ( : , : , : )
+>       REAL                        :: t1          ( IX , JX )
+>       REAL                        :: t500        ( IX , JX )
+>       REAL                        :: t700        ( IX , JX )
+>       REAL                        :: t850        ( IX , JX )
+>       REAL                        :: tbar
+>       REAL                        :: tc
+>       REAL                        :: ter         ( : , : )
+>       REAL                        :: tfixed      ( IX , JX )
+>       REAL                        :: tsfc        ( IX , JX )
+>       REAL                        :: tslv        ( IX , JX )
+> 
+>       ixm = ix - 1
+>       jxm = jx - 1
+>       tc   = 273.15 + 17.5
+> 
+>       !  Find the locations of the 850, 700 and 500 mb levels.
+> 
+>       k850 = 0                              ! FIND K AT: P=850
+>       k700 = 0                              !            P=700
+>       k500 = 0                              !            P=500
+> 
+>       DO k = 1, kx
+>          IF      (NINT(p(k)) .EQ. 85000) THEN
+>             k850 = k
+>          ELSE IF (NINT(p(k)) .EQ. 70000) THEN
+>             k700 = k
+>          ELSE IF (NINT(p(k)) .EQ. 50000) THEN
+>             k500 = k
+>          END IF
+>       END DO
+> 
+>       IF ( ( k850 .EQ. 0 ) .OR. ( k700 .EQ. 0 ) .OR. ( k500 .EQ. 0 ) ) THEN
+>          PRINT '(A)','Error in finding p level for 850, 700 or 500 hPa.'
+>          DO k = 1, kx
+>             PRINT '(A,I3,A,F10.2)','K = ',k,'  PRESSURE = ',p(k)
+>          END DO
+>          PRINT '(A)','Expected 850, 700, and 500 mb values, at least.'
+>          STOP 'not_enough_levels'
+>       END IF
+>     
+>       !  The 850 hPa level is called something special, and interpolated
+>       !  to cross points.  And then, we fill those last rows and columns.
+> 
+>       ht(:,:) = height(:,:,k850)
+> 
+>       ht(:,jx) = ht(:,jxm)
+>       ht(ix,:) = ht(ixm,:)
+>       ter(:,jx) = ter(:,jxm)
+>       ter(ix,:) = ter(ixm,:)
+>       pslv(:,jx) = pslv(:,jxm)
+>       pslv(ix,:) = pslv(ixm,:)
+> 
+>       !  The variable ht is now -ter/ht(850 hPa).  The plot thickens.
+> 
+>       ht(:,:) = -ter(:,:) / ht(:,:)
+> 
+>       !  Make an isothermal assumption to get a first guess at the surface
+>       !  pressure.  This is to tell us which levels to use for the lapse
+>       !  rates in a bit.
+> 
+>       psfc = pslv * (pslv / 85000.) ** ht
+> 
+>       !  Get a pressure more than 100 hPa above the surface - P1.  The
+>       !  P1 is the top of the level that we will use for our lapse rate
+>       !  computations.
+> 
+>       DO j = 1, jx
+>          DO i = 1, ix
+>             IF      ( ( psfc(i,j) - 95000. ) .GE. 0. ) THEN
+>                p1(I,J) = 85000.
+>             ELSE IF ( ( psfc(i,j) - 70000. ) .GE. 0. ) THEN
+>                p1(i,j) = psfc(i,j) - 10000.
+>             ELSE
+>                p1(i,j) = 50000.
+>             END IF
+>          END DO
+>       END DO
+> 
+>       !  Compute virtual temperatures for k850, k700, and k500 layers.  Now
+>       !  you see why we wanted Q on pressure levels, it all is beginning   
+>       !  to make sense.
+> 
+>       t850(:,:) = t(:,:,k850) * (1. + 0.608 * q(:,:,k850))
+>       t700(:,:) = t(:,:,k700) * (1. + 0.608 * q(:,:,k700))
+>       t500(:,:) = t(:,:,k500) * (1. + 0.608 * q(:,:,k500))
+> 
+>       !  Compute two lapse rates between these three levels.  These are
+>       !  environmental values for each (i,j).
+> 
+>       gamma78 = LOG(t850 / t700)  / LOG (85000. / 70000.)
+>       gamma57 = LOG(t700 / t500)  / LOG (70000. / 50000.)
+> 
+>       DO j = 1, jx
+>          DO i = 1, ix
+>             IF      ( ( psfc(i,j) - 95000. ) .GE. 0. ) THEN
+>                t1(i,j) = t850(i,j)
+>             ELSE IF ( ( psfc(i,j) - 85000. ) .GE. 0. ) THEN
+>                t1(i,j) = t700(i,j) * (p1(i,j) / 70000.) ** gamma78(i,j)
+>             ELSE IF ( ( psfc(i,j) - 70000. ) .GE. 0.) THEN 
+>                t1(i,j) = t500(i,j) * (p1(i,j) / 50000.) ** gamma57(i,j)
+>             ELSE
+>                t1(i,j) = t500(i,j)
+>             ENDIF
+>          END DO 
+>       END DO 
+> 
+>       !  From our temperature way up in the air, we extrapolate down to
+>       !  the sea level to get a guess at the sea level temperature.
+> 
+>       tslv = t1 * (pslv / p1) ** (gammarg)
+> 
+>       !  The new surface temperature is computed from the with new sea level 
+>       !  temperature, just using the elevation and a lapse rate.  This lapse 
+>       !  rate is -6.5 K/km.
+> 
+>       tsfc = tslv - gamma * ter
+> 
+>       !  A correction to the sea-level temperature, in case it is too warm.
+> 
+>       TFIXED = TC - 0.005 * (TSFC - TC) ** 2
+> 
+>       DO j = 1, jx  
+>          DO i = 1, ix
+>             l1 = tslv(i,j) .LT. tc
+>             l2 = tsfc(i,j) .LE. tc
+>             l3 = .NOT. l1
+>             IF      ( l2 .AND. l3 ) THEN
+>                tslv(i,j) = tc
+>             ELSE IF ( ( .NOT. l2 ) .AND. l3 ) THEN
+>                tslv(i,j) = tfixed(i,j)
+>             END IF
+>          END DO
+>       END DO
+> 
+>       !  Finally, we can get to the surface pressure.
+> 
+>       p1 = -ter * g / ( rov2 * ( tsfc + tslv ) )
+>       psfc = pslv * EXP(p1)
+> 
+>       !  Surface pressure and sea-level pressure are the same at sea level.
+> 
+>       WHERE ( ABS ( ter )  .LT. 0.1 ) psfc = pslv
+> 
+>    END SUBROUTINE sfcprs
+===================================================================
+regridder/src/module_first_guess_data.F
+diff -r3.1 -r3.2
+11a12,13
+>    REAL              :: deltalon_save
+>    INTEGER           :: nlat
+===================================================================
+regridder/src/module_first_guess_map.F
+diff -r3.2 -r3.4
+35a36,49
+>       REAL                  :: known_longitude_hold
+> 
+>       !  If the center longitude and the known longitude are in different hemispheres, fix that so that the
+>       !  distance is < 180 degrees.
+> 
+>       known_longitude_hold = known_longitude
+>       
+>       if(known_longitude * center_longitude .LT. 0 ) THEN
+>          IF ( center_longitude .LT. 0 ) THEN
+>             known_longitude_hold = known_longitude - 360
+>          ELSE
+>             known_longitude_hold = known_longitude + 360
+>          END IF
+>       END IF
+45c59
+<       xx=r*SIN(cone_factor*(known_longitude-center_longitude)*radians_per_degree)
+---
+>       xx=r*SIN(cone_factor*(known_longitude_hold-center_longitude)*radians_per_degree)
+131c145,146
+<       ( 2. * ATAN(((rr * cone_factor)/(SIN((ABS(SIGN(90.,true_latitude)-true_latitude))*radians_per_degree)*radius_of_earth))**(1./cone_factor) * &
+---
+>       ( 2. * ATAN(((rr * cone_factor)/ &
+>                    (SIN((ABS(SIGN(90.,true_latitude)-true_latitude))*radians_per_degree)*radius_of_earth))**(1./cone_factor) * &
+===================================================================
+regridder/src/proc_grid_store.F
+diff -r3.2 -r3.3
+81c81
+<          IF ( current_var%name .EQ. name ) THEN
+---
+>          IF ( current_var%name(1:8) .EQ. name(1:8) ) THEN
+===================================================================
+regridder/src/proc_ingest_first_guess.F
+diff -r3.15 -r3.20
+7a8
+>    USE gauss
+17c18
+<    REAL , DIMENSION(:,:) , ALLOCATABLE :: array , dum2d , longitude , latitude , tempgrd , landuse
+---
+>    REAL , DIMENSION(:,:) , ALLOCATABLE :: array , dum2d , longitude , latitude , tempgrd , landuse , terrain
+58a60
+>       ALLOCATE(terrain(jxf,ixf))
+180a183
+>             xfcst       =       xfcst * 60.
+187a191
+>             xfcst       =       xfcst * 60.
+204a209
+>          !          4 - Gaussian projection
+207c212,216
+<          IF ( ( llflag .NE. 0 ) .AND. ( llflag .NE. 1 ) .AND. ( llflag .NE. 3 ) .AND. ( llflag .NE. 5 ) ) THEN
+---
+>          IF ( ( llflag .NE. 0 ) .AND. &
+>               ( llflag .NE. 1 ) .AND. &
+>               ( llflag .NE. 3 ) .AND. &
+>               ( llflag .NE. 4 ) .AND. &
+>               ( llflag .NE. 5 ) ) THEN
+434a444,463
+>          ELSE IF ( llflag .EQ. 4 ) THEN
+>             READ ( UNIT=first_guess_file ) startlat, startlon, deltalon , nlat
+> 
+>             !  The startlon value needs to be consistent with the way that the program
+>             !  produces the gridded longitude field for the output domain.  The 
+>             !  longitudes will be between (inclusively) -180 and +180.
+> 
+>             IF ( ( startlon .GT. 180 ) .AND. ( startlon .LE. 360 ) ) THEN
+>                startlon = startlon - 360
+>             END IF
+> 
+>             IF ( rec4%print_echo ) THEN
+>                PRINT '(4F10.4)',           startlat, startlon, deltalat, deltalon
+>             END IF
+> 
+>             IF ( ( field(1:8) .EQ. 'U       ' ) .OR. &
+>                  ( field(1:8) .EQ. 'V       ' ) ) THEN
+>                wind_llflag   = llflag
+>             END IF
+> 
+585a615
+>               ( field(1:7) .EQ. 'SOILHGT'  ) .OR. &
+589,590c619,621
+<             !  Store the latitude and longitude from the TERRAIN file into some
+<             !  more attractively named local variables.
+---
+>             !  Store the latitude, longitude, elevation, land use and the deep soil 
+>             !  temperature from the TERRAIN file into some more attractively named local 
+>             !  variables.
+593a625
+>             terrain   = ter_data(terrain_index)%array
+678c710
+<                   !  this is the soil temperature).
+---
+>                   !  this is the soil temperature or the soil height).
+685c717
+<                             ( field(1:5) .EQ. 'SOILT' ) ) THEN
+---
+>                             ( ( field(1:5) .EQ. 'SOILT' ) .OR. ( field(1:7) .EQ. 'SOILHGT' ) ) ) THEN
+772c804
+<                             ( field(1:5) .EQ. 'SOILT' ) ) THEN
+---
+>                             ( ( field(1:5) .EQ. 'SOILT' ) .OR. ( field(1:7) .EQ. 'SOILHGT' ) ) ) THEN
+803c835
+<                      ELSE IF ( close_count .EQ. 0 ) THEN
+---
+>                      ELSE IF ( ( close_count .EQ. 0 ) .AND. ( field(1:5) .EQ. 'SOILT' ) ) THEN
+808c840
+<                            CALL missing_soil ( yla , dum2d(j,i) )
+---
+>                            CALL missing_soil ( yla , dum2d(j,i) , terrain(j,i) )
+810a843,853
+>                      !  Test #3c: There is nobody close to this grid point, and it is the soil
+>                      !  height.  Guess what, our pre-determined value here is just the terrain
+>                      !  elevation.  Why do this?  The soil temps are going to be adjusted later based
+>                      !  on the difference in elevation between the soil height and the model's elevation.
+>                      !  If we make them identical in this island location, then the adjustment is zero.
+>                      !  Since the annual-mean, deep-soil temperature is already adjusted to the 
+>                      !  elevation, we are set.
+> 
+>                      ELSE IF ( ( close_count .EQ. 0 ) .AND. ( field(1:7) .EQ. 'SOILHGT' ) ) THEN
+>                         dum2d(j,i) = terrain(j,i)
+> 
+830c873,874
+<                            IF      ( ( ABS( array(i_close,j_close)) .GT. small_positive ) .AND. ( ABS( array(i_close,j_close)) .LT. 0.5 ) ) THEN
+---
+>                            IF      ( ( ABS( array(i_close,j_close)) .GT. small_positive ) .AND. &
+>                                      ( ABS( array(i_close,j_close)) .LT. 0.5 ) ) THEN
+833c877,878
+<                            ELSE IF ( ( ABS( array(i_close,j_close)) .GE. 0.5            ) .AND. ( ABS( array(i_close,j_close)) .LT. 0.9 ) ) THEN
+---
+>                            ELSE IF ( ( ABS( array(i_close,j_close)) .GE. 0.5            ) .AND. &
+>                                      ( ABS( array(i_close,j_close)) .LT. 0.9 ) ) THEN
+835c880
+<                               close_data = close_data + 0.0
+---
+>                               close_data = close_data + 0.3
+852c897
+<                      !  There is a predetermined value of 0.25 that is used.
+---
+>                      !  There is a predetermined value of 0.3 that is used.
+856c901
+<                         dum2d(j,i) = 0.25
+---
+>                         dum2d(j,i) = 0.3
+864c909,910
+<                   !  Test #4: All flag values, this is over water and this is a water field.
+---
+>                   !  Test #4: All flag values, this is over water and this is a water field, a test for
+>                   !  the seaice field.
+908c954,955
+<                   !  Test #5a: Some flag values, this is over land and this is a land field.
+---
+>                   !  Test #5a: Some flag values, this is over land and this is a land field, for either
+>                   !  soil temperature or soil height.
+915c962
+<                               ( field(1:5) .EQ. 'SOILT' ) ) THEN
+---
+>                               ( ( field(1:5) .EQ. 'SOILT' ) .OR. ( field(1:7) .EQ. 'SOILHGT' ) ) ) THEN
+959c1006
+<                               close_data = close_data + 0.
+---
+>                               close_data = close_data + 0.3
+970c1017
+<                   !  Test #6: Some flag values, this is over water and this is a water field.
+---
+>                   !  Test #6: Some flag values, this is over water and this is a water field, specifically seaice.
+1017c1064
+<                      PRINT '(A)','This needs to be attended to.'
+---
+>                      PRINT '(A)','This is a situation to which attention needs to be given.'
+1141a1189,1204
+>                   ELSE IF ( llflag .EQ. 4 ) THEN
+>                      CALL llxy_gauss( yla , xlo , xloc(j,i) , yloc(j,i) , wrap , &
+>                                       idim , startlat , startlon , deltalon , nlat )
+> 
+>                      IF ( .NOT. wrap ) THEN
+>                         ilo       = MIN(FLOOR(xloc(j,i)) , idim-1)
+>                      ELSE
+>                         ilo       = idim
+>                      END IF
+>                      
+>                      jla       = MIN(FLOOR(yloc(j,i)) , jdim-1)
+>                      dlon      = xloc(j,i) - ilo
+>                      dlat      = yloc(j,i) - jla
+>                      deltalat  = 1.
+>                      deltalon_save = deltalon
+>                      deltalon  = 1.
+1221c1284,1288
+<             
+---
+> 
+>                   IF ( llflag .EQ. 4 ) THEN
+>                      deltalon = deltalon_save
+>                   END IF
+> 
+===================================================================
+regridder/src/proc_list_to_array.F
+diff -r3.2 -r3.8
+2a3
+>    USE diags
+18c19,30
+<    LOGICAL                   :: any_surface_data
+---
+>    LOGICAL                   :: any_surface_data   , &
+>                                 any_surface_data_t , &
+>                                 any_surface_data_u , &
+>                                 any_surface_data_v , &
+>                                 any_surface_data_r , &
+>                                 any_surface_data_z
+> 
+>    !  Pressure sorting fields.
+> 
+>    REAL , ALLOCATABLE , DIMENSION(:) :: combined_pressure_levels , dummy
+>    INTEGER :: count , dummy_count , inner , outer , number_of_combined_levels , i
+>    REAL :: hold
+24a37,45
+>    !  Data needed to generate missing surface fields.
+> 
+>    INTEGER :: loop 
+>    INTEGER :: index_t = -1 , index_u = -1 , index_v = -1 , index_r = -1 , index_h = -1
+>    INTEGER :: index_z = -1 , index_p = -1
+>    INTEGER :: ii , jj , kk 
+>    REAL , ALLOCATABLE , DIMENSION(:,:,:) :: q
+>    REAL , ALLOCATABLE , DIMENSION(:,:)   :: psfc
+> 
+39c60,65
+<    any_surface_data = .FALSE.
+---
+>    any_surface_data_t = .FALSE.
+>    any_surface_data_u = .FALSE.
+>    any_surface_data_v = .FALSE.
+>    any_surface_data_r = .FALSE.
+>    any_surface_data_z = .FALSE.
+>    any_surface_data   = .FALSE.
+47,49c73,83
+<       IF ( ( current_var%num_levels .GT. 1 ) .AND. ( .NOT. any_surface_data ) ) THEN
+<          IF ( ABS(current_var%slab%level-200100.) .LT. 1 ) THEN
+<             any_surface_data = .TRUE.
+---
+>       IF ( current_var%num_levels .GT. 1 ) THEN
+>          IF      ( ( ABS(current_var%slab%level-200100.) .LT. 1 ) .AND. ( current_var%name(1:8) .EQ. 'T       ' ) ) THEN
+>             any_surface_data_t = .TRUE.
+>          ELSE IF ( ( ABS(current_var%slab%level-200100.) .LT. 1 ) .AND. ( current_var%name(1:8) .EQ. 'U       ' ) ) THEN
+>             any_surface_data_u = .TRUE.
+>          ELSE IF ( ( ABS(current_var%slab%level-200100.) .LT. 1 ) .AND. ( current_var%name(1:8) .EQ. 'V       ' ) ) THEN
+>             any_surface_data_v = .TRUE.
+>          ELSE IF ( ( ABS(current_var%slab%level-200100.) .LT. 1 ) .AND. ( current_var%name(1:8) .EQ. 'RH      ' ) ) THEN
+>             any_surface_data_r = .TRUE.
+>          ELSE IF ( ( ABS(current_var%slab%level-200100.) .LT. 1 ) .AND. ( current_var%name(1:8) .EQ. 'HGT     ' ) ) THEN
+>             any_surface_data_z = .TRUE.
+60c94,103
+<    IF ( .NOT. any_surface_data ) THEN
+---
+>    any_surface_data = any_surface_data_t .OR. &
+>                       any_surface_data_u .OR. &
+>                       any_surface_data_v .OR. &
+>                       any_surface_data_r .OR. &
+>                       any_surface_data_z
+> 
+>    IF ( .NOT. ( any_surface_data_t .AND. &
+>                 any_surface_data_u .AND. &
+>                 any_surface_data_v .AND. &
+>                 any_surface_data_r ) ) THEN
+62,68c105,120
+<       PRINT '(A)','****************************************************************************'
+<       PRINT '(A)','****************************************************************************'
+<       PRINT '(A)','There is no surface data in your data set.'
+<       PRINT '(A)','The 1000 hPa level data is being used as the surface data for all fields.'
+<       PRINT '(A)','Make sure to set the flag USESFC=.FALSE. in the INTERPF namelist.input file.'
+<       PRINT '(A)','****************************************************************************'
+<       PRINT '(A)','****************************************************************************'
+---
+>       PRINT '(A)','*************************************************************************'
+>       PRINT '(A)','There is some missing surface data in the 3d arrays in your data set.'
+>       PRINT '(A)','The surrounding pressure level data is being interpolated to the surface.'
+>       IF ( .NOT. any_surface_data_t ) THEN
+>          PRINT '(A)','Surface temperature is missing.'
+>       END IF
+>       IF ( .NOT. any_surface_data_u ) THEN
+>          PRINT '(A)','Surface wind (u-component) is missing.'
+>       END IF
+>       IF ( .NOT. any_surface_data_v ) THEN
+>          PRINT '(A)','Surface wind (v-component) is missing.'
+>       END IF
+>       IF ( .NOT. any_surface_data_r ) THEN
+>          PRINT '(A)','Surface relative humidity is missing.'
+>       END IF
+>       PRINT '(A)','*************************************************************************'
+71a124,188
+>    !  Create a pressure array that can hold maximum number of proposed levels: 
+>    !  original + new + 1 (possibly needed for the surface in case one is not available).
+> 
+>    ALLOCATE ( combined_pressure_levels(number_of_original_levels+rec2%number_of_new_levels+1))
+>    combined_pressure_levels = -1
+>    ALLOCATE ( dummy                   (number_of_original_levels+rec2%number_of_new_levels+1))
+>    dummy                    = -1
+> 
+>    !  Fill in the new + original pressure levels in the dummy array.  These aren't sorted or checked
+>    !  for duplicates, we just want a list.  We can sort afterwards.
+> 
+>    dummy(1:rec2%number_of_new_levels) = rec2%new_levels(1:rec2%number_of_new_levels)
+>    current_var => head
+>    find_original_p_levels : DO WHILE ( ASSOCIATED(current_var) ) 
+>       IF ( number_of_original_levels .EQ. current_var%num_levels ) THEN
+>          dummy_count = 0
+>          current_slab => current_var%slab
+>          find_all_p : DO WHILE ( ASSOCIATED ( current_slab ) ) 
+>             dummy_count = dummy_count + 1
+>             dummy(rec2%number_of_new_levels+dummy_count) = current_slab%level
+>             current_slab => current_slab%next_slab
+>          END DO find_all_p
+>          EXIT find_original_p_levels
+>       ELSE
+>          current_var => current_var%next_variable 
+>       END IF
+>    END DO find_original_p_levels
+> 
+>    !  Now we sort the dummy array.  This is such a short vector, that a simple bubble
+>    !  sort method can be used.
+> 
+>    outer_sort : DO outer = 1 , number_of_original_levels + rec2%number_of_new_levels - 1
+>       inner_sort : DO inner = outer+1 , number_of_original_levels + rec2%number_of_new_levels
+>          IF ( dummy(inner) .GT. dummy(outer) ) THEN
+>             hold = dummy(outer)
+>             dummy(outer) = dummy(inner)
+>             dummy(inner) = hold
+>          END IF
+>       END DO inner_sort
+>    END DO outer_sort
+> 
+>    !  Stick the sorted pressures into a final array, without duplicates.
+> 
+>    IF      ( .NOT. any_surface_data ) THEN
+>       combined_pressure_levels(1) = 200100.
+>       count = 1
+>       DO i = 1 , number_of_original_levels + rec2%number_of_new_levels
+>          IF ( ABS(dummy(i) - combined_pressure_levels(count) ) .GT. 1. ) THEN
+>             count = count + 1
+>             combined_pressure_levels(count) = dummy(i) 
+>          END IF
+>       END DO
+>    ELSE
+>       count = 1
+>       DO i = 1 , number_of_original_levels + rec2%number_of_new_levels
+>          IF ( ABS(dummy(i) - combined_pressure_levels(count) ) .GT. 1. ) THEN
+>             count = count + 1
+>             combined_pressure_levels(count) = dummy(i) 
+>          END IF
+>       END DO
+>       count = count - 1
+>    END IF
+> 
+>    number_of_combined_levels = count
+> 
+264,266c381
+<          IF ( rec2%number_of_new_levels .GT. 0 ) THEN
+<             vertically_interpolate = .TRUE.
+<          END IF
+---
+>          vertically_interpolate = .TRUE.
+298c413
+<                !  Loop over all possible new levels to interpolate to.
+---
+>                !  Loop over all possible new levels to interpolate to (skip the surface, index = 1).
+300c415
+<                check_for_new_levels : DO new_levels_index = 1 , rec2%number_of_new_levels
+---
+>                check_for_new_levels : DO new_levels_index = 2 , number_of_combined_levels
+304c419
+<                   pressure_middle = rec2%new_levels(new_levels_index)
+---
+>                   pressure_middle = combined_pressure_levels(new_levels_index)
+393a509,628
+> 
+>    !  All of the data is now stored in the new easy-to-open arrays.  If we do not have
+>    !  any surface data, this is the place we can vertically interpolate in a trivial
+>    !  fashion, as we have everything that we want.
+> 
+>    IF ( ( .NOT. any_surface_data_t ) .OR. &
+>         ( .NOT. any_surface_data_u ) .OR. &
+>         ( .NOT. any_surface_data_v ) .OR. &
+>         ( .NOT. any_surface_data_r ) ) THEN
+> 
+>       !  Where, oh where are the 3d fields?
+>       !  Oh where, oh where can they be?
+> 
+>       find_names_3d : DO loop = 1 , fg_variables_up_index
+>          IF      ( all_names_up(loop)(1:3) .EQ. 'T  ' ) THEN
+>             index_t = loop
+>          ELSE IF ( all_names_up(loop)(1:3) .EQ. 'U  ' ) THEN
+>             index_u = loop
+>          ELSE IF ( all_names_up(loop)(1:3) .EQ. 'V  ' ) THEN
+>             index_v = loop
+>          ELSE IF ( all_names_up(loop)(1:3) .EQ. 'RH ' ) THEN
+>             index_r = loop
+>          ELSE IF ( all_names_up(loop)(1:3) .EQ. 'HGT' ) THEN
+>             index_h = loop
+>          END IF
+>       END DO find_names_3d
+> 
+>       !  Did we find all of the anticipated 3d arrays?
+> 
+>       IF ( ( index_t .EQ. -1 ) .OR. &
+>            ( index_u .EQ. -1 ) .OR. &
+>            ( index_v .EQ. -1 ) .OR. &
+>            ( index_r .EQ. -1 ) .OR. &
+>            ( index_h .EQ. -1 ) ) THEN
+>          PRINT '(A)','Troubles finding the necessary 3d arrays to make the surface fields.'
+>          PRINT '(A,I2,A)','Temperature         index = ',index_t,'.'
+>          PRINT '(A,I2,A)','U-wind              index = ',index_u,'.'
+>          PRINT '(A,I2,A)','V-wind              index = ',index_v,'.'
+>          PRINT '(A,I2,A)','Relative Humidity   index = ',index_r,'.'
+>          PRINT '(A,I2,A)','Geopotential Height index = ',index_h,'.'
+>          STOP 'Could_not_find_3d_fields'
+>       END IF
+> 
+>       !  And now the 2d arrays.
+> 
+>       find_names_ter : DO loop = 1 , SIZE(ter_data)
+>          IF      ( ter_data(loop)%name_info(1:8) .EQ. 'TERRAIN ' ) THEN
+>             index_z = loop
+>          END IF
+>       END DO find_names_ter
+> 
+>       find_names_2d : DO loop = 1 , fg_variables_sfc_index
+>          IF      ( ( all_names_sfc(loop)(1:8) .EQ. 'PMSL    ' ) .OR. &
+>                    ( all_names_sfc(loop)(1:8) .EQ. 'PRESSURE' ) ) THEN
+>             index_p = loop
+>          END IF
+>       END DO find_names_2d
+> 
+>       !  Did we find all of the anticipated arrays?
+> 
+>       IF ( ( index_z .EQ. -1 ) .OR. &
+>            ( index_p .EQ. -1 ) ) THEN
+>          PRINT '(A)','Troubles finding the necessary 2d arrays to make the surface fields.'
+>          PRINT '(A,I2,A)','Terrain              index = ',index_z,'.'
+>          PRINT '(A,I2,A)','Sea Level Pressure   index = ',index_p,'.'
+>          STOP 'Could_not_find_2d_fields'
+>       END IF
+> 
+>       !  How big is our expected data to be?
+> 
+>       ii = SIZE ( all_3d , DIM=1 ) 
+>       jj = SIZE ( all_3d , DIM=2 ) 
+>       kk = SIZE ( all_3d , DIM=3 ) 
+> 
+>       !  We need a dummy array for mixing ratio and for the surface pressure.
+> 
+>       ALLOCATE(q(ii,jj,kk))
+>       ALLOCATE(psfc(ii,jj))
+> 
+>       !  First, we need to get the mixing ratio on pressure surfaces, but not at the surface level (so
+>       !  we start at index value 2).
+> 
+>       CALL mxratprs ( all_3d(:,:,:,index_r) , all_3d(:,:,:,index_t) , combined_pressure_levels , &
+>                       ii , jj , kk , q )
+> 
+>       !  With the mixing ratio, we can compute the surface pressure.
+> 
+>       CALL sfcprs ( all_3d(:,:,2:,index_t) , q(:,:,2:) , all_3d(:,:,2:,index_h) , &
+>                     all_2d(:,:,index_p) , ter_data(index_z)%array , combined_pressure_levels(2:) , &
+>                     ii , jj , kk , psfc )
+> 
+>       !  Compute the surface values through linear in pressure interpolation.
+>  
+>       IF ( .NOT. any_surface_data_t ) THEN
+>          CALL make_surface ( all_3d(:,:,:,index_t) , psfc , combined_pressure_levels , ii , jj , kk , 1 , all_3d(:,:,1,index_t) ) 
+>       END IF
+> 
+>       IF ( .NOT. any_surface_data_u ) THEN
+>          CALL make_surface ( all_3d(:,:,:,index_u) , psfc , combined_pressure_levels , ii , jj , kk , 0 , all_3d(:,:,1,index_u) ) 
+>       END IF
+> 
+>       IF ( .NOT. any_surface_data_v ) THEN
+>          CALL make_surface ( all_3d(:,:,:,index_v) , psfc , combined_pressure_levels , ii , jj , kk , 0 , all_3d(:,:,1,index_v) ) 
+>       END IF
+> 
+>       IF ( .NOT. any_surface_data_r ) THEN
+>          CALL make_surface ( all_3d(:,:,:,index_r) , psfc , combined_pressure_levels , ii , jj , kk , 1 , all_3d(:,:,1,index_r) ) 
+>       END IF
+> 
+>       !  Get rid of the dummy allocated arrays that were used in the surface computation.
+> 
+>       DEALLOCATE (q)
+>       DEALLOCATE (psfc)
+> 
+>    END IF
+> 
+>    !  Zap the temporary space used for the pressure array.
+> 
+>    DEALLOCATE (combined_pressure_levels)
+>    DEALLOCATE (dummy)
+===================================================================
+regridder/src/proc_make_dot_point_data.F
+diff -r3.7 -r3.12
+7a8
+>    USE util
+20c21
+<    INTEGER :: index_soilt010 , index_soilt200 , index_soilt400 , &
+---
+>    INTEGER :: index_soilt010 , index_soilt040 , index_soilt100 , index_soilt200 , index_soilt400 , &
+22c23,24
+<               index_tseasfc , index_landuse , index_seaice , index_tempgrd
+---
+>               index_tseasfc , index_landuse , index_seaice , index_tempgrd, index_soilhgt , &
+>               index_skintemp , index_terrain
+207c209
+<       IF ( all_names_sfc(i)(1:8) .EQ. 'TSEASFC ' ) sst_test       = .TRUE.
+---
+>       IF ( ( all_names_sfc(i)(1:8) .EQ. 'TSEASFC ' ) .OR. ( all_names_sfc(i)(1:8) .EQ. 'SKINTEMP' ) ) sst_test       = .TRUE.
+236c238
+<       PRINT '(A,L8)','TSEASFC  sst_test =',       sst_test
+---
+>       PRINT '(A,L8)','TSEASFC or SKINTEMP sst_test =',       sst_test
+287a290,291
+>    index_soilt040 = -1
+>    index_soilt100 = -1
+293a298,299
+>    index_soilhgt  = -1
+>    index_terrain  = -1
+296a303,306
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'SOILT040' ) THEN
+>          index_soilt040 = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'SOILT100' ) THEN
+>          index_soilt100 = i   
+310a321,322
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'SKINTEMP' ) THEN
+>          index_skintemp  = i   
+316a329,334
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'SOILHGT ' ) THEN
+>          index_soilhgt  = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'TERRAIN ' ) THEN
+>          index_terrain  = i   
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'TEMPGRD ' ) THEN
+>          index_tempgrd  = i   
+320c338,346
+<    !  If there is no soil temperature field and no sea ice field, then we
+---
+>    !  Now, if we have a skin temperature but we do not have a real SST, 
+>    !  then we pretend that the skin temperature is the SST.
+> 
+>    IF ( ( index_skintemp .NE. -1 ) .AND. ( index_tseasfc .EQ. -1 ) ) THEN
+>       index_tseasfc = index_skintemp
+>       PRINT '(A)','No real SST data found, but we can use the skin temperature instead.'
+>    END IF
+> 
+>    !  If there is no sea ice field, then we
+327d352
+<              ( index_soilt010  .EQ. -1     ) .AND. &
+341d365
+<              ( index_soilt010  .EQ. -1     ) .AND. &
+355d378
+<              ( index_soilt010  .EQ. -1     ) .AND. &
+370,372c393,480
+<    !  Fix soil data at the 3 expected levels.  If there is seaice, set the
+<    !  soil temp to the sst.  If there is NO seaice, set the soil temperatures
+<    !  to 0.
+---
+>    !  Adjust soil temperatures based on difference between the interpoated soil elevation and 
+>    !  and the model terrain.  Use a -6 K km{-1}  lapse rate.
+> 
+>    IF      ( ( index_soilhgt .NE. -1 ) .AND. &
+>              ( index_seaice  .NE. -1 ) ) THEN
+> 
+>       IF ( index_soilt010 .NE. -1 ) THEN
+>          WHERE ( ( all_2d(:,:,index_landuse) .NE. bhi(23,1) ) .OR. &
+>                  ( all_2d(:,:,index_seaice)  .EQ. 1         ) ) 
+>             all_2d(:,:,index_soilt010) = all_2d(:,:,index_soilt010) &
+>                                          -0.0065 * ( ter_data(terrain_index)%array - all_2d(:,:,index_soilhgt) )
+>          END WHERE
+>       END IF
+> 
+>       IF ( index_soilt040 .NE. -1 ) THEN
+>          WHERE ( ( all_2d(:,:,index_landuse) .NE. bhi(23,1) ) .OR. &
+>                  ( all_2d(:,:,index_seaice)  .EQ. 1         ) ) 
+>             all_2d(:,:,index_soilt040) = all_2d(:,:,index_soilt040) &
+>                                          -0.0065 * ( ter_data(terrain_index)%array - all_2d(:,:,index_soilhgt) )
+>          END WHERE
+>       END IF
+> 
+>       IF ( index_soilt100 .NE. -1 ) THEN
+>          WHERE ( ( all_2d(:,:,index_landuse) .NE. bhi(23,1) ) .OR. &
+>                  ( all_2d(:,:,index_seaice)  .EQ. 1         ) ) 
+>             all_2d(:,:,index_soilt100) = all_2d(:,:,index_soilt100) &
+>                                          -0.0065 * ( ter_data(terrain_index)%array - all_2d(:,:,index_soilhgt) )
+>          END WHERE
+>       END IF
+> 
+>       IF ( index_soilt200 .NE. -1 ) THEN
+>          WHERE ( ( all_2d(:,:,index_landuse) .NE. bhi(23,1) ) .OR. &
+>                  ( all_2d(:,:,index_seaice)  .EQ. 1         ) ) 
+>             all_2d(:,:,index_soilt200) = all_2d(:,:,index_soilt200) &
+>                                          -0.0065 * ( ter_data(terrain_index)%array - all_2d(:,:,index_soilhgt) )
+>          END WHERE
+>       END IF
+> 
+>       IF ( index_soilt400 .NE. -1 ) THEN
+>          WHERE ( ( all_2d(:,:,index_landuse) .NE. bhi(23,1) ) .OR. &
+>                  ( all_2d(:,:,index_seaice)  .EQ. 1         ) ) 
+>             all_2d(:,:,index_soilt400) = all_2d(:,:,index_soilt400) &
+>                                          -0.0065 * ( ter_data(terrain_index)%array - all_2d(:,:,index_soilhgt) )
+>          END WHERE
+>       END IF
+> 
+>    ELSE IF ( ( index_soilhgt .NE. -1 ) .AND. &
+>              ( index_seaice  .EQ. -1 ) ) THEN
+> 
+>       IF ( index_soilt010 .NE. -1 ) THEN
+>          WHERE   ( all_2d(:,:,index_landuse) .NE. bhi(23,1) ) 
+>             all_2d(:,:,index_soilt010) = all_2d(:,:,index_soilt010) &
+>                                          -0.0065 * ( ter_data(terrain_index)%array - all_2d(:,:,index_soilhgt) )
+>          END WHERE
+>       END IF
+> 
+>       IF ( index_soilt040 .NE. -1 ) THEN
+>          WHERE   ( all_2d(:,:,index_landuse) .NE. bhi(23,1) ) 
+>             all_2d(:,:,index_soilt040) = all_2d(:,:,index_soilt040) &
+>                                          -0.0065 * ( ter_data(terrain_index)%array - all_2d(:,:,index_soilhgt) )
+>          END WHERE
+>       END IF
+> 
+>       IF ( index_soilt100 .NE. -1 ) THEN
+>          WHERE   ( all_2d(:,:,index_landuse) .NE. bhi(23,1) ) 
+>             all_2d(:,:,index_soilt100) = all_2d(:,:,index_soilt100) &
+>                                          -0.0065 * ( ter_data(terrain_index)%array - all_2d(:,:,index_soilhgt) )
+>          END WHERE
+>       END IF
+> 
+>       IF ( index_soilt200 .NE. -1 ) THEN
+>          WHERE   ( all_2d(:,:,index_landuse) .NE. bhi(23,1) ) 
+>             all_2d(:,:,index_soilt200) = all_2d(:,:,index_soilt200) &
+>                                          -0.0065 * ( ter_data(terrain_index)%array - all_2d(:,:,index_soilhgt) )
+>          END WHERE
+>       END IF
+> 
+>       IF ( index_soilt400 .NE. -1 ) THEN
+>          WHERE   ( all_2d(:,:,index_landuse) .NE. bhi(23,1) ) 
+>             all_2d(:,:,index_soilt400) = all_2d(:,:,index_soilt400) &
+>                                          -0.0065 * ( ter_data(terrain_index)%array - all_2d(:,:,index_soilhgt) )
+>          END WHERE
+>       END IF
+> 
+>    END IF
+>          
+>    !  Another fix for soil temperature at the expected levels.  If there is seaice, set the
+>    !  soil temp to the sst over water.
+379,380c487
+<          WHERE ( ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) ) .AND. &
+<                  ( all_2d(:,:,index_seaice)  .GT. 0.5         ) )  
+---
+>          WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+383,385c490,510
+<          WHERE ( ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) ) .AND. &
+<                  ( all_2d(:,:,index_seaice)  .LT. 0.5         ) )  
+<             all_2d(:,:,index_soilt010) = 0
+---
+>          IF ( index_tempgrd .NE. -1 ) THEN 
+>             WHERE ( all_2d(:,:,index_soilt010) .LT. 200 ) 
+>                all_2d(:,:,index_soilt010) = all_2d(:,:,index_tempgrd)
+>             END WHERE
+>          END IF
+>       END IF
+> 
+>       IF ( index_soilt040 .NE. -1 ) THEN
+>          WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>             all_2d(:,:,index_soilt040) = all_2d(:,:,index_tseasfc)
+>          END WHERE
+>          IF ( index_tempgrd .NE. -1 ) THEN 
+>             WHERE ( all_2d(:,:,index_soilt040) .LT. 200 ) 
+>                all_2d(:,:,index_soilt040) = all_2d(:,:,index_tempgrd)
+>             END WHERE
+>          END IF
+>       END IF
+> 
+>       IF ( index_soilt100 .NE. -1 ) THEN
+>          WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>             all_2d(:,:,index_soilt100) = all_2d(:,:,index_tseasfc)
+387,388c512,516
+<          WHERE ( all_2d(:,:,index_soilt010) .LT. 200 ) all_2d(:,:,index_soilt010) = 0
+<          WHERE ( all_2d(:,:,index_soilt010) .LT. 200 ) all_2d(:,:,index_tempgrd)  = 0
+---
+>          IF ( index_tempgrd .NE. -1 ) THEN 
+>             WHERE ( all_2d(:,:,index_soilt100) .LT. 200 ) 
+>                all_2d(:,:,index_soilt100) = all_2d(:,:,index_tempgrd)
+>             END WHERE
+>          END IF
+392,393c520
+<          WHERE ( ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) ) .AND. &
+<                  ( all_2d(:,:,index_seaice)  .GT. 0.5         ) )  
+---
+>          WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+396,400c523,527
+<          WHERE ( ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) ) .AND. &
+<                  ( all_2d(:,:,index_seaice)  .LT. 0.5         ) )  
+<             all_2d(:,:,index_soilt200) = 0
+<          END WHERE
+<          WHERE ( all_2d(:,:,index_soilt200) .LT. 200 ) all_2d(:,:,index_soilt200) = 0
+---
+>          IF ( index_tempgrd .NE. -1 ) THEN 
+>             WHERE ( all_2d(:,:,index_soilt200) .LT. 200 ) 
+>                all_2d(:,:,index_soilt200) = all_2d(:,:,index_tempgrd)
+>             END WHERE
+>          END IF
+404,405c531
+<          WHERE ( ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) ) .AND. &
+<                  ( all_2d(:,:,index_seaice)  .GT. 0.5         ) )  
+---
+>          WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+408,412c534,538
+<          WHERE ( ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) ) .AND. &
+<                  ( all_2d(:,:,index_seaice)  .LT. 0.5         ) )  
+<             all_2d(:,:,index_soilt400) = 0
+<          END WHERE
+<          WHERE ( all_2d(:,:,index_soilt400) .LT. 200 ) all_2d(:,:,index_soilt400) = 0
+---
+>          IF ( index_tempgrd .NE. -1 ) THEN 
+>             WHERE ( all_2d(:,:,index_soilt400) .LT. 200 ) 
+>                all_2d(:,:,index_soilt400) = all_2d(:,:,index_tempgrd)
+>             END WHERE
+>          END IF
+===================================================================
+regridder/src/proc_make_small_header.F
+diff -r3.0 -r3.3
+90c90
+<          sh_up(i)%description  = 'Dot point geopotential height                 '
+---
+>          sh_up(i)%description  = 'Cross point geopotential height               '
+145a146
+>                 ( all_names_sfc(i)(1:8) .EQ. 'SKINTEMP' ) .OR. &
+155a157,160
+>                 ( all_names_sfc(i)(1:8) .EQ. 'WEASD   ' ) .OR. &
+>                 ( all_names_sfc(i)(1:8) .EQ. 'SNOWCOVR' ) .OR. &
+>                 ( all_names_sfc(i)(1:8) .EQ. 'SNODEPTH' ) .OR. &
+>                 ( all_names_sfc(i)(1:8) .EQ. 'SNODPTH ' ) .OR. &
+180,182c185
+<                 ( all_names_sfc(i)(1:8) .EQ. 'LANDSEAD' ) .OR. &
+<                 ( all_names_sfc(i)(1:8) .EQ. 'WEASD   ' ) .OR. &
+<                 ( all_names_sfc(i)(1:8) .EQ. 'TEMPGRD ' ) ) THEN
+---
+>                 ( all_names_sfc(i)(1:8) .EQ. 'LANDSEAD' ) ) THEN
+===================================================================
+regridder/src/proc_output.F
+diff -r3.3 -r3.7
+19c19
+<    INTEGER :: index_land , index_seaice , index_tseasfc
+---
+>    INTEGER :: index_land , index_seaice , index_tseasfc , index_skintemp
+108a109,110
+>    index_tseasfc  = -1
+>    index_skintemp = -1
+117a120,121
+>       ELSE IF ( all_names_sfc(name_loop)(1:8) .EQ. 'SKINTEMP' ) THEN
+>          index_skintemp = name_loop
+120a125,130
+>    !  Do we have to pretend we have the SST?
+> 
+>    IF ( ( index_tseasfc .EQ. -1 ) .AND. ( index_skintemp .NE. -1 ) ) THEN
+>       index_tseasfc = index_skintemp
+>    END IF
+> 
+173a184
+>            ( all_names_sfc(name_loop)(1:8) .EQ. 'SOILHGT ' ) .OR. &
+===================================================================
+regridder/src/regridder.F
+diff -r3.6 -r3.7
+3c3
+< !  southern hemisphere tests
+---
+> !  southern hemisphere polar tests
+22a23,24
+> !     ELSE IF (llflag.eq.4) THEN
+> !        WRITE (iunit) startlat, startlon, deltalon , nlat
+49a52
+> !     INTEGER           :: nlat
+105a109
+> !     NLAT is the number of latitude loops between the pole and the equator
+114,216d117
+< 
+< !  Feb 98 - Start coding based upon Kevin Manning's I/O design
+< !  Mar 98 - Testing complete with ERA and NNRP.
+< !           COARSE/FINE grid
+< !           Differing size grids in single file
+< !           +/- delta latitude/longitude
+< !           Replicated field names checked.
+< !           Multiple levels of Pressure checked.
+< !           Multiple time periods.
+< !           Out of order output OK due to pablum.f crutch.
+< !           Gaussian grids assumed to be regular lat/lon.
+< !           Works with traditional TERRAIN file (elevation + land use)
+< !              or newer version with zillions of terrestial fields.
+< !           Put into makefile structure
+< !           Correct the cross/dot of the new TERRAIN file fields
+< !           Graciously STOPs if the terrain, namelist.input, or
+< !              first_guess file is missing, and with a PRINT statement
+< !  Apr 98 - Check for duplicate pressures in the new levels and in the
+< !              original first guess data
+< !           Error checks for namelist problems: ending date prior to
+< !              starting date, out of order new pressures, duplicated
+< !              pressure levels
+< !           Reasonable tests for the masked fields, 8 so far.
+< !           An expansion of what was considered reasonable for the masked
+< !              fields tests.  The interpolation is now also on cross points
+< !              to match the terrain land mask.
+< !           Allow different versions of data from first guess fields to be
+< !              used.
+< !           Allow Lambert conformal cone factor computation to use a 
+< !              single tangent cone
+< !           Include Lambert conformal projection for input data type
+< !           Use true latitude in the llxy routines
+< !           Compute MM5-ish information from first guess projection 
+< !           Rotate input winds to met projection from map projection
+< !           Check expected date (from NAMELIST) with the received
+< !              date (from the first guess header)
+< !  May 98 - Polar stereographic projection from the information in the
+< !              GRIB document
+< !           Use SST data from the traditional NCAR NAVY archives
+< !           Test to make sure the required 3d data is available
+< !  Jun 98 - It is now regridder, no more big_d & dirty_d
+< !           Enhanced the Makefile structure for easier cross-machine
+< !              compilations
+< !           Split the configuration files apart
+< !  Aug 98 - Changed the input CHARACTER strings to multiples of 8 bytes
+< !              so that non-byte boundary problems are allayed
+< !  Nov 98 - Fixed the limited area for which the longitudinal interpolation
+< !              was able to function.
+< !  Dec 98 - Fixed the computation of the difference in longitude from
+< !              the center point to each (i,j).  This one was a biggy.
+< !  Feb 99 - The 10-digit date computations were removed in favor of
+< !              character strings dates.
+< !           Namelist date interval is changed to seconds to be consistent with
+< !              other programs.
+< !           Removed spurious print about missing soil temperature wrt 
+< !              the implications concerning the masked interpolation.
+< !           Duplicated pressures (same value in the namelist and in the 
+< !              first-guess field) are acceptable
+< !           Map projection information for wind fields is saved for the
+< !              rotation from the first-guess map projection.
+< !           Corrections for ptop wrt the first-guess pressure levels -
+< !              mainly, it has to be an available pressure level.
+< !  Mar 99 - Modified met_to_map and map_to_met for large domains (zapped
+< !              the 3d temporary variables and made them 2d)
+< !           Changed call from unexpand2(:,:,loop) to (1,1,loop), probably
+< !              this was a bug
+< !  Apr 99 - Moved data to v3 format, but terrain is "generated" v3, so still
+< !              need to compute the lat/lon and other terrestial fields
+< !           All output pressure arrays in Pa
+< !           Grid distance on input assumed to be in m
+< !           Location of water index used for computing land mask
+< !           Big header modified to allow # of vertical levels in output
+< !           Small header modified to increase size of staggering to 4 bytes
+< !           Correction to input first-guess name/units/desc to 9/25/46 chars
+< !           Modified I/O for IVERSION=2 to have reasonable name/units/desc
+< !           Allowed wrapping for lat/lon data when interpolation is between the
+< !              last and first grid point in a latitude loop
+< !           Modified small header to put in the start_dims
+< !           u,v are interpolated as dot point, other fields are interpolated
+< !              as cross point fields
+< !           Last row and column of lat/lon filled in for the cross point
+< !              interpolation
+< !           The height field staggering string is now for cross points
+< !           Pressure is now output as real, skipping first value (200100) and
+< !              substituting 100100
+< !           Print out modified for RAWINS users - print_f77_info in namelist
+< !           Output frequency (s) in bhr(1,2), which moves ptop to bhr(2,2)
+< !  May 99 - Ingests "real" v3 terrain data, including terrestial information
+< !           No computation for lat/lon, Coriolis, or map scale factors from 
+< !              terrain data
+< !  Jun 99 - Remove snow cover if the location is the water_index
+< !           Forgot to add bhi(1,1) to output
+< !           Output file is now called REGRID_DOMAINx, where "x" is domain # ID
+< !  Sep 99 - Allow single-time period first-guess files for such fields as
+< !              SST and SNOW
+< !           Allow snow cover (put it back!) over water
+< !           Several soil temp fixes: 1) if seaice exists soilt = sst, 2) if
+< !              soilt < 200 then soilt = 0, 3) use tempgrd if no valid soilt
+< !           Fix u,v input rotation 
+< !  Oct 99 - Fix supplied when TEMPGRD not available for island-type SOILT
+< !           Swap priorities for "root" and "constant" files
+< !           Initiialize filename to blank to prevent overwriting
+< !  Nov 99 - Allow Mercator projection data for input

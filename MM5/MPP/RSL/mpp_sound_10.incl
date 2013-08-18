@@ -1,0 +1,14 @@
+CSTART   mpp_sound_10.incl
+#ifdef MPP1
+#  ifdef UPSHOT
+C   This is the close of a timing event started in mpp_solve3_50.incl
+C   included from solve3.F
+      call mm5_logevent(32)
+#  endif
+      IF (CSNEST(INEST).LT.0.) THEN
+        CSNEST(INEST) = T0(1,1,KX)
+        CALL RSL_MON_BCAST(CSNEST(INEST),RWORDSIZE)
+      ENDIF
+      CS=SQRT(GAMMA*R*CSNEST(INEST))
+#endif
+CEND   mpp_sound_10.incl

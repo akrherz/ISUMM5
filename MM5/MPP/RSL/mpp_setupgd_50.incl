@@ -1,0 +1,9 @@
+CSTART   mpp_setupgd_50.incl
+        DO J = 1, JL
+          DO I = 1, IL
+            BLWDT(I,J) = 1.
+            BLWCS(I,J) = 1.
+          ENDDO
+        ENDDO
+
+CEND   mpp_setupgd_50.incl

@@ -1,0 +1,5 @@
+
+- Added a NOLEAP configure.user option.
+  When set to 1, February is hard coded with 28 days
+
+- Added Exponential Boundary Conditions (EXPOBC) option

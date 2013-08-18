@@ -1,0 +1,109 @@
+4LFTXsfc.      4-layer LiFTed indeX
+CFNLFclm.      Cloud Forcing Net Longwave Flux for total atmospheric column
+CFNLFsfc.      Cloud Forcing Net Longwave Flux at surface
+CFNLFtoa.      Cloud Forcing Net Longwave Flux at top of atmosphere
+CFNSFclm.      Cloud Forcing Net Solar Flux for total atmospheric column
+CFNSFsfc.      Cloud Forcing Net Solar Flux at surface
+CFNSFtoa.      Cloud Forcing Net Solar Flux at top of atmosphere
+CPRATsfc.      Convective Precipitation RATe
+CSDLFsfc.      Clear Sky Downward Longwave Flux at surface
+CSDSFsfc.      Clear Sky Downward Solar Flux at surface
+CSULFtoa.      Clear Sky Upward Longwave Flux at top of atmosphere
+CSUSFsfc.      Clear Sky Upward Solar Flux at surface
+CSUSFtoa.      Clear Sky Upward Solar Flux at top of atmosphere
+CWORKclm.      Cloud WORK Function
+DLWRFsfc.      Downward LongWave Radiation Flux at surface
+DSWRFsfc.      Downward Solar Radiation Flux at surface
+DSWRFtoa.      Downward Solar Radiation Flux at top of atmosphere
+GFLUXsfc.      Ground heat FLUX 
+ICECsfc.       ICE Concentration
+LANDsfc.       LAND-sea mask
+LFTXsfc.       LiFTed indeX.
+LHTFLsfc.      Latent HeaT FLux  
+NBDSFsfc.      Near ir Beam Downward Solar Flux at surface
+NDDSFsfc.      Near ir Diffuse Downward Solar Flux at surface
+NLWRSsfc.      Net long wave radiation at Surface
+NSWRSsfc.      Net Short Wave Radiation at Surface
+PEVPRsfc.      Potential EVaPoration Rate
+POTsig.995.    POtential Temperature at sigma 0.995
+PRATEsfc.      Precipitation RATE
+PREShcb.       PRESsure at high-cloud base
+PREShct.       PRESsure at high-cloud top
+PRESlcb.       PRESsure at low-cloud base
+PRESlct.       PRESsure at low-cloud top
+PRESmcb.       PRESsure at middle-cloud base
+PRESmct.       PRESsure at middle-cloud top
+PRESmsl.       PRESsure at mean sea level
+PRESmwl.       PRESsure at the maximum wind level
+PRESsfc.       PRESsure at the surface
+PRESsfc.f00.   PRESsure at the surface (0-hour forecast) ???
+PREStrp.       PRESsure at the tropopause
+PRMSLmsl.      Pressure Reduced to Mean Sea Level ???
+PWAT.ges.      Precipitable WATer ??? 
+PWATclm.       Precipitable WATer in the total atmospheric column
+PWATclm.gau.   Precipitable WATer ???
+RHclm.         Relative Humidity of the total atmospheric column
+RHplg.0.       Relative Humidity in a layer between two pressure levels
+RHsig.995.     Relative Humidity at sigma-level 0.995
+RHslr.1.       Relative Humidity in a layer between two sigma levels.
+RHslr.720.     Relative Humidity in a layer between two sigma levels.
+RHslr.940.     Relative Humidity in a layer between two sigma levels.
+RUNOFsfc.      Runoff
+SFCRsfc.       Surface Roughness
+SGLYRhcb.      SiGma LaYeR of high-cloud base
+SGLYRhct.      SiGma LaYeR of high-cloud top
+SGLYRlcb.      SiGma LaYeR of low-cloud base
+SGLYRlct.      SiGma LaYeR of low-cloud top
+SGLYRmcb.      SiGma LaYeR of middle-cloud base
+SGLYRmct.      SiGma LaYeR of middle-cloud top
+SHTFLsfc.      Sensible HeaT FLux
+SOILWdlr.10.   SOIL Water in layer 0 to 10 cm below surface
+SOILWdlr.200.  SOIL Water in layer 10 to 200 cm below surface
+SPFHhag.2.     Specific Humidity at height above ground of 2 meters
+TCDCclm.       Total ClouD Cover in a column
+TCDChcl.       Total ClouD Cover of high-cloud layer
+TCDClcl.       Total ClouD Cover of low-cloud layer
+TCDCmcl.       Total ClouD Cover of middle-cloud layer
+TMAXhag.2.     MAXimum Temperature at height above ground of 2 meters
+TMINhag.2.     MINimum Temperature at height above ground of 2 meters
+TMPdlr.10.     TeMPerature in a layer 0 to 10 cm below surface
+TMPdlr.200.    TeMPerature in a layer 10 to 200 cm below surface
+TMPdpl.300.    TeMPerature in a layer 200 to 400 cm below surface
+TMPhag.2.      TeMPerature at height above ground of 2 meters
+TMPhct.        TeMPerature of high-cloud top
+TMPlct.        TeMPerature of low-cloud top
+TMPmct.        TeMPerature of middle-cloud top
+TMPmwl.        TeMPerature at maximum wind level
+TMPplg.0.      Temperature in a layer between two pressure levels
+TMPsfc.        TeMPerature of surface
+TMPsig.995.    TeMPerature of sigma-level 0.995
+TMPtrp.        TeMPerature of the tropopause
+U-GWDsfc.      Zonal Gravity Wave stress ???
+UFLXsfc.       Zonal component of momentum FLuX.
+UGRDhag.10.    U-wind at height above ground of 10 m
+UGRDhml.1829.  U-wind at a height above mean-sea level
+UGRDhml.2743.  U-wind at a height above mean-sea level    
+UGRDhml.3658.  U-wind at a height above mean-sea level    
+UGRDmwl.       U-wind at maximum-wind level
+UGRDplg.0.     U-wind in a layer between two pressure levels
+UGRDsig.995.   U-wind at sigma-level 0.995
+UGRDtrp.       U-wind at the tropopause
+ULWRFsfc.      Upward LongWave Radiation Flux at surface
+ULWRFtoa.      Upward LongWave Radiation Flux at top of atmosphere
+USWRFsfc.      Upward ShortWave Radiation Flux at surface          
+USWRFtoa.      Upward ShortWave Radiation Flux at top of atmosphere
+V-GWDsfc.      Meridional component of Gravity Wave stress ???
+VBDSFsfc.      Visible beam downward solar flux
+VDDSFsfc.      Visible diffuse downward solar flux
+VFLXsfc.       Meridional component of momentum FLux.
+VGRDhag.10.    V-wind at height above ground of 10 m.
+VGRDhml.1829.  V-wind at a height above mean-sea level    
+VGRDhml.2743.  V-wind at a height above mean-sea level    
+VGRDhml.3658.  V-wind at a height above mean-sea level    
+VGRDmwl.       V-wind at the maximum wind level
+VGRDplg.0.     V-wind in a layer between two pressure levels
+VGRDsig.995.   V-wind at sigma-level 0.995
+VGRDtrp.       V-wind at the tropopause
+VSSHtrp.       Vertical speed shear at the tropopause
+VVELsig.995.   Vertical VELocity at sigma-level 0.995
+WEASDsfc.      Water Equivalent of Accumulated Snow Depth.

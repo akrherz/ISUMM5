@@ -1,0 +1,24 @@
+# buildlinks
+# This script is designed to installs N32.  If it is run by itself, 
+# the environment variable n32home must have been set to the home 
+# directory of N32 to set up the links correctly.
+
+unalias cd
+set n32home=`( cd .. ; pwd )`
+echo Setting up symbolic links in $n32home
+set echo
+ln -s	$n32home/Scanner/defines.h		defines.h
+ln -s	$n32home/Parser/edt.h			edt.h
+ln -s	$n32home/Parser/f_definitions.h	f_definitions.h
+ln -s	$n32home/Parser/f_executables.h	f_executables.h
+ln -s	$n32home/Parser/f_expressions.h	f_expressions.h
+ln -s	$n32home/Parser/f_format.h		f_format.h
+ln -s	$n32home/Parser/f_main.h		f_main.h
+ln -s	$n32home/Parser/f_y.h			f_y.h
+ln -s	$n32home/Scanner/h.h			h.h
+ln -s	$n32home/Parser/macros.h		macros.h
+ln -s	$n32home/Parser/n32.h			n32.h
+ln -s	$n32home/Parser/node.h		node.h
+ln -s	$n32home/Parser/pushback.h		pushback.h
+ln -s	$n32home/Scanner/tokens.h		tokens.h
+

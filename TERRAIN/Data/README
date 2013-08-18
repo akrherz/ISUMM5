@@ -1,0 +1,65 @@
+This is the directory where input data to terrain
+program resides.
+
+Apart from USGS tiled 30 second elevation data, all
+input data to TERRAIN are expected to locate in this
+directory. The complete data sets for TERRAIN Version 3.5 
+and their sizes are listed below:
+
+Global elevation data, generated from USGS 30 sec dataset:
+   116640000  DEM_02M_GLOBAL
+    18662400  DEM_05M_GLOBAL
+     4665600  DEM_10M_GLOBAL
+      518400  DEM_30M_GLOBAL
+      129600  DEM_60M_GLOBAL
+
+Old 13-category landuse data:
+    30326400  LANDUSE.10
+     3369600  LANDUSE.30
+      842400  LANDUSE.60
+
+USGS (Version 2) 24-category land-water mask and landuse/vegetaion data:
+   933120000  LWMASK-USGS.30s
+    58320000  LWMASK-USGS.02
+     9331200  LWMASK-USGS.05
+     2332800  LWMASK-USGS.10
+      259200  LWMASK-USGS.30
+       64800  LWMASK-USGS.60
+   933120000  VEG-USGS.30s
+  1458000000  VEG-USGS.02
+   233280000  VEG-USGS.05
+    58320000  VEG-USGS.10
+     6480000  VEG-USGS.30
+     1620000  VEG-USGS.60
+
+Top (0-30 cm) soil category (17), deep soil temp and vegetation fraction data:
+   933120000  SOILCAT.30s
+   991440000  SOILCAT.02
+   158630400  SOILCAT.05
+    39657600  SOILCAT.10
+     4406400  SOILCAT.30
+     1101600  SOILCAT.60
+      129600  SOILTEMP.60
+    27993600  VEG-FRACTION.10
+
+Bottom (30-100 cm) soil category (17):
+   933120000  SOILCATB.30s
+   991440000  SOILCATB.02
+   158630400  SOILCATB.05
+    39657600  SOILCATB.10
+     4406400  SOILCATB.30
+     1101600  SOILCATB.60
+
+SiB 16-category land-water mask and landuse/vegetaion data:
+   155520000  LWMASK-SIB.30s
+     9720000  LWMASK-SIB.02
+     1555200  LWMASK-SIB.05
+      388800  LWMASK-SIB.10
+       43200  LWMASK-SIB.30
+       10800  LWMASK-SIB.60
+   155520000  VEG-SIB.30s
+   165240000  VEG-SIB.02
+    26438400  VEG-SIB.05
+     6609600  VEG-SIB.10
+      734400  VEG-SIB.30
+      183600  VEG-SIB.60

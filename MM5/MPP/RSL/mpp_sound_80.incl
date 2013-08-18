@@ -1,0 +1,7 @@
+CSTART   mpp_sound_80.incl
+#ifdef MPP1
+#  ifdef UPSHOT
+        call mm5_logevent(203)
+#  endif
+#endif
+CEND   mpp_sound_80.incl

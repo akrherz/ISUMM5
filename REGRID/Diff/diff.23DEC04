@@ -1,0 +1,1191 @@
+===================================================================
+CHANGES
+diff -r3.12 -r3.19
+6c6
+< The current release is 3.6 (December 19, 2002)
+---
+> The current release is 3.7 (December 23, 2004)
+8a9
+> Bug fixes and changes in V3.7:
+9a11,170
+> Bug Fixes:
+> 
+> pregrid:
+> 
+> - Allow true latitude in GRIB file to be either positive or negative.
+>  
+>   Affected files:
+>   pregrid/grib.misc/rd_grib.F
+>   pregrid/util/gribcode.F
+>   pregrid/util/pregrid_version.F
+> 
+> - ERA40 data SOILHGT field has different units to other datasets.
+>   A fix has been added to convert this to the standard values used
+>   by pregrid.
+>     Thanks to Johann Zueger from ARC for pointing this out
+> 
+>   Affected files:
+>   pregrid/grib.misc/rd_grib.F
+>   pregrid/grib.misc/rrpr.F
+> 
+> - Prevent negative exponennts in ECMWF GRIB files to be set to 0, which 
+>   could result in wrongly ingesting the data. This is not a problem
+>   with other datasets.
+>     Thanks to Jean-Louis Monge from Ecole Polytechnique
+> 
+>   Affected file:
+>   pregrid/util/gribcode.F
+> 
+> - Change name SST in Vtable to SKINTEMP
+> 
+>   Affected files:
+>   pregrid/grib.misc/Vtable.NNRP
+>   pregrid/ncep.grib/Vtable.SST
+> 
+> regridder:
+> 
+> - Keep all SQRT functions real to avoid problems with pgf5
+> 
+>   Affected file:
+>   regridder/src/module_tc_bogus.F
+> 
+> - Fix for using TC bogus and Mercator projections
+>     Thanks to Mohar Chattopadhyay from Met.Service New Zealand
+> 
+>   Affected file:
+>   regridder/src/module_tc_bogus.F
+> 
+> - Allow polar-projection data to have origin location defined other than (1,1).
+> 
+>   Affected files:
+>   regridder/src/module_map_utils.F
+>   regridder/src/module_tc_bogus.F
+>   regridder/src/proc_ingest_first_guess.F
+> 
+> - Check for large positive values for masked fields.
+> 
+>   Affected file:
+>   regridder/src/proc_ingest_first_guess.F
+> 
+> - Prevent negative values of seaice.
+> 
+>   Affected file:
+>   regridder/src/proc_make_dot_point_data.F
+> 
+> - Add a fix so that high frequency data do not deallocated terrain 
+>   arrays too early.
+> 
+>   Affected files:
+>   regridder/src/proc_output.F
+>   regridder/src/proc_zap_space_array.F
+> 
+> - Change value of CP to 1004., to be consistent with rest of
+>   the programs. 
+> 
+>   Affected file:
+>   regridder/src/module_constants.F
+> 
+> - Change logical "L" formatting to "L7" to accomodate the
+>   formatting requirements of SUN logical WRITE statements
+> 
+>   Affected file:
+>   regridder/src/proc_namelist.F
+> 
+> Changes and improvements:
+> 
+> - Add INTEL compiler flags. PGI will remain the default. To
+>   compile with INTEL type "make intel"
+> 
+>   Affected files:
+>   Makefile
+>   pregrid/util/Makefile
+> 
+> - Add compiler options for Cray X1
+>   Thanks to Peter Johnsen from Cray
+> 
+>   Affected files:
+>   Makefile
+>   regridder/src/module_horiz_interp.F
+>   regridder/src/proc_ingest_first_guess.F
+> 
+> pregrid:
+> 
+> - For ALADIN-LACE model, if upper-air RH is missing, see if we can 
+>   compute RH from RHFRAC.
+>     Thanks to Luksa Kraljevic from the Meteorological and 
+>     Hydrological Service of Croatia
+> 
+>   Affected file:
+>   pregrid/grib.misc/rrpr.F
+> 
+> - Add Vtables / scripts and data files to be used with ERA40 data.
+>   If using this data for the first time, please refer to the 
+>   README_ERA40 file for more information.
+> 
+>   Affected files:
+>   pregrid/README_ERA40 
+>   pregrid/pregrid_era40_int.csh
+>   pregrid/grib.misc/Vtable.ERA43D
+>   pregrid/grib.misc/Vtable.ERA4SNOW
+>   pregrid/grib.misc/Vtable.ERA4SOIL
+>   pregrid/grib.misc/Vtable.ERA4SST 
+>   pregrid/grib.misc/Vtable.ERA4SIVT
+>   regridder/SIVT_FILE:1957-09-01_12
+> 
+> - Set the min RH allowed to 1%
+> 
+>   Affected files:
+>   pregrid/grib.misc/rrpr.F
+>   pregrid/ncep.grib/output.F
+>   pregrid/on84/output.F
+> 
+> - Include canopy moisture in Vtables for AGRMET data. Canopy moisture
+>   is interpolated using mask interpolation scheme.
+> 
+>   Affected files:
+>   pregrid/grib.misc/Vtable.AGRMETSOIL
+>   pregrid/grib.misc/Vtable.AGRMETSOIL2
+> 
+> regridder:
+> 
+> - Add a user defined min value for RH. The default value is
+>   set to 5%, but a user has the option of decreasing it to as low
+>   as 1%. 
+> 
+>   Affected files:
+>   regridder/src/module_diags.F
+>   regridder/src/module_namelist_info.F
+>   regridder/src/proc_make_big_header.F
+>   regridder/src/proc_make_dot_point_data.F
+>   regridder/src/proc_namelist.F
+>   regridder/src/proc_output.F
+>   regridder/.hidden/namelist.input_RH
+> 
+> - Add CANOPY MOISTURE to the masked fields
+> 
+>   Affected files:
+>   regridder/src/proc_ingest_first_guess.F
+>   regridder/src/proc_make_dot_point_data.F
+> 
+> ========================================================
+===================================================================
+Makefile
+diff -r3.12 -r3.16
+18c18,52
+< 	@grep CRAY .tmpfile ; \
+---
+> 	grep crayx1 .tmpfile ; \
+> 	if [ $$? = 0 ] ; then echo "Compiling for Cray X1"						; \
+> 		echo "AR		=	$(AR)"				>  macros_pregrid	; \
+> 		echo "RM		=	$(RM)"				>> macros_pregrid	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_pregrid	; \
+> 		echo "CD		=	$(CD)"				>> macros_pregrid	; \
+> 		echo "LN		=	$(LN)"				>> macros_pregrid	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_pregrid	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_pregrid	; \
+> 		echo "TOUCH		=	touch"				>> macros_pregrid	; \
+> 		echo "CPP		=	cpp"				>> macros_pregrid	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DSGI -DBIT32 -UCRAY -Dcrayx1"	>> macros_pregrid	; \
+> 		echo "FC		=	ftn"				>> macros_pregrid	; \
+> 		echo "FCFLAGS		=	-f free -p ../util -p ."	>> macros_pregrid	; \
+> 		echo "LDFLAGS		=	"				>> macros_pregrid	; \
+> 		echo "CCFLAGS		=	-DSGI -DBIT32 -I."		>> macros_pregrid	; \
+> 		echo "LOCAL_LIBRARIES	=	../util/libpgu.a"		>> macros_pregrid	; \
+> 		( $(CD) pregrid ; $(MAKE) all )								; \
+> 		echo "AR		=	$(AR)"				>  macros_regridder	; \
+> 		echo "RM		=	$(RM)"				>> macros_regridder	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_regridder	; \
+> 		echo "CD		=	$(CD)"				>> macros_regridder	; \
+> 		echo "LN		=	$(LN)"				>> macros_regridder	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_regridder	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_regridder	; \
+> 		echo "TOUCH		=	touch"				>> macros_regridder	; \
+> 		echo "CPP		=	cpp"				>> macros_regridder	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DSGI -DBIT32 -UCRAY -Dcrayx1"	>> macros_regridder	; \
+> 		echo "FC		=	ftn"				>> macros_regridder	; \
+> 		echo "FCFLAGS		=	-f free -Ossp"			>> macros_regridder	; \
+> 		echo "LDFLAGS		=	-Ossp"				>> macros_regridder	; \
+> 		echo "CCFLAGS		=	-DSGI -DBIT32 -I."		>> macros_regridder	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_regridder	; \
+> 		( $(CD) regridder ; $(MAKE) all )							; \
+> 	else grep CRAY .tmpfile ; \
+297a332
+> 	fi ; \
+299a335,369
+> intel:
+> 	echo "Compiling for Linux using INTEL compiler"						; \
+> 		echo "AR		=	$(AR)"				>  macros_pregrid	; \
+> 		echo "RM		=	$(RM)"				>> macros_pregrid	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_pregrid	; \
+> 		echo "CD		=	$(CD)"				>> macros_pregrid	; \
+> 		echo "LN		=	$(LN)"				>> macros_pregrid	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_pregrid	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_pregrid	; \
+> 		echo "TOUCH		=	touch"				>> macros_pregrid	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_pregrid	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DDEC -DBIT32 -traditional"	>> macros_pregrid	; \
+> 		echo "FC		=	ifort"				>> macros_pregrid	; \
+> 		echo "FCFLAGS		=	-FR -I../util -convert big_endian" >> macros_pregrid	; \
+> 		echo "LDFLAGS		=	-i_dynamic" 			>> macros_pregrid	; \
+> 		echo "CCFLAGS		=	-DDEC -DBIT32 -I."		>> macros_pregrid	; \
+> 		echo "LOCAL_LIBRARIES	=	../util/libpgu.a"		>> macros_pregrid	; \
+> 		( $(CD) pregrid ; $(MAKE) all )								; \
+> 		echo "AR		=	$(AR)"				>  macros_regridder	; \
+> 		echo "RM		=	$(RM)"				>> macros_regridder	; \
+> 		echo "RM_LIST		=	$(RM_LIST)"			>> macros_regridder	; \
+> 		echo "CD		=	$(CD)"				>> macros_regridder	; \
+> 		echo "LN		=	$(LN)"				>> macros_regridder	; \
+> 		echo "MAKE		=	$(MAKE)"			>> macros_regridder	; \
+> 		echo "SHELL		=	/bin/sh"			>> macros_regridder	; \
+> 		echo "TOUCH		=	touch"				>> macros_regridder	; \
+> 		echo "CPP		=	/lib/cpp"			>> macros_regridder	; \
+> 		echo "CPPFLAGS		=	-I. -C -P -DDEC -DBIT32 -traditional"	>> macros_regridder	; \
+> 		echo "FC		=	ifort"				>> macros_regridder	; \
+> 		echo "FCFLAGS		=	-FR -pc 32  -convert big_endian">> macros_regridder	; \
+> 		echo "LDFLAGS		=	-i_dynamic" 			>> macros_regridder	; \
+> 		echo "CCFLAGS		=	-DDEC -DBIT32 -I."		>> macros_regridder	; \
+> 		echo "LOCAL_LIBRARIES	=	"				>> macros_regridder	; \
+> 		( $(CD) regridder ; $(MAKE) all	) 							; \
+> 
+===================================================================
+README
+diff -r3.7 -r3.9
+2,3c2,3
+< VERSION 3 REGRID PROGRAM (release 3-6)
+< (Updated December 19, 2002)
+---
+> VERSION 3 REGRID PROGRAM (release 3-7)
+> (Updated December 23, 2004)
+125c125,127
+< regrid.deck: batch job deck for NCAR's Cray
+---
+> ibm-regrid.deck:  batch job deck for NCAR's IBM
+> cray-regrid.deck: batch job deck for NCAR's Cray 
+>            (may be modified for other Cray environment)
+===================================================================
+pregrid/Doc/html/pregrid_changes.html
+diff -r1.6 -r1.7
+16a17,29
+> <h3>2003-01-24 (pregrid version 0.28):</h3>
+>    <ul>
+>     <li>Correct the truelat for southern hemisphere polar grids.
+>     <br><br>
+>     Affected files: <br>
+>        <ul><li>util/gribcode.F (test on hemisphere before setting
+> 	      truelat)<br>
+> 	    <li>util/rd_grib.F (test on hemisphere before setting
+> 	      truelat)<br>
+>  </ul></ul>
+> 
+> <p>
+> 
+179c192
+< Last modified: Wed Sep 19 15:00:33 MDT 2001
+---
+> Last modified: Fri Jan 24 09:58:10 MST 2003
+===================================================================
+pregrid/grib.misc/Vtable.AGRMETSOIL
+diff -r3.1 -r3.2
+17a18
+>  207 |  1   |   0  |      | CANOPYM  | m        | Canopy Moisture Content                     |
+===================================================================
+pregrid/grib.misc/Vtable.AGRMETSOIL2
+diff -r3.1 -r3.2
+18d17
+<  213 |  1   |   0  |      | GREENFRC | %        | Green Vegetation Fraction                   |
+19a19
+>  207 |  1   |   0  |      | CANOPYM  | m        | Canopy Moisture Content                     |
+20a21
+>  213 |  1   |   0  |      | GREENFRC | %        | Green Vegetation Fraction                   |
+===================================================================
+pregrid/grib.misc/Vtable.NNRP
+diff -r3.0 -r3.1
+18c18
+<  11  |  1   |   0  |      | SST      | K        | Sea-Surface Temperature                     |
+---
+>  11  |  1   |   0  |      | SKINTEMP | K        | Skin Temperature                            |
+===================================================================
+pregrid/grib.misc/rd_grib.F
+diff -r3.5 -r3.7
+70a71,72
+> ! 2003-01-24:                                                                 !
+> !               - Truelat of Polar Stereographic grid depends on hemisphere   !
+252a255,257
+>                  elseif (ktype.eq.109.and.icenter.eq.98) then 
+>                     ! level=200100.
+>                     level = float(200000+iprty(i))
+345c350,354
+<      map%truelat1 = 60.
+---
+>      if (infogrid(9) > 127) then
+>         map%truelat1 = -60.
+>      else
+>         map%truelat1 = 60.
+>      endif
+469a479
+> 
+===================================================================
+pregrid/grib.misc/rrpr.F
+diff -r3.6 -r3.10
+293c293,311
+< !
+---
+> 
+> ! If upper-air RH is missing, see if we can compute RH from RHFRAC:
+> !    (Luksa Kraljevic, Meteorological and Hydrological Service of Croatia)
+> 
+>      do k = 1, nlvl
+>         if (plvl(k).lt.200000.) then
+>            if (.not. is_there(nint(plvl(k)), 'RH').and. &
+>                 is_there(nint(plvl(k)), 'RHFRAC')) then
+>               call get_dims(nint(plvl(k)), 'RHFRAC')
+>               allocate(scr2d(map%nx,map%ny))
+>               call get_storage(nint(plvl(k)), 'RH', scr2d, map%nx, map%ny)
+>               scr2d = scr2d * 100
+>               call put_storage(nint(plvl(k)), 'RH',   scr2d, map%nx, map%ny)
+>               deallocate(scr2d)
+> 
+>            endif
+>         endif
+>      enddo
+> 
+313c331,332
+< ! Check to see if we need to fill RH above 300 mb to 10%:
+---
+> ! Check to see if we need to fill RH above 300 mb 
+> ! Set to 1% for now - can be over written in regridder by user
+318c337
+<         scr2d = 10.
+---
+>         scr2d = 1.
+349a369,375
+> ! If we've got a SOILHGT field and it is from ECMWF, change units 
+> 
+>      if (is_there(200100, 'SOILHGT')) then
+>         call get_dims(200100, 'SOILHGT')
+>         call ecmwf_soil_hgt(map%nx, map%ny)
+>      endif
+> 
+362a389,405
+> subroutine ecmwf_soil_hgt(ix, jx)
+> ! If we've got a SOILHGT field and it is from ECMWF, change units 
+>   use storage_module
+>   implicit none
+>   integer :: ix, jx
+>   real, dimension(ix,jx) :: soilhgt
+>   real :: soil_tmp
+> 
+>   call get_storage(200100, 'SOILHGT',soilhgt, ix, jx)
+>   soil_tmp = maxval(soilhgt)
+>   if (soil_tmp .gt. 20000.) then
+>     print*,"Looks like we have a SOILHGT field from ECMWF"
+>     soilhgt = soilhgt/9.81
+>   endif
+>   call put_storage(200100, 'SOILHGT',soilhgt, ix, jx)
+> end subroutine ecmwf_soil_hgt
+> 
+===================================================================
+pregrid/ncep.grib/Vtable.SST
+diff -r3.0 -r3.1
+4c4
+<  11  |  1   |   0  |      | SST      | K        | Sea-Surface Temperature                     |
+---
+>  11  |  1   |   0  |      | SKINTEMP | K        | Sea-Surface Temperature                     |
+===================================================================
+pregrid/ncep.grib/output.F
+diff -r3.3 -r3.4
+60c60
+<   scr2d = 10.
+---
+>   scr2d = 1.
+===================================================================
+pregrid/nise/README
+diff -r1.2 -r1.3
+1,10c1,15
+< Where do you get the HDFEOS fractional seaice data?
+< ftp sidads.colorado.edu
+< user: nise
+< passwd: ni$eteam
+< 
+< get the NISE_SSMIF13*.HDFEOS file for that date (name as of Nov 2002)
+< 
+< Please be a registered user of the data (no charge).
+< Register at http://nsidc.org/data/nise1.html
+< Near the top it says "Register for Data".  
+---
+> Since version 3.6, REGRID can process fractional seaice data as well.
+> Fractional seaice data is used in MM5 if the polar physics option is
+> activated with IPOLAR = 1 in configure.user.
+> 
+> The source used for the fractional seaice data is:
+> National Snow and Ice Data Center, Boulder, CO, USA
+> 
+> This data can be obtained by anyone from the National Snow and Ice
+> Data Center at no charge (They only require users to register
+> with them before downloading data).
+> 
+> To download data, first register at:
+> http://nsidc.org/data/nise1.html (Near the top it says "Register for Data")
+> Once you are a registered user, you will be supplied with a user name
+> and password to download data.
+12c17
+< Also, if you use the data, there is a citation at the bottom of the 
+---
+> If you use the data, there is a citation at the bottom of the 
+14,16c19,21
+< Nolin, A., R.L. Armstrong, and J. Maslanik. 1998 - [insert date of data acquisition]. Near Real-Time
+< SSM/I EASE-Grid Daily Global Ice Concentration and Snow Extent. Boulder, CO, USA: National Snow and
+< Ice Data Center. Digital media.
+---
+> Nolin, A., R.L. Armstrong, and J. Maslanik. 1998 - [insert date of data acquisition]. 
+> Near Real-Time SSM/I EASE-Grid Daily Global Ice Concentration and Snow Extent. 
+> Boulder, CO, USA: National Snow and Ice Data Center. Digital media.
+22,23c27
+< Questions about use of the data in the MM5 system?
+< mesouser@ucar.edu
+---
+> Where do you get the HDFEOS fractional seaice data?
+24a29,36
+> Once you have registered, use the user name and password provided to go
+> to their ftp site:
+> 
+> ftp sidads.colorado.edu
+> user: provided-user-name
+> passwd: provided-pass-word
+> 
+> get the NISE_SSMIF13*.HDFEOS file for that date (name as of Nov 2002)
+37a50,64
+> 
+> Note that this conversion program only converts one date at
+> a time. This is normally enough, since regridder only needs
+> one time period of SEAICEFR data. (This data is ingested by
+> regridder via the "constants_full_name" variable in
+> regridder/namelist.input.)
+> 
+> If desired a user may use more than one time for SEAICEFR as input.
+> In this case, the pregrid/nise converter needs to be run separately for
+> each time period, and the data must be supplied to regridder via the
+> "root" variable in regridder/namelist.input.
+> 
+> 
+> Questions about use of the data in the MM5 system?
+> mesouser@ucar.edu
+===================================================================
+pregrid/on84/output.F
+diff -r3.1 -r3.2
+63c63
+<   scr2d = 10.
+---
+>   scr2d = 1.
+===================================================================
+pregrid/util/Makefile
+diff -r3.3 -r3.4
+21c21
+< 	$(FC) -o $(@) $(?:.f=.o) $(LOCAL_LIBRARIES)
+---
+> 	$(FC) -o $(@) $(?:.f=.o) $(LOCAL_LIBRARIES) $(LDFLAGS)
+===================================================================
+pregrid/util/cio.c
+diff -r3.3 -r3.4
+19c19
+< #if defined (SGI) || defined (SOLARIS) || defined (SUN) || defined (DEC) || defined (ALPHA) || defined (VPP)
+---
+> #if defined (SGI) || defined (SOLARIS) || defined (SUN) || defined (DEC) || defined (ALPHA) || defined (VPP) || defined (HP)
+===================================================================
+pregrid/util/gribcode.F
+diff -r3.9 -r3.12
+16,33c16,36
+< !    2000-11-07:
+< !
+< !               - Add a cylindrical equidistant grid to gribllxy
+< !
+< !               - Define sec1(25) and sec1(26) as binary flags 
+< !                 (0=false, 1=true) for the presence of a GDS and a BMS,
+< !                 respectively.  
+< !
+< !               - Take gclon out of the module, and use gridinfo(6) instead.
+< !                 This makes for one less thing for the user to set in the
+< !                 the case of predefined grids.
+< !
+< !               - Add a number of predefined grids (61, 62, 63, 64, 105)
+< ! 
+< !               - Add a logical variable RECOGNIZED_GRID if the grid is 
+< !                 recognized, either from the GDS or from the list of 
+< !                 predefined grids.
+< !
+---
+> !    2003-01-24:                                                              !
+> !               - Corrected the assignment of truelat = 60.0 for polar grids  !
+> !                 to take into account both northern and southern hemispheres !
+> !                                                                             !
+> !    2000-11-07:                                                              !
+> !               - Add a cylindrical equidistant grid to gribllxy              !
+> !                                                                             !
+> !               - Define sec1(25) and sec1(26) as binary flags                !
+> !                 (0=false, 1=true) for the presence of a GDS and a BMS,      !
+> !                 respectively.                                               !
+> !                                                                             !
+> !               - Take gclon out of the module, and use gridinfo(6) instead.  !
+> !                 This makes for one less thing for the user to set in the    !
+> !                 the case of predefined grids.                               !
+> !                                                                             !
+> !               - Add a number of predefined grids (61, 62, 63, 64, 105)      !
+> !                                                                             !
+> !               - Add a logical variable RECOGNIZED_GRID if the grid is       !
+> !                 recognized, either from the GDS or from the list of         !
+> !                 predefined grids.                                           !
+> !                                                                             !
+1677c1680,1681
+<         gtrue1 = 60.
+---
+>         ! GRIB edition 1 Polar Stereographic grids are true at 60 degrees
+>         ! Which hemisphere depends on infogrid(9), the "Projection Center Flag"
+1679,1681c1683,1693
+<         r = grrth/gridinfo(7) * tand((90.-glat1)/2.) * (1.+sind(gtrue1))
+<         gx1 = r * sind(glon1-gridinfo(6))
+<         gy1 = - r * cosd(glon1-gridinfo(6))
+---
+>         if (infogrid(9) > 127) then
+>            gtrue1 = -60.
+>            r = grrth/gridinfo(7) * tand((-90.-glat1)/2.) * (1.+sind(-gtrue1))
+>            gx1 = -r * sind(glon1-gridinfo(6))
+>            gy1 = -r * cosd(glon1-gridinfo(6))
+>         else
+>            gtrue1 = 60.
+>            r = grrth/gridinfo(7) * tand((90.-glat1)/2.) * (1.+sind(gtrue1))
+>            gx1 = r * sind(glon1-gridinfo(6))
+>            gy1 = -r * cosd(glon1-gridinfo(6))
+>         endif
+1903c1915,1916
+<           float(16**(ichar-64))
+---
+>           16.0**(ichar-64)
+> !         float(16**(ichar-64))
+===================================================================
+pregrid/util/pregrid_version.F
+diff -r3.16 -r3.17
+4c4
+<   write(*,'(   " **   pregrid version number: 0.27  **")')
+---
+>   write(*,'(   " **   pregrid version number: 0.28  **")')
+===================================================================
+regridder/Doc/README.namelist
+diff -r3.8 -r3.9
+202a203,207
+> Since Version 3.6, one may use 'constants_full_name' to ingest 
+> maximum snow albedo field (ALMX_FILE), and monthly albedo fields
+> (available from NCAR's MSS: /MESOUSER/DATASETS/REGRID/MONTHLY_ALBEDO.TAR.gz,
+> and ftp://ftp.ucar.edu/mesouser/MM5V3/REGRID_DATA/MONTHLY_ALBEDO.TAR.gz).
+> 
+===================================================================
+regridder/src/module_constants.F
+diff -r3.2 -r3.3
+2c2
+<    REAL , PARAMETER :: cp              = 1004.5
+---
+>    REAL , PARAMETER :: cp              = 1004.0
+===================================================================
+regridder/src/module_diags.F
+diff -r3.7 -r3.9
+4a5
+>    USE namelist_info
+148c149
+<                   rh(i,j,k) = MIN ( MAX ( rh(i,j,k) , 10. ) , 100. ) 
+---
+>                   rh(i,j,k) = MIN ( MAX ( rh(i,j,k) , rec2%min_RH_value ) , 100. ) 
+193c194
+<                rh(i,j,k) = MIN ( 100. , MAX ( 100.*q(i,j,k)/qs , 10. ) )
+---
+>                rh(i,j,k) = MIN ( 100. , MAX ( 100.*q(i,j,k)/qs ,  rec2%min_RH_value ) )
+===================================================================
+regridder/src/module_horiz_interp.F
+diff -r3.2 -r3.3
+19a20,22
+> #ifdef crayx1
+>       REAL :: a2(4)
+> #endif
+55a59,65
+> #ifdef crayx1
+> ! pjj/cray - vectorize
+>          do k=1,4
+>             a2(k) = oned(x, stl(1,k), stl(2,k), stl(3,k), stl(4,k))
+>          enddo
+>          bint = oned(y,a2(1),a2(2),a2(3),a2(4))
+> #else
+60a71
+> #endif
+62a74,79
+> #ifdef crayx1
+>             do k=1,4
+>                a2(k) = oned(y,stl(k,1),stl(k,2),stl(k,3),stl(k,4))
+>             enddo
+>             bint = (bint+oned(x,a2(1),a2(2),a2(3),a2(4))) * 0.5
+> #else
+67a85
+> #endif
+===================================================================
+regridder/src/module_map_utils.F
+diff -r3.3 -r3.4
+120c120
+< !         CALL map_set(code,lat1,lon1,dx,stdlon,truelat1,truelat2,proj)
+---
+> !         CALL map_set(code,lat1,lon1,knowni,knownj,dx,stdlon,truelat1,truelat2,proj)
+125a126,127
+> !         knowni (input) = origin point, x-location
+> !         knownj (input) = origin point, y-location
+205a208,209
+>     REAL             :: knowni   ! X-location of known lat/lon
+>     REAL             :: knownj   ! Y-location of known lat/lon
+229a234,235
+>     proj%knowni   = -999.9
+>     proj%knownj   = -999.9
+234c240
+<   SUBROUTINE map_set(proj_code,lat1,lon1,dx,stdlon,truelat1,truelat2,proj)
+---
+>   SUBROUTINE map_set(proj_code,lat1,lon1,knowni,knownj,dx,stdlon,truelat1,truelat2,proj)
+254a261
+>     REAL, INTENT(IN)                  :: knowni , knownj
+290a298,299
+>     proj%knowni = knowni
+>     proj%knownj = knownj
+440,441c449,450
+<     proj%polei = 1. - proj%rsw * COS(alo1)
+<     proj%polej = 1. - proj%hemi * proj%rsw * SIN(alo1)
+---
+>     proj%polei = proj%knowni - proj%rsw * COS(alo1)
+>     proj%polej = proj%knownj - proj%hemi * proj%rsw * SIN(alo1)
+===================================================================
+regridder/src/module_namelist_info.F
+diff -r3.5 -r3.6
+20a21
+>       REAL :: min_RH_value
+===================================================================
+regridder/src/module_tc_bogus.F
+diff -r3.4 -r3.8
+151c151,155
+<          CALL map_set ( proj_merc , lat1 , lon1 , ds , xlonc , tlat1 , tlat2 , proj )
+---
+>          IF ( lon1  .LT. -180. ) lon1  = lon1  + 360.
+>          IF ( lon1  .GT.  180. ) lon1  = lon1  - 360.
+>          IF ( xlonc .LT. -180. ) xlonc = xlonc + 360.
+>          IF ( xlonc .GT.  180. ) xlonc = xlonc - 360.
+>          CALL map_set ( proj_merc , lat1 , lon1 , 1., 1., ds , xlonc , tlat1 , tlat2 , proj )
+153c157
+<          CALL map_set ( proj_lc   , lat1 , lon1 , ds , xlonc , tlat1 , tlat2 , proj )
+---
+>          CALL map_set ( proj_lc   , lat1 , lon1 , 1., 1., ds , xlonc , tlat1 , tlat2 , proj )
+155c159
+<          CALL map_set ( proj_ps   , lat1 , lon1 , ds , xlonc , tlat1 , tlat2 , proj )
+---
+>          CALL map_set ( proj_ps   , lat1 , lon1 , 1., 1., ds , xlonc , tlat1 , tlat2 , proj )
+335a340,358
+>          DO k=1,kx
+>             DO i=1,ix-1
+>                utcr(i,jx,k) = utcr(i,jx-1,k)
+>                vtcr(i,jx,k) = vtcr(i,jx-1,k)
+>             END DO
+>             DO j=1,jx-1
+>                utcr(ix,j,k) = utcr(ix-1,j,k)
+>                vtcr(ix,j,k) = vtcr(ix-1,j,k)
+>             END DO
+>    
+>             utcr( 1,jx,k) = utcr(   2,jx-1,k)
+>             utcr(ix, 1,k) = utcr(ix-1,   2,k)
+>             utcr(ix,jx,k) = utcr(ix-1,jx-1,k)
+>    
+>             vtcr( 1,jx,k) = vtcr(   2,jx-1,k)
+>             vtcr(ix, 1,k) = vtcr(ix-1,   2,k)
+>             vtcr(ix,jx,k) = vtcr(ix-1,jx-1,k)
+>          END DO
+> 
+425c448
+<                      rad = SQRT((i-i_mvc)**2.+(j-j_mvc)**2.)*ds
+---
+>                      rad = SQRT(REAL(i-i_mvc)**2.+REAL(j-j_mvc)**2.)*ds
+437c460
+<                      rad = SQRT((i-i_mvc)**2.+(j-j_mvc)**2.)*ds
+---
+>                      rad = SQRT(REAL(i-i_mvc)**2.+REAL(j-j_mvc)**2.)*ds
+593c616
+<                   rad = SQRT((i-i_mvc)**2.+(j-j_mvc)**2.)*ds
+---
+>                   rad = SQRT(REAL(i-i_mvc)**2.+REAL(j-j_mvc)**2.)*ds
+663c686
+<                   rad = SQRT((i-i_mvc)**2.+(j-j_mvc)**2.)*ds
+---
+>                   rad = SQRT(REAL(i-i_mvc)**2.+REAL(j-j_mvc)**2.)*ds
+702c725
+<                   rad = SQRT((i-i_mvc)**2.+(j-j_mvc)**2.)*ds
+---
+>                   rad = SQRT(REAL(i-i_mvc)**2.+REAL(j-j_mvc)**2.)*ds
+===================================================================
+regridder/src/proc_ingest_first_guess.F
+diff -r3.29 -r3.36
+20,21c20,22
+<    REAL , DIMENSION(:,:) , ALLOCATABLE :: array , dum2d , longitude , latitude , tempgrd , landuse , terrain
+<    REAL :: xlo , yla , dlon , dlat
+---
+>    REAL , DIMENSION(:,:) , ALLOCATABLE :: array , array_backwards , &
+>                                           dum2d , longitude , latitude , tempgrd , landuse , terrain
+>    REAL :: xlo , yla , dlon , dlat , known_i , known_j
+52a54,60
+>    !  Initialize these known_i and known_j values.  If this is a projected
+>    !  data set, these will be set.  If this is just your regular run of the
+>    !  mill lat/lon spacing, this is all we get.
+> 
+>    known_i = 1
+>    known_j = 1
+> 
+341a350,352
+>             known_i = 1
+>             known_j = 1
+> 
+386c397,413
+<                CALL map_set(proj_merc,lat1,lon1,deltax*1000.,xlonc,truelat1,truelat2,proj)
+---
+>                IF      ( ( deltax .GT. 0 ) .AND. ( deltay .GT. 0 ) ) THEN
+>                   known_i = 1.
+>                   known_j = 1.
+>                ELSE IF ( ( deltax .GT. 0 ) .AND. ( deltay .LT. 0 ) ) THEN
+>                   known_i = 1.
+>                   known_j = jdim
+>                ELSE IF ( ( deltax .LT. 0 ) .AND. ( deltay .GT. 0 ) ) THEN
+>                   known_i = idim
+>                   known_j = 1.
+>                ELSE IF ( ( deltax .LT. 0 ) .AND. ( deltay .LT. 0 ) ) THEN
+>                   known_i = idim
+>                   known_j = jdim
+>                END IF
+> if(nint(known_i*known_j).gt.1) then
+> stop 'fix_this_mercator'
+> endif
+>                CALL map_set(proj_merc,lat1,lon1,1.,1.,deltax*1000.,xlonc,truelat1,truelat2,proj)
+423c450,466
+<                CALL map_set(proj_lc,lat1,lon1,deltax*1000.,xlonc,truelat1,truelat2,proj)
+---
+>                IF      ( ( deltax .GT. 0 ) .AND. ( deltay .GT. 0 ) ) THEN
+>                   known_i = 1.
+>                   known_j = 1.
+>                ELSE IF ( ( deltax .GT. 0 ) .AND. ( deltay .LT. 0 ) ) THEN
+>                   known_i = 1.
+>                   known_j = jdim
+>                ELSE IF ( ( deltax .LT. 0 ) .AND. ( deltay .GT. 0 ) ) THEN
+>                   known_i = idim
+>                   known_j = 1.
+>                ELSE IF ( ( deltax .LT. 0 ) .AND. ( deltay .LT. 0 ) ) THEN
+>                   known_i = idim
+>                   known_j = jdim
+>                END IF
+> if(nint(known_i*known_j).gt.1) then
+> stop 'fix_this_lambert'
+> endif
+>                CALL map_set(proj_lc,lat1,lon1,1.,1.,deltax*1000.,xlonc,truelat1,truelat2,proj)
+446c489
+<                PRINT '(4F10.4)',           startlat, startlon, deltalat, deltalon
+---
+>                PRINT '(4F10.4)',           startlat, startlon, deltalon , nlat
+453a497,499
+>             known_i = 1
+>             known_j = 1
+> 
+455a502,517
+> 
+>             !  If this is a *special* AFWA domain of seaice, fix the center longitude to
+>             !  what is considered an MM5 standard.  The specifics: it is a se ice field,
+>             !  it is polar stereographic, it has a negatice true lat, the (1,1) location
+>             !  is in the upper left hand corner.  Based on these, swap the central longitude.
+> 
+>             !  This replaces the mod sent to AFWA 23 April 2003.
+>             
+>             IF ( ( field(1:6) .EQ. 'SEAICE' ) .AND. &
+>                  ( truelat1 .LT. 0. ) .AND. &
+>                  ( deltax   .GT. 0. ) .AND. &
+>                  ( deltay   .LT. 0. ) )     THEN
+>                PRINT *,'AFWA OLD LONC=',xlonc
+>                xlonc = xlonc - 180.
+>             END IF
+> 
+482c544,557
+<                CALL map_set(proj_ps,lat1,lon1,deltax*1000.,xlonc,truelat1,truelat2,proj)
+---
+>                IF      ( ( deltax .GT. 0 ) .AND. ( deltay .GT. 0 ) ) THEN
+>                   known_i = 1.
+>                   known_j = 1.
+>                ELSE IF ( ( deltax .GT. 0 ) .AND. ( deltay .LT. 0 ) ) THEN
+>                   known_i = 1.
+>                   known_j = jdim
+>                ELSE IF ( ( deltax .LT. 0 ) .AND. ( deltay .GT. 0 ) ) THEN
+>                   known_i = idim
+>                   known_j = 1.
+>                ELSE IF ( ( deltax .LT. 0 ) .AND. ( deltay .LT. 0 ) ) THEN
+>                   known_i = idim
+>                   known_j = jdim
+>                END IF
+>                CALL map_set(proj_ps,lat1,lon1,known_i,known_j,ABS(deltax*1000.),xlonc,truelat1,truelat2,proj)
+510c585,586
+<          !  Though -1e20 is a lovely flag value, to be sure, let's go with zero instead.
+---
+>          !  There are data sets that set HUGE POSITIVE flag values for masked fields.  Our 
+>          !  humble convention, of course, is to instead have HUGE NEGATIVE flags.  
+512,513c588,589
+<          WHERE ( array .LT. -1.e19 ) 
+<             array = 0
+---
+>          WHERE ( array .GT. 1.E19 )
+>             array = -1.E20
+515a592,661
+>          !  If the projected data is flipped upside down or side to side, then we'll
+>          !  just handle it here expeditiously.  I cannot fathom changing indices 
+>          !  below in each of the interpolation blocks just to handle this situation.  
+>          !  First, this is only if the data is projected (polar only right now), and 
+>          !  second it is only if the known_i or known_j values are not = 1.
+> 
+>          IF ( ( llflag .EQ. 5 ) .AND. &
+>               ( ( NINT(known_i) .NE. 1 ) .OR. ( NINT(known_j) .NE. 1 ) ) ) THEN
+> 
+>             IF ( ALLOCATED ( array_backwards ) ) THEN
+>                DEALLOCATE ( array_backwards ) 
+>             END IF
+>             ALLOCATE (array_backwards(idim,jdim))
+> 
+>             !  There are four possible origin locations that may be chosen for
+>             !  domain, let's call them A, B, C, and D.  If the origin is set as
+>             !  point A, then we do nothing (we are not even in this IF test!).
+>             !  We handle each of the three remaining flips.    
+> 
+>             !          C                             D
+>             !           -----------------------------
+>             !           |                           |
+>             !           |                           |
+>             !           |                           |
+>             !           |                           |
+>             !           |                           |
+>             !           |                           |
+>             !           |                           |
+>             !           |                           |
+>             !           |                           |
+>             !           |                           |
+>             !           |                           |
+>             !           -----------------------------
+>             !          A                             B
+> 
+>             !  Flip B : known_i = dim, known_j = 1
+> 
+>             IF      ( ( NINT(known_i) .EQ. idim ) .AND. ( NINT(known_j) .EQ.    1 ) ) THEN
+>                DO j = 1 , jdim
+>                   DO i = 1 , idim
+>                      array_backwards(idim-i+1,j) = array(i,j)
+>                   END DO
+>                END DO
+> 
+>             !  Flip C : known_i = 1, known_j = jdim
+> 
+>             ELSE IF ( ( NINT(known_i) .EQ.    1 ) .AND. ( NINT(known_j) .EQ. jdim ) ) THEN
+>                DO j = 1 , jdim
+>                   DO i = 1 , idim
+>                      array_backwards(i,jdim-j+1) = array(i,j)
+>                   END DO
+>                END DO
+> 
+>             !  Flip D : known_i = dim, known_j = jdim
+> 
+>             ELSE IF ( ( NINT(known_i) .EQ. idim ) .AND. ( NINT(known_j) .EQ. jdim ) ) THEN
+>                DO j = 1 , jdim
+>                   DO i = 1 , idim
+>                      array_backwards(idim-i+1,jdim-j+1) = array(i,j)
+>                   END DO
+>                END DO
+> 
+>             END IF
+> 
+>             !  Put the flipped data back in the array with which we wish to play.
+> 
+>             array = array_backwards
+> 
+>          END IF
+> 
+593a740,741
+>               ( field(1:7) .EQ. 'CANOPYM'  ) .OR. &
+>               ( field(1:7) .EQ. 'LANDSEA'  ) .OR. &
+596c744
+<    
+---
+> 
+628c776,779
+<          
+---
+> 
+> ! pjj/cray
+> !$OMP parallel do default(shared) &
+> !$OMP private(i,j,yla,xlo,ilo,jla,dlon,dlat,xlonc_mod,deltalat,deltalon,close_count,close_data)
+682,685c833,836
+<                   IF      ( ( ABS( array(ilo  ,jla  )) .GT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo+1,jla  )) .GT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo  ,jla+1)) .GT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo+1,jla+1)) .GT. small_positive ) .AND. &
+---
+>                   IF      ( ( array(ilo  ,jla  ) .GT. big_negative ) .AND. & 
+>                             ( array(ilo+1,jla  ) .GT. big_negative ) .AND. & 
+>                             ( array(ilo  ,jla+1) .GT. big_negative ) .AND. & 
+>                             ( array(ilo+1,jla+1) .GT. big_negative ) .AND. &
+687a839
+>                               ( field(1:7) .EQ. 'CANOPYM'  ) .OR. ( field(1:7) .EQ. 'LANDSEA'  ) .OR. &
+711,718c863,870
+<                   ELSE IF ( ( ABS( array(ilo  ,jla  )) .GT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo  ,jla  )) .LE. 0.5            ) .AND. & 
+<                             ( ABS( array(ilo+1,jla  )) .GT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo+1,jla  )) .LE. 0.5            ) .AND. & 
+<                             ( ABS( array(ilo  ,jla+1)) .GT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo  ,jla+1)) .LE. 0.5            ) .AND. & 
+<                             ( ABS( array(ilo+1,jla+1)) .GT. small_positive ) .AND. &
+<                             ( ABS( array(ilo+1,jla+1)) .LE. 0.5            ) .AND. &
+---
+>                   ELSE IF ( ( array(ilo  ,jla  ) .GT. big_negative ) .AND. & 
+>                             ( array(ilo  ,jla  ) .LE. 0.5            ) .AND. & 
+>                             ( array(ilo+1,jla  ) .GT. big_negative ) .AND. & 
+>                             ( array(ilo+1,jla  ) .LE. 0.5            ) .AND. & 
+>                             ( array(ilo  ,jla+1) .GT. big_negative ) .AND. & 
+>                             ( array(ilo  ,jla+1) .LE. 0.5            ) .AND. & 
+>                             ( array(ilo+1,jla+1) .GT. big_negative ) .AND. &
+>                             ( array(ilo+1,jla+1) .LE. 0.5            ) .AND. &
+746,749c898,901
+<                   ELSE IF ( ( ABS( array(ilo  ,jla  )) .GT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo+1,jla  )) .GT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo  ,jla+1)) .GT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo+1,jla+1)) .GT. small_positive ) .AND. &
+---
+>                   ELSE IF ( ( array(ilo  ,jla  ) .GT. big_negative ) .AND. & 
+>                             ( array(ilo+1,jla  ) .GT. big_negative ) .AND. & 
+>                             ( array(ilo  ,jla+1) .GT. big_negative ) .AND. & 
+>                             ( array(ilo+1,jla+1) .GT. big_negative ) .AND. &
+771,774c923,926
+<                   ELSE IF ( ( ABS( array(ilo  ,jla  )) .LT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo+1,jla  )) .LT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo  ,jla+1)) .LT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo+1,jla+1)) .LT. small_positive ) .AND. &
+---
+>                   ELSE IF ( ( array(ilo  ,jla  ) .LT. big_negative ) .AND. & 
+>                             ( array(ilo+1,jla  ) .LT. big_negative ) .AND. & 
+>                             ( array(ilo  ,jla+1) .LT. big_negative ) .AND. & 
+>                             ( array(ilo+1,jla+1) .LT. big_negative ) .AND. &
+777a930
+>                               ( field(1:7) .EQ. 'CANOPYM'  ) .OR. ( field(1:7) .EQ. 'LANDSEA'  ) .OR. &
+787c940
+<                            IF ( ABS( array(i_close,j_close)) .GT. small_positive ) THEN
+---
+>                            IF ( array(i_close,j_close) .GT. big_negative ) THEN
+809c962,963
+<                                ( ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) ) .AND. &
+---
+>                                ( ( field(1:7) .EQ. 'CANOPYM'  ) .OR. ( field(1:7) .EQ. 'LANDSEA'  ) .OR. &
+>                                  ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) ) .AND. &
+865a1020,1023
+>                      ELSE IF ( ( close_count .EQ. 0 ) .AND. ( field(1:7) .EQ. 'LANDSEA'  ) .AND. &
+>                                ( ter_data(land_mask_index)%array(j,i) .EQ. 1 ) ) THEN
+>                         dum2d(j,i) = 1.
+> 
+867c1025,1026
+<                                ( ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) ) .AND. &
+---
+>                                ( ( field(1:7) .EQ. 'CANOPYM'  ) .OR. &
+>                                  ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) ) .AND. &
+872c1031,1032
+<                                ( ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) ) .AND. &
+---
+>                                ( ( field(1:7) .EQ. 'CANOPYM'  ) .OR. ( field(1:7) .EQ. 'LANDSEA'  ) .OR. &
+>                                  ( field(1:5) .EQ. 'SNOWH'    ) .OR. ( field(1:5) .EQ. 'WEASD'    ) ) .AND. &
+881,884c1041,1044
+<                   ELSE IF ( ( ( ABS( array(ilo  ,jla  )) .LE. small_positive ) .OR. ( ABS( array(ilo  ,jla  )) .GE. 0.9 ) ) .AND. & 
+<                             ( ( ABS( array(ilo+1,jla  )) .LE. small_positive ) .OR. ( ABS( array(ilo+1,jla  )) .GE. 0.9 ) ) .AND. & 
+<                             ( ( ABS( array(ilo  ,jla+1)) .LE. small_positive ) .OR. ( ABS( array(ilo  ,jla+1)) .GE. 0.9 ) ) .AND. & 
+<                             ( ( ABS( array(ilo+1,jla+1)) .LE. small_positive ) .OR. ( ABS( array(ilo+1,jla+1)) .GE. 0.9 ) ) .AND. & 
+---
+>                   ELSE IF ( ( ( array(ilo  ,jla  ) .LE. big_negative ) .OR. ( array(ilo  ,jla  ) .GE. 0.9 ) ) .AND. & 
+>                             ( ( array(ilo+1,jla  ) .LE. big_negative ) .OR. ( array(ilo+1,jla  ) .GE. 0.9 ) ) .AND. & 
+>                             ( ( array(ilo  ,jla+1) .LE. big_negative ) .OR. ( array(ilo  ,jla+1) .GE. 0.9 ) ) .AND. & 
+>                             ( ( array(ilo+1,jla+1) .LE. big_negative ) .OR. ( array(ilo+1,jla+1) .GE. 0.9 ) ) .AND. & 
+895,896c1055,1056
+<                            IF      ( ( ABS( array(i_close,j_close)) .GT. small_positive ) .AND. &
+<                                      ( ABS( array(i_close,j_close)) .LT. 0.5 ) ) THEN
+---
+>                            IF      ( ( array(i_close,j_close) .GT. big_negative ) .AND. &
+>                                      ( array(i_close,j_close) .LT. 0.5 ) ) THEN
+899,900c1059,1060
+<                            ELSE IF ( ( ABS( array(i_close,j_close)) .GE. 0.5            ) .AND. &
+<                                      ( ABS( array(i_close,j_close)) .LT. 0.9 ) ) THEN
+---
+>                            ELSE IF ( ( array(i_close,j_close) .GE. 0.5            ) .AND. &
+>                                      ( array(i_close,j_close) .LT. 0.9 ) ) THEN
+934,937c1094,1097
+<                   ELSE IF ( ( ABS( array(ilo  ,jla  )) .LT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo+1,jla  )) .LT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo  ,jla+1)) .LT. small_positive ) .AND. & 
+<                             ( ABS( array(ilo+1,jla+1)) .LT. small_positive ) .AND. &
+---
+>                   ELSE IF ( ( array(ilo  ,jla  ) .LT. big_negative ) .AND. & 
+>                             ( array(ilo+1,jla  ) .LT. big_negative ) .AND. & 
+>                             ( array(ilo  ,jla+1) .LT. big_negative ) .AND. & 
+>                             ( array(ilo+1,jla+1) .LT. big_negative ) .AND. &
+947c1107
+<                            IF ( ABS( array(i_close,j_close)) .GT. small_positive ) THEN
+---
+>                            IF ( array(i_close,j_close) .GT. big_negative ) THEN
+979,982c1139,1142
+<                   ELSE IF ( ( ( ABS( array(ilo  ,jla  )) .LT. small_positive )   .OR. & 
+<                               ( ABS( array(ilo+1,jla  )) .LT. small_positive )   .OR. & 
+<                               ( ABS( array(ilo  ,jla+1)) .LT. small_positive )   .OR. & 
+<                               ( ABS( array(ilo+1,jla+1)) .LT. small_positive ) ) .AND. &
+---
+>                   ELSE IF ( ( ( array(ilo  ,jla  ) .LT. big_negative )   .OR. & 
+>                               ( array(ilo+1,jla  ) .LT. big_negative )   .OR. & 
+>                               ( array(ilo  ,jla+1) .LT. big_negative )   .OR. & 
+>                               ( array(ilo+1,jla+1) .LT. big_negative ) ) .AND. &
+985a1146
+>                                 ( field(1:7) .EQ. 'CANOPYM'  ) .OR. ( field(1:7) .EQ. 'LANDSEA'  ) .OR. &
+996c1157
+<                            IF ( ABS( array(i_close,j_close)) .GT. small_positive ) THEN
+---
+>                            IF ( array(i_close,j_close) .Ge. big_negative ) THEN
+1023c1184
+<                            IF      ( ( ABS( array(i_close,j_close)) .GE. small_positive ) .AND. &
+---
+>                            IF      ( ( array(i_close,j_close) .GE. big_negative ) .AND. &
+1027c1188
+<                            ELSE IF ( ( ABS( array(i_close,j_close)) .GT. 0.5            ) .AND. &
+---
+>                            ELSE IF ( ( array(i_close,j_close) .GT. 0.5            ) .AND. &
+1043,1046c1204,1207
+<                   ELSE IF ( ( ( ABS( array(ilo  ,jla  )) .LT. small_positive )   .OR. & 
+<                               ( ABS( array(ilo+1,jla  )) .LT. small_positive )   .OR. & 
+<                               ( ABS( array(ilo  ,jla+1)) .LT. small_positive )   .OR. & 
+<                               ( ABS( array(ilo+1,jla+1)) .LT. small_positive ) ) .AND. &
+---
+>                   ELSE IF ( ( ( array(ilo  ,jla  ) .LT. big_negative )   .OR. & 
+>                               ( array(ilo+1,jla  ) .LT. big_negative )   .OR. & 
+>                               ( array(ilo  ,jla+1) .LT. big_negative )   .OR. & 
+>                               ( array(ilo+1,jla+1) .LT. big_negative ) ) .AND. &
+1058c1219
+<                            IF ( ABS( array(i_close,j_close)) .GT. small_positive ) THEN
+---
+>                            IF ( array(i_close,j_close) .GT. big_negative ) THEN
+1137a1299,1301
+> ! pjj/cray
+> !$OMP parallel do default(shared) &
+> !$OMP private(i,j,yla,xlo,ilo,jla,dlon,dlat,xlonc_mod,deltalat,deltalon,wrap,deltalon_save)
+===================================================================
+regridder/src/proc_make_big_header.F
+diff -r3.2 -r3.5
+18c18
+<    bhi ( 3, 2 ) = 6
+---
+>    bhi ( 3, 2 ) = 7
+54a55,57
+>  
+>    bhr ( 3, 2 ) = rec2%min_RH_value
+>    bhrc( 3, 2 ) = 'Minimum value used for RH on pressure surfaces'
+===================================================================
+regridder/src/proc_make_dot_point_data.F
+diff -r3.13 -r3.18
+24,25c24,25
+<               index_tseasfc , index_landuse , index_seaice , index_tempgrd, index_soilhgt , &
+<               index_skintemp , index_terrain
+---
+>               index_tseasfc  , index_landuse  , index_seaice   , index_tempgrd  , index_soilhgt  , &
+>               index_skintemp , index_terrain  , index_seaicefr
+30c30
+<               index_albsnomx , index_albedo
+---
+>               index_albsnomx , index_albedo   , index_canopym
+261c261,262
+<    !  is set to 10%, and why not go ahead and constrain the maximum as well.
+---
+>    !  is set to the user supplied min value set in record 2 of the namelist
+>    !  Also go ahead and constrain the maximum as well.
+265c266
+<          WHERE ( all_3d(:,:,:,i) .LT.  10. ) all_3d(:,:,:,i) =  10.
+---
+>          WHERE ( all_3d(:,:,:,i) .LT.   rec2%min_RH_value ) all_3d(:,:,:,i) =   rec2%min_RH_value
+307a309
+>    index_seaicefr = -1
+325a328
+>    index_canopym  = -1
+365a369,370
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'SEAICEFR' ) THEN
+>          index_seaicefr = i   
+399a405,406
+>       ELSE IF ( all_names_sfc(i)(1:8) .EQ. 'CANOPYM ' ) THEN
+>          index_canopym  = i   
+482a490,508
+>    IF ( index_canopym  .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_landuse) .EQ. bhi(23,1) )
+>          all_2d(:,:,index_canopym ) = 0.
+>       END WHERE
+>    END IF
+> 
+>    !  Please, no negative values of seaice.
+> 
+>    IF ( index_seaice   .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_seaice  ) .LT. 0. ) 
+>          all_2d(:,:,index_seaice  ) = 0.
+>       END WHERE
+>    END IF
+> 
+>    IF ( index_seaicefr .NE. -1 ) THEN
+>       WHERE ( all_2d(:,:,index_seaicefr) .LT. 0. ) 
+>          all_2d(:,:,index_seaicefr) = 0.
+>       END WHERE
+>    END IF
+===================================================================
+regridder/src/proc_namelist.F
+diff -r3.9 -r3.11
+22a23
+>    REAL                   :: min_RH_value                       
+43c44
+<    NAMELIST / record2 / ptop_in_Pa , new_levels_in_Pa , sst_to_ice_threshold , linear_interpolation
+---
+>    NAMELIST / record2 / ptop_in_Pa , new_levels_in_Pa , sst_to_ice_threshold , linear_interpolation, min_RH_value
+104a106
+>    min_RH_value         = 5.0
+189c191
+<          WRITE ( UNIT = 6 , FMT='(A,L)' ) ' INSERT_BOGUS_STORM = ',insert_bogus_storm
+---
+>          WRITE ( UNIT = 6 , FMT='(A,L7)' ) ' INSERT_BOGUS_STORM = ',insert_bogus_storm
+242a245
+>    rec2%min_RH_value              = min_RH_value        
+===================================================================
+regridder/src/proc_output.F
+diff -r3.7 -r3.9
+247c247,249
+<    IF ( rec1%current_date(1:13) .EQ. rec1%ending_date(1:13) ) THEN
+---
+>    IF ( ( ( rec1%current_date(1:13) .EQ. rec1%ending_date(1:13) ) .AND. ( MOD(rec1%time_increment_second,3600) .EQ. 0 ) ) .OR. &
+>         ( ( rec1%current_date(1:16) .EQ. rec1%ending_date(1:16) ) .AND. ( MOD(rec1%time_increment_second,  60) .EQ. 0 ) ) .OR. &
+>           ( rec1%current_date(1:19) .EQ. rec1%ending_date(1:19) ) ) THEN                                                     
+266a269,286
+>       ! Warning if min_RH_value below 1% or above 10%
+>       IF ( rec2%min_RH_value < 1.0 .OR. rec2%min_RH_value > 10.0) THEN
+>          PRINT '(A)','                                         '
+>          PRINT '(/A)','*******************************************************************'
+>          PRINT '(A)','                  Attention              '
+>            IF ( rec2%min_RH_value < 1.0 ) THEN
+>              PRINT '(A)','You have set the min RH value to be below 1%'
+>              PRINT '(A)','Please note that this will have no effect since '
+>              PRINT '(A)','later programs will reset this to a min of 1%   '
+>            ENDIF
+>            IF ( rec2%min_RH_value > 10.0 ) THEN
+>              PRINT '(A,F5.2)','You have set the min RH value to ',rec2%min_RH_value
+>              PRINT '(A)','Please note that this may result in over prediction of moisture'
+>              PRINT '(A)','Recommended values are between 1 and 10%        '
+>            ENDIF
+>          PRINT '(A/)','*******************************************************************'
+>       END IF
+> 
+===================================================================
+regridder/src/proc_zap_space_array.F
+diff -r3.0 -r3.1
+11c11,13
+<    IF ( rec1%current_date(1:13) .EQ. rec1%ending_date(1:13) ) THEN
+---
+>    IF ( ( ( rec1%current_date(1:13) .EQ. rec1%ending_date(1:13) ) .AND. ( MOD(rec1%time_increment_second,3600) .EQ. 0 ) ) .OR. &
+>         ( ( rec1%current_date(1:16) .EQ. rec1%ending_date(1:16) ) .AND. ( MOD(rec1%time_increment_second,  60) .EQ. 0 ) ) .OR. &
+>           ( rec1%current_date(1:19) .EQ. rec1%ending_date(1:19) ) ) THEN                                                       

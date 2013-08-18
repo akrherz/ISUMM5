@@ -1,0 +1,13 @@
+CSTART   mpp_errob_50.incl
+          IF(INHYD.EQ.1)THEN
+            ERRF(7,N)=
+     +       ((1.-DXOB)*((1.-DYOB)*PSB(IOB,JOB)+DYOB*PSB(IOB+1,JOB)
+     +       )+DXOB*((1.-DYOB)*PSB(IOB,JOB+1)+DYOB*PSB(IOB+1,JOB+1)
+     +       ))
+          ELSE
+            PRINT*,
+     +      "OBS NUDGING NOT IMPLEMENTED FOR HYDROSTATIC MPP CODE"
+            STOP 235
+          ENDIF
+          ENDIF
+CEND   mpp_errob_50.incl

@@ -1,0 +1,10 @@
+CSTART   mpp_intpsgd_10.incl
+C           8pt  
+C
+C          + + +
+C psoc     + * +
+C          + + +
+C
+      CALL RSL_EXCH_STENCIL( DOMAINS(IN), STEN_FDDA_0(IN) )
+C
+CEND   mpp_intpsgd_10.incl

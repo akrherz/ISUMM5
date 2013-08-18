@@ -1,0 +1,16 @@
+CSTART   mpp_solve_00.incl
+#ifdef MPP1
+C Needed for output to rsl.error.0000
+#  ifndef T3E
+      INTEGER MILLICLOCK
+      EXTERNAL MILLICLOCK
+#  endif
+C Needed for communication in define_comms
+      COMMON /STATEVAR/PR1, RHO1
+      COMMON /STATEV2/TBP
+      logical frst_blnudgd( nvar )
+      common /par_fdda/ frst_blnudgd
+C Added for v2r6 and addition of THA to solver
+      common /tha_com/ tha
+#endif
+CEND   mpp_solve_00.incl

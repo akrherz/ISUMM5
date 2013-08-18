@@ -1,0 +1,6 @@
+#! /bin/csh -f
+
+set Hdate=$1
+set Deltat = $2
+
+nawk -v HDATE=$Hdate -v IDT=$Deltat -f ../util/newdate.awpr 

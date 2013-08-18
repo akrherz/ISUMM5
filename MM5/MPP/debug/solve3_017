@@ -1,0 +1,21 @@
+cC                                                                                SOLVE3.708
+cC..T..COMPUTE THE VERTICAL ADVECTION TERM:                                       SOLVE3.709
+cC                                                                                SOLVE3.710
+c        CALL VADV(KZZ,TTEN,TA,QDOT,MSFX,PSA,SCR2,J,INDH,INEST)                   21APR97.146
+c#ifdef DEBUGGAL
+c#  include <solve3_017>
+c#endif
+cC                                                                                SOLVE3.712
+c        CALL HADV(PPTEN,UA,VA,PP,MSFX,DX4,J,1,INEST)                             SOLVE3.713
+
+      if ( j.eq.JDEBUG.and.inest.eq.NESTDEBUG ) then
+      i = IDEBUG
+      k = KDEBUG
+            print*,'solve3_017: after vadv of t',inest
+            print*,'ta   ',ta(i,j,k)
+            print*,'tc   ',tc(i,j,k)
+            print*,'qdot ',qdot(i,j,k)
+            print*,'tten ',tten(i,k)
+            print*,'msfx ',msfx(i,j)
+            print*,'psa  ',psa (i,j)
+      endif

@@ -1,0 +1,72 @@
+ ;
+ ;       1. user-chosen options I
+ ;
+ RADFRQ    = 30.,  ;atmospheric radiation calculation frequency (in minutes)
+ IMVDIF    = 1,    ;moist vertical diffusion in clouds - 0, 1 (IBLTYP=2,5 only)
+ IVQADV    = 1,    ;vertical moisture advection uses log interpolation - 0, linear - 1
+ IVTADV    = 1,    ;vertical temperature advection uses theta interpolation - 0, linear - 1
+ ITHADV    = 1,    ;advection of temperature uses potential temperature - 1, standard - 0
+ ITPDIF    = 1,    ;sigma-diffusion using temperature - 0, sigma-diffusion using perturbation 
+ ;                 ;temperature - 1, z-diffusion - 2
+ TDKORR    = 2,    ;temperature gradient correction for z-diffusion at ground level
+ ;                 ;uses -1- ground temp, -2- one-sided difference of air temp
+ ICOR3D    = 1,    ;3D Coriolis force - 0, 1
+ IEXSI     = 0,    ;initial sea-ice - 0, 1(base on SST), 2(read in) (ISOIL=1 only)
+ IFUPR     = 1,    ;upper radiative boundary condition - 0, 1
+ LEVSLP    = 9,    ;nest level (correspond to LEVIDN) at which solar radiation starts to 
+                   ;account for orography
+                   ;set large to switch off
+                   ;only have an effect for very high resolution model domains
+ OROSHAW   = 0,    ;include effect of orography shadowing 
+                   ;ONLY has an effect if LEVSLP is also set
+                   ;0=no effect (default), 
+                   ;1=orography shadowing taken into account - NOT AVAILABLE FOR MPI RUNS
+ ITADVM = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ; 0: default - instability limiter not used 
+                                        ; 1: use instability limiter for temp advection
+ IQADVM = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ; 0: default - instability limiter not used 
+                                        ; 1: use instability limiter for QV/CLW advection
+ ;
+ ;       2. do not change IBOUDY
+ ;
+ IBOUDY = 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, ;boundary conditions
+ ;        (fixed, time-dependent, relaxation -0,2,3)
+ ;
+ ;       3. keep the following 8 variables as they are
+ ;          unless doing sensitivity runs
+ ;
+ IFDRY  = 0,                            ;fake-dry run (no latent heating) - 0, 1
+ ;                                       for IMPHYS = 2,3,4,5,6,7 (requires ICUPA = 1)
+ ISSTVAR= 0,                            ;varying SST in time - 1, otherwise, 0
+ IMOIAV = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ;bucket soil moisture scheme. 0 - not used,
+                                        ;1 - used w/o extra input, 2 - user w/ soil m input
+ IZ0TOPT= 0,                            ;thermal roughness option in IBLTYP = 2,5. 
+                                        ;0 - old option, 1 - Garratt, 2 - Zilitinkevich
+ ISFMTHD= 1,                            ;method for calculation of 2m/10m diagnostics
+                                        ;0 - old method, 1 - new method for stable conditions
+ IFSNOW = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ;SNOW COVER EFFECTS - 0, 1, 2
+ ;                                      ;0 - no effect, 1 - with effect, 2 - simple snow model
+ ISFFLX = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ;surface fluxes - 0, 1
+ ITGFLG = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ;surface temperature prediction - 1:yes, 3:no
+ ISFPAR = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ;surface characteristics - 0, 1
+ ICLOUD = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ;cloud effects on radiation - 0, 1
+ ;                                       currently for IFRAD = 1,2
+ IEVAP  = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ;evap of cloud/rainwater - <0, 0, >0
+ ;                                       (currently for IMPHYS=3,4,5 only)
+ ISMRD  = 0,                            ;soil moisture initialization by PX LSM:
+ ;                                       =0, use moisture avail from LANDUSE.TBL;
+ ;                                       =2, use soil moisture from REGRID
+ ;
+ ; Default soil layers expected as input for ISOIL 2 & 3
+ ; These values reflect the BOTTOM of the soil layer available
+ ISTLYR = 10,40,100,200,
+ ISMLYR = 10,40,100,200,
+ ;ISTLYR = 10,200,0,0,    
+ ;ISMLYR = 10,200,0,0,    
+ ; Other common layers used by EC models (for instance ERA40)
+ ;ISTLYR = 7,28,100,255, 
+ ;ISMLYR = 7,28,100,255, 
+ ;
+ ; Next two switches for new version of NOAH LSM (ISOIL=2)
+ RDMAXALB=.FALSE.                       ;use climo maximum snow albedo (not landuse table)
+ RDBRDALB=.FALSE.                       ;use monthly climo background albedo (not landuse table)
+ ;

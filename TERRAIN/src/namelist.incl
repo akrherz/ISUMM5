@@ -1,0 +1,24 @@
+C                                                                                NAMELIST.1
+C  /MAPBG/:   HOLDS MAP BACKGROUND INFORMATION;                                  NAMELIST.2
+C  /DOMAINS/: HOLDS DOMAINS' INFORMATION;                                        NAMELIST.3
+C  /OPTN/:    HOLDS SWITCHES OF THE OPTIONS;                                     NAMELIST.4
+C  /FUDGE/;   HOLDS LAND-USE FUDGING INFORMATION;                                NAMELIST.5
+C  /EZFUDGE/; HOLDS LAKE SURFACE HEIGHT INFO FOR EZFUDGE                         NAMELIST.6
+C  /FUDGET/:  HOLDS INFORMATION ON LAT/LON BOXES FOR NO EZFUDGE                  NAMELIST.7
+C                                                                                NAMELIST.8
+C                                                                                NAMELIST.9
+      NAMELIST /MAPBG/PHIC, XLONC, IEXP, AEXP, IPROJ, PSI1                       NAMELIST.10
+      NAMELIST /DOMAINS/ NESTIX, NESTJX, NESTI, NESTJ, DIS, RID                  NAMELIST.11
+     1,      NUMNC, NTYPE, MAXNES,NSTTYP                                         NAMELIST.12
+      NAMELIST /DATANAME/ TERNAME, LNDNAME, VGNAME, SONAME,                      NAMELIST.13
+     1                    LWNAME,  VFNAME , TSNAME                               NAMELIST.14
+      NAMELIST /OPTN/ IPRINT, IPRNTD, IFFUDG, IFTFUG, IFEZFUG, IBNDRY,           NAMELIST.15
+     1                IPRTHT, IPRTLU, IWRITE, IPFLAG,  IFANAL,                   NAMELIST.16
+     2                 ISURF,  IFTER,  IFILL,    FIN,   G30SD,                   NAMELIST.17
+     3                DATASW,TRUELAT1,TRUELAT2,ISMTHTR,VEGESOIL,                 NAMELIST.18
+     4               VEGONLY,  VSPLOT, IEXTRA                                    NAMELIST.19
+     5              ,LSMDATA, VEGTYPE                                            06NOV00.108
+      NAMELIST /FUDGE/ IFFUG, NDFUG, IFUG, JFUG,  LNDFUG                         NAMELIST.20
+      NAMELIST /EZFUDGE/ HTPS                                                    NAMELIST.21
+      NAMELIST /FUDGET/ STARTLAT, ENDLAT, STARTLON, ENDLON, NFUGBOX              NAMELIST.22
+C                                                                                NAMELIST.23

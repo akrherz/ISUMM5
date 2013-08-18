@@ -1,0 +1,18 @@
+	      ECMWF Version of Table 2 for FM92-VIII Ext. GRIB
+Parameters used in ds115.1, ECWMF reanalysis level III-B upper air dataset
+
+CODE FIGURE                     FIELD NAME                        UNITS
+
+   129                  Geopotential (orography at sfc)          m2 s-2
+
+   130                  Temperature                                 K
+
+   131                  U-component of Wind                       ms-1
+
+   132                  V-component of Wind                       ms-1
+
+   133                  Specific Humidity                         kg/kg
+
+   135                  Vertical Velocity                         Pa s-1
+ 
+   157                  Relative Humidity                            %

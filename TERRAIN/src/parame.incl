@@ -1,0 +1,2 @@
+C      IIMX,JJMX are the maximum size of the domains, NSIZE = IIMX*JJMX
+       PARAMETER (IIMX = 100, JJMX = 100, NSIZE = IIMX*JJMX)

@@ -1,0 +1,7 @@
+      REAL CDMINP,CDMINZ,CUQMAX,CUQMIN,DTIMSET,EDTMAX,EDTMIN,EDTSMN,             PARGRCU.1
+     -  EDTSMX,PBCMAX,PKDCUT,SIGCBHI,TCRIT                                       PARGRCU.2
+      INTEGER KBMAX                                                              PARGRCU.3
+      COMMON /PARGRCU/IFDTSET,DTIMSET,PBCMAX,IFCDZ,CDMINP,CDMINZ,                PARGRCU.4
+     -     EDTMIN,EDTMAX,EDTSMX,EDTSMN,TCRIT,KBMAX,SIGCBHI,PKDCUT,               PARGRCU.5
+     -     CUQMAX,CUQMIN                                                         PARGRCU.6
+      LOGICAL IFDTSET,IFCDZ                                                      PARGRCU.7

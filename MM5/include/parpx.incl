@@ -1,0 +1,3 @@
+C--Namelist switches for PX LSM                                                  PARPX.1
+      INTEGER ISMRD,NUDGE,IFGROW                                                 PARPX.2
+      COMMON /PARPX/ISMRD,NUDGE,IFGROW                                           PARPX.3

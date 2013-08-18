@@ -1,0 +1,15 @@
+c  515     CONTINUE                                                               SOLVE3.582
+c#ifdef DEBUGGAL
+c#  include <solve3_011>
+c#endif
+c                                                                                 SOLVE3.583
+c        DO 330 K=1,KL                                                            SOLVE3.584
+
+      if ( j.eq.JDEBUG.and.inest.eq.NESTDEBUG ) then
+      i = IDEBUG
+      k = KDEBUG
+      print*,'solve3_011: After calc of qdot',inest
+      print*,'qdot',qdot(i,j,k)
+      print*,'ta   ',ta(i,j,k)
+      print*,'tc   ',tc(i,j,k)
+      endif

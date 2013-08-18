@@ -1,0 +1,41 @@
+c            XKC(I,K)=AMIN1(CELL,XKHMAX)                                          SOLVE3.624
+c  460     CONTINUE                                                               SOLVE3.625
+c#ifdef DEBUGGAL
+c#  include <solve3_012>
+c#endif
+c                                                                                 SOLVE3.626
+c        DO 465 K=1,KL                                                            SOLVE3.627
+c          DO 465 I=2,ILX                                                         SOLVE3.628
+c            XKDOT(I,K)=0.25*(XKC(I,K)+XKC(I-1,K)+XKM(I,K)+XKM(I-1,K))            SOLVE3.629
+c  465     CONTINUE                                                               SOLVE3.630
+c
+      if ( j.eq.JDEBUG.and.inest.eq.NESTDEBUG ) then
+      i = IDEBUG
+      k = KDEBUG
+         print*,'solve3_012: After calc of xkc',inest
+         print*,'xkc',xkc(i,k)
+         print*,'xkm',xkm(i,k)
+         print*,'ub(i+1,j+1,k)',ub(i+1,j+1,k)
+         print*,'ub(i+1,j,k)',ub(i+1,j,k)
+         print*,'ub(i+1,j-1,k)',ub(i+1,j-1,k)
+         print*,'ub(i,j+1,k)',ub(i,j+1,k)
+         print*,'ub(i,j,k)',ub(i,j,k)
+         print*,'ub(i,j-1,k)',ub(i,j-1,k)
+         print*,'vb(i+1,j+1,k)',vb(i+1,j+1,k)
+         print*,'vb(i+1,j,k)',vb(i+1,j,k)
+         print*,'vb(i+1,j-1,k)',vb(i+1,j-1,k)
+         print*,'vb(i,j+1,k)',vb(i,j+1,k)
+         print*,'vb(i,j,k)',vb(i,j,k)
+         print*,'vb(i,j-1,k)',vb(i,j-1,k)
+         print*,'RHSCR2(i+1,j+1)',RHSCR2(i+1,j+1)
+         print*,'RHSCR2(i+1,j)',RHSCR2(i+1,j)
+         print*,'RHSCR2(i+1,j-1)',RHSCR2(i+1,j-1)
+         print*,'RHSCR2(i,j+1)',RHSCR2(i,j+1)
+         print*,'RHSCR2(i,j)',RHSCR2(i,j)
+         print*,'RHSCR2(i,j-1)',RHSCR2(i,j-1)
+         print*,'c200 ',c200
+         print*,'xkhz ',xkhz
+         print*,'xkhmax',xkhmax
+         print*,'ta   ',ta(i,j,k)
+         print*,'tc   ',tc(i,j,k)
+      endif

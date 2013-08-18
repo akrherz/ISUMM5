@@ -1,0 +1,16 @@
+C                                                                                RPSTARN.1
+C --- COMMON BLOCK RPSTAR(Nest Domain), 1/PSTAR                                  RPSTARN.2
+C                                                                                RPSTARN.3
+      REAL CRXN,DMDXN,DMDYN,DPSDXMN,DPSDYMN,EXN,PDOTAN,PDOTBN,RPDOTAN,           RPSTARN.4
+     1 RPDOTBN,RPSAN,RPSBN,RPSCN,SRXN                                            RPSTARN.5
+      POINTER (INAPDA, PDOTAN(MIX,MJX)), (INAPDB, PDOTBN(MIX,MJX)),              RPSTARN.6
+     1        (INARPA,  RPSAN(MIX,MJX)), (INARPB,  RPSBN(MIX,MJX)),              RPSTARN.7
+     2       (INARPDA,RPDOTAN(MIX,MJX)),(INARPDB,RPDOTBN(MIX,MJX)),              RPSTARN.8
+     3        (INARPC,  RPSCN(MIX,MJX)),                                         RPSTARN.9
+     4     (INADPSDXM,DPSDXMN(MIX,MJX)),(INADPSDYM,DPSDYMN(MIX,MJX)),            RPSTARN.10
+     5       (INADMDX,  DMDXN(MIX,MJX)),    (INADMDY,DMDYN(MIX,MJX)),            RPSTARN.11
+     6         (INAEX,    EXN(MIX,MJX)),                                         RPSTARN.12
+     7        (INACRX,   CRXN(MIX,MJX)),    (INASRX, SRXN(MIX,MJX))              RPSTARN.13
+      COMMON /RPSTARN/INAPDA,INAPDB,INARPA,INARPB,INARPDA,INARPDB,               RPSTARN.14
+     1                INARPC,INADPSDXM,INADPSDYM,INADMDX,INADMDY,                RPSTARN.15
+     2                INAEX, INACRX,   INASRX                                    RPSTARN.16

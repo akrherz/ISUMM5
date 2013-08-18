@@ -1,0 +1,12 @@
+C    CONTENT:   THE POINTERS OF ARRAYS HOLDING THE INPUT DATA.                   SPACE.1
+C    USED IN:   RDLDTR,  TERDRV.                                                 SPACE.2
+C                                                                                SPACE.3
+      COMMON /SPACE / ZLON(NOBT), ZLAT(NOBT), HTOB(NOBT)                         SPACE.4
+      COMMON /SPACE0/ ZLAND(13,NOBT)                                             SPACE.5
+      COMMON /SPACEI/ IBLOCK                                                     SPACE.6
+      COMMON /SPACE1/ VEGECAT(NVC,NOBT)                                          SPACE.7
+      COMMON /SPACE2/ SOILCAT(1,1)                                               SPACE.8
+      COMMON /SPACE3/ VEGEFRC(12,1)                                              SPACE.9
+      COMMON /SPACE4/ TEMPGRD(1)                                                 SPACE.10
+      COMMON /SPACE5/ VEGECAT30S(NOBT)                                           SPACE.11
+      COMMON /SPACE6/ SOILCAT30S(1)                                              SPACE.12

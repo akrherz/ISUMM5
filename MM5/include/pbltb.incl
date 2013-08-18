@@ -1,0 +1,2 @@
+      REAL PSIHTB,PSIMTB                                                         PBLTB.1
+      COMMON /PBLTB/PSIMTB(0:1000),PSIHTB(0:1000)                                PBLTB.2

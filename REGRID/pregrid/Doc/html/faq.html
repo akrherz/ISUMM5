@@ -1,0 +1,271 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; OSF1 V4.0 alpha) [Netscape]">
+</head>
+<body text="#000000" bgcolor="#CCFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<h1>
+FAQ</h1>
+We're still working on it.&nbsp; Eventually, we'll put in more answers,
+and more questions.
+<p>
+<br><b><font size=+1><a href="#GRIB codes">1</a>.</font></b>
+   I want to get different fields from my GRIB file.  How can I find the appropriate code 
+   numbers for my own pregrid Vtable?
+<br><b><font size=+1><a href="#GRIB fields">2</a>.</font></b>
+   How can I find out what fields are in my GRIB file?
+<br>3. pregrid didn't work.&nbsp; What went wrong?
+<br>4. regridder didn't work.&nbsp; What went wrong?
+<br><b><font size=+1><a href="#NetCDF">5</a>.</font></b>
+   Does REGRID support NetCDF input?
+<br><b><font size=+1><a href="where_to_find_analyses.html">6.</a></font></b>
+Where can I find data sets?
+<br>7. Does REGRID support _<i><u>    </u></i>_ data (fill in the blank)?
+<br>8. Does REGRID support _<i><u>    </u></i>_ map projection (fill in
+the blank)?
+<br><b><font size=+1><a href="#Soil Data from NNRP">9.</a></font></b> I
+want to run the OSU Land-Surface Model in MM5.&nbsp; How do I get pregrid
+to read all of the necessary fields from the NCEP/NCAR&nbsp;Reanalysis
+dataset?
+<br><b><font size=+1><a href="#MOSAIC">10.</a></font></b> How do I handle
+data sets that split up the globe into several tiles and distribute
+      the tiles as separate data files?
+<p><a NAME="GRIB codes"></a>
+<br>
+<hr><b><font size=+2>I want to get different fields from my GRIB file.
+How can I find the appropriate code numbers for my own pregrid
+Vtable?</font></b><p> 
+The first step is to find out what fields are in the GRIB file.  For
+that, see the  <a href="#GRIB fields">related question</a>.  As
+always, the place from which you received the GRIB data should have
+the best information on the content of the GRIB files.  Once you know
+what fields are in your GRIB file, decide which fields you want to
+extract using the pregrid program.  Running the gribprint program
+(supplied with the REGRID code) on a GRIB file prints out a list of 
+code numbers describing the various fields in the file.  Use those
+code numbers to fill out the Vtable.
+<p><a NAME="GRIB fields"></a>
+<br>
+<hr WIDTH="100%"><b><font size=+3>How can I find out what fields are in
+my GRIB file?</font></b><br>
+As always, the first place to go for information about your GRIB files
+is the place you got the GRIB files themselves.  Whatever center, or
+organization, or modeling group supplied you with the GRIB files
+should also have some documentation about what those files contain.<p>
+In trying to find out the contents of various GRIB files, one document
+I have found invaluable is NCEP Office Note 388, a description of the
+GRIB format.  This document can be found in a variety of places in the
+internet, including 
+<a href="ftp://ftp.ncep.noaa.gov/pub/nws/nmc/docs/gribed1">
+ftp.ncep.noaa.gov/pub/nws/nmc/docs/gribed1 </a> <p>
+A handy utility program, called "gribprint" is provided in the REGRID package
+to help the user determine what fields are in a&nbsp; GRIB file.&nbsp;&nbsp;
+Program gribprint is created automatically when the REGRID package is compiled.
+<p>&nbsp;&nbsp; Usage:&nbsp; gribprint [-v | -V] file
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -v&nbsp;&nbsp; : Print more
+information about the GRIB records
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -V&nbsp; : Print way too
+much information about the GRIB records
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; file&nbsp; : GRIB file to
+read
+<p>The printout from gribprint can be a little strange to interpret.&nbsp;
+Just executing "gribprint file" gives you something like this:
+<br><br>
+<table CELLSPACING=0 CELLPADDING=2 NOSAVE >
+<td ALIGN=RIGHT>1</td> <td ALIGN=RIGHT>130</td> <td ALIGN=RIGHT>102</td> <td ALIGN=RIGHT>0&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>2</td> <td ALIGN=RIGHT>2</td> <td ALIGN=RIGHT>102</td> <td ALIGN=RIGHT>0&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>3</td> <td ALIGN=RIGHT>7</td> <td ALIGN=RIGHT>109</td> <td ALIGN=RIGHT>1&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>4</td> <td ALIGN=RIGHT>11</td> <td ALIGN=RIGHT>109</td> <td ALIGN=RIGHT>1&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>5</td> <td ALIGN=RIGHT>52</td> <td ALIGN=RIGHT>109</td> <td ALIGN=RIGHT>1&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr> 
+<td ALIGN=RIGHT>6</td> <td ALIGN=RIGHT>51</td> <td ALIGN=RIGHT>109</td> <td ALIGN=RIGHT>1&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>7</td> <td ALIGN=RIGHT>33</td> <td ALIGN=RIGHT>109</td> <td ALIGN=RIGHT>1&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>8</td> <td ALIGN=RIGHT>34</td> <td ALIGN=RIGHT>109</td> <td ALIGN=RIGHT>1&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>9</td> <td ALIGN=RIGHT>158</td> <td ALIGN=RIGHT>109</td> <td ALIGN=RIGHT>1&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>10</td> <td ALIGN=RIGHT>153</td> <td ALIGN=RIGHT>109</td> <td ALIGN=RIGHT>1&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>11</td> <td ALIGN=RIGHT>58</td> <td ALIGN=RIGHT>109</td> <td ALIGN=RIGHT>1&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>12</td> <td ALIGN=RIGHT>20</td> <td ALIGN=RIGHT>1</td> <td ALIGN=RIGHT>0&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>13</td> <td ALIGN=RIGHT>39</td> <td ALIGN=RIGHT>100</td> <td ALIGN=RIGHT>50&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+<td ALIGN=RIGHT>14</td> <td ALIGN=RIGHT>39</td> <td ALIGN=RIGHT>100</td> <td ALIGN=RIGHT>75&nbsp;0&nbsp;2000-01-21_12:00&nbsp;+00</td> </tr>
+</table>
+
+<p>The first column is simply a sequential numbering of the GRIB record
+within the file.&nbsp; The second column is the parameter code number.&nbsp;
+Unfortunately, these code numbers are not standard in GRIB files, so the
+user will need to consult some documentation regarding the particular GRIB
+dataset in question to determine what these code numbers correspond to.&nbsp;
+The third column is the level type.&nbsp; The fourth column is the level
+value.&nbsp; The fifth column is a second level value, used only for those
+fields that define levels by two values (such as an average over a layer).&nbsp;
+The sixth column is the date, and the seventh column is the forecast hour.
+<p>With the -v option, "gribprint -v file" will give you something like
+this:<br><br>
+<table CELLSPACING=0 CELLPADDING=0 NOSAVE >
+<td ALIGN=LEFT>GRIB SECTION 0:</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Grib Length</td> <td ALIGN=RIGHT>26672</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Grib Edition</td><td ALIGN=RIGHT>1</td></tr>
+</table>
+<br>
+<table CELLSPACING=0 CELLPADDING=0 NOSAVE >
+<td ALIGN=LEFT>GRIB SECTION 1:</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Length of PDS</td><td ALIGN=RIGHT>28</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Parameter Table Version</td><td ALIGN=RIGHT>2</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Center ID</td><td ALIGN=RIGHT>7</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Process ID</td><td ALIGN=RIGHT>89</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Grid ID</td><td ALIGN=RIGHT>104</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Is there a BITMAP?</td><td ALIGN=RIGHT>11000000</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Parameter</td><td ALIGN=RIGHT>130</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Level type</td><td ALIGN=RIGHT>102</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Height, pressure, etc.</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Year</td><td ALIGN=RIGHT>100</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Month</td><td ALIGN=RIGHT>1</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Day</td><td ALIGN=RIGHT>21</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Hour</td><td ALIGN=RIGHT>12</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Minute</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Forecast time unit</td><td ALIGN=RIGHT>1</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; P1</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; P2</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Time Range Indicator</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Number in Ave?</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Number missing from ave?</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Century</td><td ALIGN=RIGHT>20</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Sub-center</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Decimal scale factor</td><td ALIGN=RIGHT>0</td></tr>
+</table>
+<br>
+<table CELLSPACING=0 CELLPADDING=0 NOSAVE >
+<td ALIGN=LEFT>GRIB SECTION 2:</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Length of GRID Desc. Section</td><td ALIGN=RIGHT>32</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Number of V. Coordinate Parms</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; List Starting point</td><td ALIGN=RIGHT>255</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Data Representation type</td><td ALIGN=RIGHT>5</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Polar Stereographic Grid</td></tr>
+</table>
+<blockquote>
+<table CELLSPACING=0 CELLPADDING=0 NOSAVE >
+<td ALIGN=LEFT>NI</td><td ALIGN=RIGHT>147</td></tr>
+<td ALIGN=LEFT>NJ</td><td ALIGN=RIGHT>110</td></tr>
+<td ALIGN=LEFT>Lat 1</td><td ALIGN=RIGHT>-268</td></tr>
+<td ALIGN=LEFT>Lon 1</td><td ALIGN=RIGHT>-139475</td></tr>
+<td ALIGN=LEFT>Resolution and Component</td><td ALIGN=RIGHT>&nbsp;&nbsp;00001000</td></tr>
+<td ALIGN=LEFT>Lov</td><td ALIGN=RIGHT>-105000</td></tr>
+<td ALIGN=LEFT>Dx</td><td ALIGN=RIGHT>90755</td></tr>
+<td ALIGN=LEFT>Dy</td><td ALIGN=RIGHT>90755</td></tr>
+<td ALIGN=LEFT>Projection center</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>Scanning mode</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>I-Scanning increment</td><td ALIGN=RIGHT>1</td></tr>
+<td ALIGN=LEFT>J-Scanning increment</td><td ALIGN=RIGHT>1</td></tr>
+</table>
+</blockquote>
+<table CELLSPACING=0 CELLPADDING=0 NOSAVE >
+<td ALIGN=LEFT>GRIB SECTION 3:</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Length of bit map section</td><td ALIGN=RIGHT>2028</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Number of unused bits</td><td ALIGN=RIGHT>6</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Numeric</td><td ALIGN=RIGHT>0</td></tr>
+</table>
+<p>GRIB SECTION 4:
+<table CELLSPACING=0 CELLPADDING=0 NOSAVE >
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Length of BDS</td><td ALIGN=RIGHT>24572</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; 0/1: grid-point or sph. harm. data</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; 0/1: simple or complex packing</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; 0/1: floating or integer</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; 0/1: No addl flags or addl flags</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Unused bits</td><td ALIGN=RIGHT>12</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Binary Scale Factor</td><td ALIGN=RIGHT>0</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Reference Value</td><td ALIGN=RIGHT>96077.06250000</td></tr>
+<td ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp; Number of bits for packing</td><td ALIGN=RIGHT>14</td></tr>
+</table>
+<br>
+<p><a NAME="NetCDF"></a>
+<br>
+<hr WIDTH="100%"><b><font size=+3>Does REGRID support NetCDF
+data?</font></b><br>
+<p>
+Short answer: No.
+<p>
+However, if you can read the NetCDF data and put all the necessary
+fields into our REGRID <a href="intermediate_format.html">Intermediate
+Format</a>, the <i>regridder</i> program should happily regrid it 
+for you.
+
+<h1><p>
+<a NAME="Soil Data from NNRP"></a>
+<hr WIDTH="100%">I want to run the OSU Land-Surface Model in MM5.&nbsp;
+How do I get pregrid to read all of the necessary fields from the NCEP/NCAR&nbsp;Reanalysis
+dataset?</h1>
+If you have access to NCAR Crays, set up the get_nnrp.deck and submit from
+your local machine.&nbsp; Or set up and submit the get_nnrp.csh deck from
+the NCAR Cray machine.&nbsp; This should return to you a number of files
+of the form pgb.* and a number of files of the form SFCNNRP_*.&nbsp; The
+pgb.* files contain the atmospheric fields (and some surface fields).&nbsp;
+The SFCNNRP* files contain the surface fields and the fields necessary
+for input to the Land Surface Model (LSM) in MM5.&nbsp; Then set up your
+pregrid.csh shell script something like this:
+<p>set SRC3D = GRIB&nbsp;&nbsp; # Because it's a pretty generic GRIB dataset
+you're accessing.
+<p>set InFiles = ( ${DataDir}/pgb* ${DataDir}/SFCNNRP* )
+<p>set SRCSST = $SRC3D&nbsp;&nbsp; # You're getting SST from the same data
+set as the other fields
+<p>set InSST = ( )&nbsp;&nbsp;&nbsp;&nbsp; # Since SST is from the same
+files, you do not specify any new files here.
+<p>set SRCSNOW = $SRC3D # Same for snow as for SST
+<br>set InSnow = ( )
+<p>set SRCSOIL = $SRC3D&nbsp; # Same for soil as for snow and SST
+<br>set InSoil = ( )
+<p>Set up your namelist as for your case.
+<p>The bottom section, just before the "END USER MODIFICATION" banner,
+needs to be modified.&nbsp; Tell the program to use the tables that
+have been set up for
+the NCEP/NCAR Reanalysis Project, for the atmospheric, SST, Snow, and
+Soil variables.&nbsp; These are the NNRP* Vtables.&nbsp; This section
+should look something like this:<br><br>
+&nbsp;&nbsp;set VT3D&nbsp;&nbsp;=&nbsp;&nbsp;grib.misc/Vtable.NNRP3D<br>
+&nbsp;&nbsp;set VTSST&nbsp;&nbsp;=&nbsp;&nbsp;grib.misc/Vtable.NNRPSST<br>
+&nbsp;&nbsp;set VTSNOW&nbsp;&nbsp;=&nbsp;&nbsp;grib.misc/Vtable.NNRPSNOW<br>
+&nbsp;&nbsp;set VTSOIL&nbsp;&nbsp;=&nbsp;&nbsp;grib.misc/Vtable.NNRPSOIL<br>
+<p>
+
+<h1><p>
+<a NAME="MOSAIC"></a>
+<hr WIDTH="100%">How do I handle data sets that split up the globe
+    into several tiles and distribute the tiles as separate data files?
+</h1>
+Some data sets may split the globe into several tiles.  One example of
+    this is the WAFS/ICAO/International Exchange/FOS Grids.  It's not
+    exactly straightforward to handle this situation, but there's
+    nothing really complicated.  The determined user (that's you)
+    should have no difficulties following the procedure.  
+
+<p>In this situation, the pregrid program must be run once for each
+      tile.  Each individual pregrid job must refer only to the input
+      data files for one particular tile.  
+    After each individual pregrid job, rename the output files so that
+    the next run does not overwrite the files just created.  For
+      example, you might run pregrid for four different tiles, 
+    changing file names from "FILE:YYYY-MM-DD_HH" to "TILE1:YYYY-MM-DD_HH", 
+    "TILE2:YYYY-MM-DD_HH", "TILE3:YYYY-MM-DD_HH",
+      "TILE4:YYYY-MM-DD_HH" (where, as usual, YYYY-MM-DD_HH is
+      replaced by the particular time or times you've processed. <p>
+
+After you've run pregrid several times and have created Regrid
+      intermediate files for the individual tiles, you may combine all
+      four tiles into one grid with the program 
+    "build_mosaic".  The source-code for this program is found in the
+    pregrid/util directory.  To make the executable, enter "make
+    build_mosaic".  This creates an executable called "build_mosaic".
+    To combine the tiles into one grid, execute 
+    "build_mosaic TILE*:YYYY-MM-DD_HH".  This will create a file
+    called "MOSAIC:YYYY-MM-DD_HH"  Note that this program must be run
+      once for each particular time.  When you're done, the
+      MOSAIC:YYYY-MM-DD_HH files should go right into the regridder
+      program with no problems.
+<p>
+<hr WIDTH="100%">
+<br><a href="Documentation_Home.html">Documentation HOME</a>
+<p>
+<!-- hhmts start -->
+Last modified: Fri Oct 27 11:52:21 MDT 2000
+<!-- hhmts end -->
+</body>
+</html>

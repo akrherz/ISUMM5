@@ -1,0 +1,51 @@
+cc$& local(i,j,k,kp1,km1,wo,cc,cdd,cj,pyup,pyvp,ptend,rofac,                      SOUND.267
+cc$& tk,tkm,ca,g1,g2,c,b,aa,rhs,denom,pxup,pxvp)                                  SOUND.268
+c#ifdef MPP1
+c#  include <mpp_sound_30.incl>
+c#endif
+c#ifdef DEBUGGAL
+c#  include <sound_008>
+c#endif
+c        DO 400 J=2,M-1                                                  SOUND.26         9
+cC                                                                                SOUND.270
+cC     DO K=1,N                                                                   SOUND.271
+cC     DO I=2,L-1                                                                 SOUND.272
+
+      if(inest.eq.NESTDEBUG)then
+        print*,'sound_008: before 400 loop'
+      i=IDEBUG
+      j=JDEBUG
+      print*, 'ps0  ',ps0(i  ,j-1),ps0(i  ,j  )
+      print*, '     ',ps0(i-1,j-1),ps0(i-1,j  )
+      print*, 'ht   ',0.0        ,ht(i+1,j  ), 0.0
+      print*, '     ',ht(i  ,j-1),ht(i  ,j  ),ht(i  ,j+1)
+      print*, '     ',0.0        ,ht(i-1,j  ), 0.0
+      print*, 'msfd ',msfd(i+1,j  ),msfd(i+1,j+1)
+      print*, '     ',msfd(i  ,j  ),msfd(i  ,j+1)
+      print*, 'msfx ',msfx(i,j  )
+
+      do k = 1, mkx
+      print*,'k = ',k
+      print*, 'ua   ',k,ua(i+1,j,k),ua(i+1,j+1,k)
+      print*, '     ',k,ua(i,j,k),ua(i,j,k+1)
+      print*, 'va   ',k,va(i+1,j,k),va(i+1,j+1,k)
+      print*, '     ',k,va(i,j,k),va(i,j,k+1)
+      print*, 'ta   ',k,ta(i,j,k)
+      print*, 'wa   ',k,wa(i,j,k)
+      print*, 'ppa  ',k,ppa(i,j,k)
+      print*, 't0   ',k,t0(i,j,k)
+
+      print*, 'ub   ',k,ub(i,j,k)
+      print*, 'vb   ',k,vb(i,j,k)
+      print*, 'tb   ',k,tb(i,j,k)    ! even though this is communicated
+                                     ! the neighbors aren't used at this point
+                                     ! can get rid of the communication
+      print*, 'qvb  ',k,qvb(i,j,k-1),qvb(i,j,k)
+      print*, '     ',k,qvb(i-1,j-1,k),qvb(i-1,j,k)
+      print*, 'ppb  ',k,ppb(i,j,k-1),ppb(i,j,k)
+      print*, '     ',k,ppb(i-1,j-1,k),ppb(i-1,j,k)
+
+      enddo
+
+      endif
+

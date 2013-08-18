@@ -1,0 +1,9 @@
+CSTART   mpp_errob_40.incl
+          IIIS = IS_X0( IOB )
+          IIIE = IE_X0( IOB )
+          JJJS = JS_X0( JOB )
+          JJJE = JE_X0( JOB )
+          MP_LOCAL_COBMASK(N) = ( IIIS .LE. MIX .AND. IIIE .GE. 1  .AND.
+     +                            JJJS .LE. MJX .AND. JJJE .GE. 1 )
+          IF ( MP_LOCAL_COBMASK(N) ) THEN
+CEND   mpp_errob_40.incl

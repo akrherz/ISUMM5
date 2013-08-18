@@ -1,0 +1,5 @@
+The files in this directory contain inserts that can be added to the
+code for debugging purposes.  A few lines of context are inserted
+at the start of each file to show where in the code they go (the target
+source file is included in the name of each file here).
+

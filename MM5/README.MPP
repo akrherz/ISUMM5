@@ -1,0 +1,578 @@
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+
+PLEASE NOTE: On-line information on MPP option available at:
+
+      http://www.mmm.ucar.edu/mm5/mpp
+
+There is a web page describing MPP performance benchmarking, with some
+results, at:
+
+      http://www.mmm.ucar.edu/mm5/mpp/cowbench 
+
+There is also a log of fixes and tips (responses to user problems)
+at the following URL:
+
+      http://www.mmm.ucar.edu/mm5/mpp/helpdesk
+
+
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+---------------------------------------
+Notes on Version 3-7 release of MPP-MM5
+---------------------------------------
+
+I.  Fixes, enhancements for 3-7:
+
+  A. New physical options included in MPP version:
+     ITPDIF = 2 : z-diffusion
+     LEVSLP : level at which solar radiation starts to account
+              for the effect of orography
+     ITADVM & IQADVM = 1 : using an instability limiter for
+                           advection
+
+  B. New physical options NOT included in MPP version:
+     OROSHAW = 1 : this option takes orography shadowing
+                   into account IF solar radiation is 
+                   accounted for. 
+                   If set to 1 during an MPP run, it will be
+                   reset to 0.
+
+---------------------------------------
+Notes on Version 3-6 release of MPP-MM5
+---------------------------------------
+
+I.  Fixes, enhancements for 3-6:
+
+  A. Includes all bug fixes between the release of 3-5 (Dec. 2001) and the
+     release of 3-6 (December 2002).  See
+              http://www.mmm.ucar.edu/mm5/mpp/helpdesk.
+
+  B. New NOAH LSM (ISOIL=2) is included in MPP version.
+
+  C. New polar physics option (activated by settting IPOLAR = 1 in configure.user)
+     is included in MPP version.
+
+---------------------------------------
+Notes on Version 3-5 release of MPP-MM5
+---------------------------------------
+
+I.  Fixes, enhancements for 3-5:
+
+  A. Includes all bug fixes between the release of 3-4 (Nov. 2000) and the
+     release of 3-5 (December 2001).  See
+              http://www.mmm.ucar.edu/mm5/mpp/helpdesk.
+
+  B. New KF (ICUPA=8) is included in MPP version.
+
+  C. The coupling of Eta PBL and OSU LSM is included in MPP version.
+
+  D. The simple snow model is included in MPP version.
+
+  E. A batch deck for running MPP MM5 job on NCAR's blackforest is
+     provided. The deck can be created by setting RUNTIME_SYSTEM = sp2.
+     A deck to use OpenMP only is also available (but probably not 
+     recommended on blackforest).
+
+
+Last updated: July 26, 2001, JM/AB
+
+----------------------
+Contents of this file:
+----------------------
+
+     Compiling and Running on MPP machines (also, REPORTING PROBLEMS)
+
+     Note on Version 3-4 release of MPP-MM5
+
+     Notes on other MPP-related features
+
+     Note on 'how-to' descriptions for adding
+         physics modules to MM5 and for checking bit-for-bit agreement
+         with the non-MPP code).
+
+-------------------------------------
+Compiling and Running on MPP machines
+-------------------------------------
+
+1. Obtain the MPP tar file from the same directory MM5 tar file resides.
+
+2. Uncompress and untar the MPP tar file in same directory as
+   configure.user. This will create a directory called 
+   MPP after untaring the file.
+
+3. Edit configure.user file to change the following:
+
+   Set minimum number of processors in each direction in section 7 
+       depending on the total number of processors available.
+   (http://box.mmm.ucar.edu/mm5/mpp/helpdesk/19990425.html)
+
+   Un-comment (remove leading '#') from appropriate subsection of
+   Section 7 in configure.user for your computer.
+
+   pre-compilation switches: section 5 and 6 of configure.user.
+
+4. Type 'make mpp' to compile the code. A executable called
+   mm5.mpp will be generated in the directory Run/. All object files
+   are located in MPP/build directory after MPP compilation.
+
+5. Type 'make mm5.deck' to create a file mm5.deck.  
+
+6. Edit mm5.deck to select other switches; in particular review the 
+   NESTIX and NESTJX settings, since these are not set from the configure.user.
+
+7. Execute 'mm5.deck' - this creates the namelist file: Run/mmlif file.  Since
+   commands vary from machine to machine and there are sometimes scheduler
+   considerations, MPP mm5.deck scripts only create a namelist: they do not run
+   the program.  Consult the documentation and administration staff
+   for your system.  Hint: this may involve using the mpirun command.
+
+8. After the completion of each job, you will see many files created during
+   the execution in directory Run/, such as rsl.error.00xx, rsl.out.00xx, 
+   and show_domain_00xx (where xx are numbers from 00 to maximum number of 
+   processors minus 1). These files may be removed if the job has run
+   properly.  File rsl.out.0000 contains output similar to that of
+   mm5.print.out file.  When reporting runtime problems to mesouser@ucar.edu,
+   please include any of these files that contain error messages.
+
+9. When you change configure.user, type 'make mpclean' then type 
+   'make mpp' again to create a new executable.  If you ever move the code
+   to a different directory, type 'make uninstall' then 'make mpp'.  This
+   may also be used as a last resort to get the code out of "a state."
+
+   BEFORE REPORTING A PROBLEM, please 'make uninstall' then 'make mpp' to
+   make sure you can repeat the problem.  REPORT PROBLEMS to
+   mesouser@ucar.edu and please be as specific as possible about the
+   computer/model configuration and the failure behavior you are
+   reporting. Send your configure.user file, your mmlif file, and any
+   rsl.error.* or rsl.out.* files containing tell-tale error messages
+   (or summarize the messages in your email).
+
+---------------------------------------
+Notes on Version 3-4 release of MPP-MM5
+---------------------------------------
+
+I.  Fixes, enhancements for 3-4:
+
+  A. Includes all bug fixes between the release of 3-3 (Jan. 2000) and the
+     release of 3-4 (November 2000).  See
+              http://www.mmm.ucar.edu/mm5/mpp/helpdesk.
+
+  B. The model now allows for time-step change at a restart. Please see 
+     the README file for further details.
+
+  C. Allow SST/SEAICE/SNOW COVER to be updated during (long) model 
+     simulations. The model also allows nests to input LOWBDY files if 
+     they are present in the Run directory. Please see the README file 
+     for further details.
+
+  D. Add capability to output time-series of 14 2-D variables.
+
+  E. Nest initialization with LSM and IOVERW=2 option. This allows
+     nest initialized at either the beginning or later model times to
+     have the correct land-water masked fields without getting them
+     from MMINPUT files.
+
+
+II.  MPP testing
+
+  A.   Platforms tested
+
+    1.   Compaq Cluster
+
+Complete set of tests (see below) using the MMM 4100 cluster; works in
+both MPI mode and combined MPI/OpenMP mode across multiple nodes.
+
+    2.   IBM SP
+
+Partial testing on Winterhawk-II system at NCAR (blackforest) using AFWA
+T3A scenario and MRF, mixed ice, Grell cumulus, Dudhia radiation, and
+multi-layer soil. No nesting.
+
+    3.   Fujitsu VPP 5000
+
+Tested at Central Weather Bureau, Taiwan using CAA test scenario and
+MRF, mixed ice, Grell cumulus, Dudhia radiation, and multi-layer soil;
+triply nested (4 domains).
+
+    4.   SGI Origin
+
+Tested MPP version (section 7c) on SOC case.
+
+    5.   Sun
+
+Tested MPP version (section 7i) on SOC case.
+
+    6.   Linux cluster with Myrinet 2000 interconnect.
+
+Tested MPP version (section 7g) over SOC and World-Series Rainout cases on up
+to 60 processors.
+
+
+  B.   Test regimen on MMM Compaq Cluster
+--------------------------------------------------------------------------
+| - All testing was done on MMM Compaq Cluster using the Storm of the 
+|   Century data set.
+| - All tests compare non-MPP/single-thread with MPP/single-thread.
+| - All cases use MAXNES=2 unless otherwise stated.
+| - All cases use TIMAX=60. and TAPFRQ = 30. unless otherwise stated.
+| - All executables were compiled with option -g for bit-for-bit comparison,
+|   and with -DBIT_FOR_BIT_KLUDGE when IBLTYP=2 or IBLTYP=6 were used. 
+|
+| The "options" column contains brief descriptions of the options
+| tested. E.g., (KF,MRF,AFWA) means KF cumulus, MRF PBL, with the rest
+| of the options set to the standard AFWA ones. (Standard AFWA options
+| are Blackadar or MRF, mixed ice, Grell cumulus, Dudhia radiation, and
+| multi-layer soil).
+|
+| The number of MPI processes and threads used is recorded in the "-np" and
+| "omp" columns, respectively. 
+| 
+| In the "date" column is the date (mmyy) that bit-for-bit agreement between
+| the non-MPP and MPP MMOUT_DOMAIN1 and MMOUT_DOMAIN2 was confirmed, unless
+| otherwise stated in the "comments" column.
+| 
+| 
+| test  options            -np omp date comments
+| ----  -------            --- --- ---- --------
+| 1a    (Blackadar,AFWA)    4   4  1020 TIMAX=360.       (-DBIT_FOR_BIT_KLUDGE) 
+| 
+| 1b    (MRF,AFWA)          4   4  1026 TIMAX=180., w&w/o LOWBDY_DOMAIN2
+|                           4   2  1106 -Tested restart with different DT.
+| 
+| 1c    Land Surface Model                  
+|       (MRF,ISOIL=2)       4   2  1025 IOVERW=0, w&w/o LOWBDY_DOMAIN2
+|                                       -Non-MPP v3.4 mods required MPP mods to:
+|                                        mp_stotndt.F,define_comms.F,packdown.incl,
+|                                        mpp_initnest_30.incl,bcast_size.F
+|                                         
+|       (MRF,ISOIL=2)       4   1  1102 IOVERW=2, no MMINPUT_DOMAIN2,LOWBDY_DOMAIN2
+|                                       - required fix to nestlsm.F
+| 
+| 1d    (GS,AFWA)          12   1   "   (-DBIT_FOR_BIT_KLUDGE)
+| 
+| 1e    (PX,AFWA)           -   -  ---- New, not yet working in MPP.
+| 
+| 1e    Incr. output:
+|       (INCTAP,noFDDA)     4   2  1027      
+|       (BUFFRQ,noFDDA)     4   2  1027         
+| 
+| 2a    IMPHYS=4:
+|       (MRF)               6   2  1026 w/o LBDYIN_DOMAIN2
+|       (GS)                6   2  1026 w/o LBDYIN_DOMAIN2  (-DBIT_FOR_BIT_KLUDGE)
+|            
+| 2b Cumulus options:
+|       (KF,MRF,AFWA)       4   2  1027 ICUPA=6,w/o LOWBDYIN_DOMAIN2  
+|       (BM,MRF,AFWA)       4   2  1027 ICUPA=7,with LOWBDYIN_DOMAIN2 
+|       (FC,MRF,AFWA)       4   2  1027 ICUPA=5,with LOWBDYIN_DOMAIN2 (bugfix)  
+|       (KUO,MRF,AFWA)      4   2  1027 ICUPA=2,w/o LOWBDYIN_DOMAIN2  
+|   
+| 2c Radiation options:
+|       (CCM2, 1a)          4   2  1027 w/o LOWBDYIN_DOMAIN2 (-DBIT_FOR_BIT_KLUDGE)   
+|       (RRTM)              4   3  1027 w/o LOWBDYIN_DOMAIN2 (-DBIT_FOR_BIT_KLUDGE)  
+| 
+| 2d IOVERW settings:
+|       (IOVERW=1)          6   2  1027 w/o LOWBDY_DOMAIN2         
+|       (IOVERW=2)          6   1  1019 TIMAX=780.,ISSTVAR=1 w&w/o LOWBDY_DOMAIN2,
+|                                       -Tested w&w/o restart option (at TIMAX=360).
+|                                       -Non-MPP v3.4 mods required MPP mods to:
+|                                        lbdyin.F,mpp_lbdyin_00.incl,mpp_lbdyin_00.incl, 
+|                                        define_comms.F,rslcom.inc,rsl_bcast.c
+|--------------------------------------------------------------------------
+
+
+III.    Status of MM5 Features with MPP Option
+
+  A.  Nesting
+
+Feedback options IFEED = 0,3,and 4 work. IFEED=4 is preferred over
+IFEED=3 for parallel performance reasons.  The initialization options
+IOVERW=0,1,2 work.
+
+  B.  Land surface.
+
+All land surface options, including the OSU LSM option (ISOIL=2)
+are working.
+
+  C.  Data assimilation
+
+Gridded nudging (FDDAGD=1) works.  Obs nudging (FDDAOB=1) is not well
+tested.
+
+  D.  PBL
+
+Blackadar (IBLTYP=2), MRF (IBLTYP=5), and Gayno-Seaman (IBLTYP=6) options
+work. Other PBL options should work but have not been tested.
+
+  E.  Microphysics
+
+The simple-ice (IMPHYS=4) and mixed-phase (IMPHYS=5) schemes have been
+tested and work.   The others probably work but have not been tested
+yet for MPP.  MPHYSTBL should work but has not been tested yet on MPP.
+
+  F.  Radiation
+
+The cloud (IFRAD=2), CCM2 (IFRAD=3), and the new RRTM scheme (IFRAD=4)
+work with MPP.  Others should work.
+
+  G.  Cumulus
+
+Kuo (ICUPA=2), Grell (ICUPA=3), FC (ICUPA=5), KF (ICUPA=6), and BM
+(ICUPA=7) work with MPP.  Arakawa Schubert does not work with MPP.
+
+  H.  Output options:
+
+     1.   MPP_IO_NODE
+
+This is an integer namelist variable that appears in the OPARAM
+section.  Its settings either '0' (no i/o node) or '1' (i/o node).
+Default 0.  Replaces the -DAFWA_IO compile-time option from v2 (same
+functionality but now specifiable in namelist, without having to
+recompile).  This causes node zero to serve only as an I/O node and the
+remainder of the nodes work as compute nodes.  When MPP_IO_NODE is 1,
+ask MPI for one more processor than you ordinarily would. For example,
+if you plan to run with an I/O node and want 4 compute nodes, ask for 5
+nodes.
+
+     2.  BUFFRQ
+
+Works with MPP.  (Used to break up history output over multiple
+files).
+
+     3.  INCTAP
+
+Works with MPP. This is used to decrease the output frequency on an
+domain by an integer multiple of TAPFRQ.
+
+     4.  Restarts
+
+The MPP option to MM5 supports restarts.  The namelist semantics
+are identical to the non-MPP version, however there are a number of
+important differences.
+
+A restart run must be restarted on the same number of processors as the
+run that wrote the restart files.
+
+MPP-restarts employ named files (not standard unit number named
+files).  MPP restart files are saved to files in a directory,
+./restrts, located in the working directory (the directory in which the
+model is run).  It is only necessary that this directory be present or
+linked to from the current working directory of the restart run;
+otherwise no renaming or linking of files is necessary.
+
+File naming:  If the restart files were saved from a run in which
+SVLAST was .false., the files in the ./restrts directory will be named
+as follows:
+
+     r-dd-xxxxxxx-pppp
+
+     dd       = domain number (topmost domain = 01)
+
+     xxxxxxx  = value of IXTIMR for this restart
+
+     pppp     = id of the processor that wrote the file
+
+If the restart files were saved from a run in which SVLAST was .true.,
+the files in the ./restrts directory will be named the same way except
+xxxxxxx = 0000000.
+
+On restart, the model first looks in the ./restrts directory for the
+restart set whose xxxxxxx name corresponds to the IXTIMR value in the
+namelist.  If this set is not found, it then looks for a set whose
+xxxxxxx = 0000000.  If neither set is found, the model aborts.
+
+The ./restrts directory may (and perhaps should) be a symbolic link to
+a large, fast scratch file system on your machine.  For example, in the
+IBM SP2, one may wish to have ./restrts actually be a symbolic link to
+/tmp so that the local tmp disk on each processor will be utilized:
+
+     ln -s /tmp ./restrts
+
+Or one may symbolically link to a fast file system such as PIOFS:
+
+     ln -s /piofs/username ./restrts
+
+Details on other systems will vary, but the ability to make a symbolic
+link from the current working directory to a scratch file system visible
+to the processors is widely supported.
+
+-----------------------------------
+Notes on other MPP-related features
+-----------------------------------
+
+Parallel model abort on excessive CFL violations
+
+  This option causes the parallel model to abort on all processors in
+  the event of severe CFL violations on any processor.  This option was
+  requested by the Air Force Weather Agency.  The option is controlled
+  using two namelist variables, ICFLPERIOD and CFLTHRESH, in the OPARAM
+  section of the namelist:
+
+  CFLTHRESH    type: real      allowed values:  any      default: 1.1
+
+     This specifies the threshold above which the time averaged maximum
+     CFL will trigger a model abort.
+
+  ICFLPERIOD   type: integer   allowed values:  non-neg  default: 0
+
+     This variable specifies the number of "small" steps (minor
+     iterations in the SOUND routine) over which to compute a time
+     average of the maximum CFL value for a step.  This computed value
+     is used as the criterion for aborting the run.  For example, a
+     value of 5 will compute the average of the CFL maxima over the
+     most recent 5 steps.  If the value is greater than CFLTHRESH, the
+     model aborts (see below).  A value of 0 (zero) for ICFLPERIOD
+     disables the feature so that CFL violations will not trigger an
+     automatic abort.  Setting ICFLPERIOD to 1 means use the
+     instantaneous (non-averaged) CFL maximum for that step.
+
+  When the model aborts, the aborting processor will create a file
+  named CFLVIOLATION (empty) in the model working directory and then
+  call MPI_Abort to effect the shutdown.  Testing for existence of this
+  file provides a simple, efficient means for determining whether the
+  CFL violation is the cause of model shutdown.  As before, each
+  processor outputs messages to its rsl.error.**** file whenever a
+  point exceeds a CFL value of 1.0.
+
+
+--------------------------------------------------------
+Note on how to add a physics module to the MPP framework
+--------------------------------------------------------
+
+The new Schultz scheme is used as an example:
+
+  1.  Add physics package to regular MM5 directory hierarchy
+
+        physics/explicit/schultz/schultz.F
+        physics/explicit/schultz/schultz_mic.F
+
+  2.  Modify MPP/mpp_objects_all
+
+        #ifdef IMPHYS7
+          REISNER2_OBJ= exmoisg.o rslf.o
+        #endif
+<new>   #ifdef IMPHYS8
+<new>     SCHULTZ_OBJ =   schultz.o schultz_mic.o
+<new>   #endif
+
+        MOIST_OBJ = $(NONCONV_OBJ) $(SIMPLE_OBJ) $(LSIMPLE_OBJ) \
+<new>                $(SCHULTZ_OBJ) \
+                     $(REISNER_OBJ) $(REISNER_S_OBJ) $(LREISNER_OBJ)  ...
+
+      Note that for options that are to be compiled into the code all
+      the time, you can add the .o files to BASE_OBJ instead.
+
+  3.  For J-callable routines (eg. schultz.F), add an entry to MPP/FLICFILE
+
+        cflic n=lexmoisr:j,exmoisr:j,exmoisg:j,godmic:j
+        cflic n=lexmoiss:j,exmoiss:j
+<new>   cflic n=schultz:j
+        cflic n=cupara2:j
+        cflic n=cupara3:j,cup:j,minimi:j,maximi:j
+
+      What this entry says is that the routine 'schultz' is called from
+      within a loop over a decomposed dimension, and that the loop
+      index is known as 'J' within the subroutine.   (J is passed in
+      through the argument list).
+
+  4.  If FLIC doesn't need to be or shouldn't be called for a routine
+      (shultz_mic.F) add a rule to MPP/RSL/Makefile.RSL .
+
+        #
+        # These modules are column callable as written, and do not need FLIC.
+        #
+         [...]
+        schultz_mic.o : schultz_mic.F
+                $(CUT) -c1-72 $*.F | $(M4_FLIC) - | $(CPP) $(INCLUD...
+                $(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+
+      In the case of schultz_mic(), the routine is called for each i,k
+      point individually and there are no decomposed data structures or
+      loops within the routine.  FLIC doesn't need to work with this.
+      Additionally, schultz_mic() contains FUNCTION declarations, which
+      FLIC does not handle.  Rather than break these out in a separate
+      file, we just add the whole file to this part of Makefile.RSL and
+      avoid using FLIC on it.
+
+  5.  Make uninstall and make mpp.  The make uninstall is to get the
+      model to reestablish the symbolic links in the MPP/build
+      directory to include the new source files you have added.  The
+      mechanism (in MPP/Makelinks) will make a link to any source file
+      anywhere in the MM5 source tree, so you don't have to do anything
+      else to tell the mechanism where the files are.  It will find
+      them automatically.
+
+
+C. Procedures for testing bit for bit agreement between MPP and non-MPP
+   versions of the model.
+
+The following is a brief description of how to check the parallel
+version of the model for bit for bit agreement with the non-MPP version.
+
+  1.  In configure.user, disable all optimization for the MPP and non-MPP
+      versions on your platform of choice.  This will entail editing
+      Section 3 in the non-MPP configure.user and Section 7 in the 
+      MPP configure.user.  Also remove any specifications of fast
+      math libraries (e.g. the mass or essl libraries on the IBM.
+
+  2.  If you are testing with the Blackadar PBL scheme (HIRPBL), or the
+      Gayno-Seaman PBL scheme (GSPBL), define BIT_FOR_BIT_KLUDGE in the
+      CPP flags. You can either do this directly, by inserting the CPP
+      directive:
+
+          #define BIT_FOR_BIT_KLUDGE
+
+      at the beginning of file physics/pbl_sfc/hirpbl/hirpbl.F or
+      physics/pbl_sfc/gspbl/gspbl.F, respectively. Or you can simply
+      add the CPP flag:
+
+          -DBIT_FOR_BIT_KLUDGE
+
+      in your configure.user file.
+
+      Be certain to remove this again when you are done testing.
+
+  3.  Compile both the MPP and non-MPP versions, and run them using
+      the same namelist file and data sets.
+
+  4.  Compare the files.
+
+      4a.  First try comparing the output files using the Unix
+           cmp command, e.g.:  cmp fort.41.par fort.41.seq .  If the
+           command returns without any output, the files are identical
+           bit for bit and the test has succeeded.
+
+      4b.  If cmp finds differences
+
+           If differences are reported by the cmp command, that does
+           not necessarily mean that the output is substantively 
+           different -- there is garbage data around some output 
+           fields (extra row and column not used for cross point
+           variables) and this can generate spurious differences
+           between the parallel and non-MPP output files.
+
+           Download the file:
+
+             http://www.mmm.ucar.edu/mp/WRF/diffv2.f
+
+           and compile with your fortran compiler.  On the DEC
+           machines, use the -convert big_endian option.  Then
+           use the resulting program as follows:
+
+              diffv2 fort.41.seq fort.41.par
+
+           If the non-garbage data in the files differ, the program
+           will generate two files, fort.88 and fort.98, which 
+           contain ASCII dumps of the fields that differ.  If the
+           diffv2 program writes a lot of stuff to the screen but
+           doesn't generate these files, then the fields all agree
+           bit for bit, and the test succeeds.
+
+      4c.  If you are unable to get bit-for-bit agreement between
+           the MPP and non-MPP versions of the model for your 
+           configuration, please send us a note: mesouser@ucar.edu.
+            
+   5. When you are done testing, be sure to undo the changes to the
+      code that you may have done in steps 1 and 2, especially the
+      #define in hirpbl.F.
+

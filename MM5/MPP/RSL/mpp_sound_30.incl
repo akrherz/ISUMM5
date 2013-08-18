@@ -1,0 +1,28 @@
+CSTART   mpp_sound_30.incl
+#ifdef MPP1
+C        * *
+C        + *      * +
+C                 * *
+C release 6 version
+C ht      x        x
+C ua      x
+C va      x
+C ppb              x
+C tb               x
+C qvb              x
+C release 7 version
+C ht      x        x
+C u3d     x
+C v3d     x
+C pp3d              x
+C tb               x
+C qvb              x
+#  ifdef UPSHOT
+        call mm5_logevent(201)
+#  endif
+        CALL RSL_EXCH_STENCIL(DOMAINS(INEST),STEN_SB(INEST))
+#  ifdef UPSHOT
+        call mm5_logevent(102)
+#  endif
+#endif
+CEND   mpp_sound_30.incl

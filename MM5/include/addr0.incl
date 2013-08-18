@@ -1,0 +1,9 @@
+C                                                                                ADDR0.1
+C----------------------------------------------------------------------          ADDR0.2
+C                                                                                ADDR0.3
+#if defined (DEC_ALPHA) || defined (crayx1)     
+      INTEGER*8 IAXALL                                                           ADDR0.5
+#else                                                                            ADDR0.6
+      INTEGER IAXALL                                                             ADDR0.7
+#endif                                                                           ADDR0.8
+      COMMON/ADDR0/ IAXALL(NUMVAR,MAXNES)                                        ADDR0.9

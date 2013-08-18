@@ -1,0 +1,35 @@
+C                                                                                VARIOUSN.1
+C----------------------------------------------------------------------          VARIOUSN.2
+C                                                                                VARIOUSN.3
+      INTEGER INL,INLX,INLXM,JNL,JNLX,JNLXM,JULDAN,KNL,KNLM,KNLP1,               VARIOUSN.4
+     1  KTAUN,KTAURN,ITAPCNTN                                                    VARIOUSN.5
+      POINTER ( INAIL,    INL),( INAJL,    JNL),( INAKL,    KNL),                VARIOUSN.6
+     1        (INAKP1,  KNLP1),( INAKM,   KNLM),(INAILX,   INLX),                VARIOUSN.7
+     2        (INAILM,  INLXM),(INAJLX,   JNLX),(INAJLM,  JNLXM),                VARIOUSN.8
+     3        (INAKTU,  KTAUN),(INAKTR, KTAURN),(INATPC, ITAPCNTN),              VARIOUSN.9
+     4        (INAJUL, JULDAN)                                                   VARIOUSN.10
+C                                                                                VARIOUSN.11
+C----------------------------------------------------------------------          VARIOUSN.12
+C                                                                                VARIOUSN.13
+      REAL C200N,C201N,C203N,DTMINN,DTN,DTN2,DXN,DXN16,DXN2,DXN4,DXN8,           VARIOUSN.14
+     1 DXNSQ,FNUDGN,GMTN,GNUDGEN,TDNADV,TDNINI,TQNADV,TQNEVA,TQNINI,             VARIOUSN.15
+     2 TQNRAI,XKHMAN,XKHZN,XTIMEN                                                VARIOUSN.16
+      POINTER ( INAXT, XTIMEN), ( INADT,    DTN), (INADT2, DTN2),                VARIOUSN.17
+     1        (INADTM, DTMINN), ( INADX,    DXN), (INADX2, DXN2),                VARIOUSN.18
+     2        (INADX4,   DXN4), (INADX8,   DXN8), (INAD16,DXN16),                VARIOUSN.19
+     3        (INADXQ,  DXNSQ), ( INAXK,  XKHZN),(INAXKM,XKHMAN),                VARIOUSN.20
+     4        ( INAC0,  C200N), ( INAC1,  C201N), ( INAC3,C203N),                VARIOUSN.21
+     5        (INAGMT,   GMTN),                                                  VARIOUSN.22
+     6        (INADMI, TDNINI),(INADMA,TDNADV),                                  VARIOUSN.23
+     7        (INAQMI, TQNINI), (INAQMA, TQNADV),(INAQME,TQNEVA),                VARIOUSN.24
+     8        (INAQMR, TQNRAI), (INAFNG,FNUDGN), (INAGNG,GNUDGEN)                VARIOUSN.25
+C                                                                                VARIOUSN.26
+C----------------------------------------------------------------------          VARIOUSN.27
+C                                                                                VARIOUSN.28
+      COMMON/ADDRN4/INAIL,INAJL, INAKL, INAKP1,  INAKM, INAILX, INAILM,          VARIOUSN.29
+     1          INAJLX, INAJLM, INAKTU, INAKTR, INATPC, INAJUL,                  VARIOUSN.30
+     1          INAXT,   INADT, INADT2,                                          VARIOUSN.31
+     2          INADTM,  INADX, INADX2, INADX4, INADX8, INAD16, INADXQ,          VARIOUSN.32
+     3          INAXK, INAXKM,  INAC0,  INAC1,  INAC3,  INAGMT,                  VARIOUSN.33
+     4          INADMI, INADMA, INAQMI, INAQMA, INAQME,                          VARIOUSN.34
+     5          INAQMR, INAFNG, INAGNG                                           VARIOUSN.35

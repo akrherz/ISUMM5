@@ -1,0 +1,8 @@
+1. parseconfig creates a needed include file by parsing the
+   configure.user file.
+2. Makefile.dev is for making some development utilities.
+   make -f Makefile.dev
+3. In addition, there are some utility scripts in this directory.
+   Of these, only makedeck.csh is *required*.
+
+D. Hansen, NCAR 1996

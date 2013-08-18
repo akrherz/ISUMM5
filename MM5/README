@@ -1,0 +1,201 @@
+
+VERSION 3 MM5 PROGRAM (release 3-7)
+ 
+======
+Notice
+======
+
+MM5 was developed in cooperation with The Pennsylvania State University
+(Penn State) and the University Corporation for Atmospheric Research (UCAR).
+
+Penn State and UCAR make no proprietary claims, either statutory or
+otherwise, to this version and release of MM5 and consider MM5 to be in the
+public domain for use by any person or entity for any purpose without any
+fee or charge. Penn State and UCAR request that any MM5 user include this
+notice on any partial or full copies of MM5. Penn State and UCAR further
+request that the user credit Penn State and UCAR in any publications that
+result from the use of MM5. The names Penn State and UCAR shall not be used
+or referenced in any advertising or publicity which endorses or promotes any
+products or commercial entity associated with or using MM5, or any
+derivative works thereof, without the written authorization of UCAR and Penn
+State.
+
+MM5 is provided by Penn State and UCAR on an "AS IS" basis and any
+warranties, either express or implied, including but not limited to implied
+warranties of noninfringement, originality, merchantability and fitness for
+a particular purpose, are disclaimed. Neither UCAR nor Penn State will be
+obligated to provide the user with any support, consulting, training or
+assistance of any kind with regard to the use, operation and performance of
+MM5 nor to provide the user with any updates, revisions, new versions, error
+corrections or "bug" fixes. In no event will UCAR and Penn State be liable
+for any damages, whatsoever, whether direct, indirect, consequential or
+special, which may result from an action in contract, negligence or other
+claim that arises out of or in connection with the access, use or
+performance of MM5, including infringement actions.
+
+
+****************************************************************************
+
+This is the main directory for the MM5 Version 3 source code release.  
+Within this directory you should find all that you need to compile 
+and run MM5 (V3).
+
+1.	For directions on compiling MM5 see below.
+2.	For more information on MM5 V3 release, visit MM5 home page
+        http://www.mmm.ucar.edu/mm5/mm5v3.html
+3.      For bug fixes, read CHANGES.
+4.      For actually difference between this and previous releases, 
+        see Diff/diff.xxxxxxx
+
+For questions, send mail to mesouser@ucar.edu
+
+-------------------------------------------------------------------------
+
+What is in V3 MM5?
+
+Major change in V3 MM5 includes:
+
+1. Removing hydrostatic dynamics option
+2. Rewritten solve routine to efficiency
+3. New land-surface model option: ISOIL=2 (require additional data input
+   from TERRAIN, and REGRID)
+4. Using V3 data format
+
+-------------------------------------------------------------------------
+
+***************************************************************
+Also see the online self-tutorial at
+http://www.mmm.ucar.edu/mm5/mm5v3/tutorial/teachyourself.html
+***************************************************************
+
+-------------------------
+Compiling and Running MM5
+-------------------------
+
+We have split the model options into pre-compilation and post-compilation 
+switches in the configure.user file and the mm5.deck respectively. 
+You would therefore need to do the following:
+
+1: edit configure.user:
+   RUNTIME_SYSTEM: uncomment the one you are running the model on; 
+   compile flags:  uncomment the compiler flags according to the RUNTIME_SYSTEM;
+   pre-compilation switches: section 5 and 6 of configure.user.
+2: 'make' (in top-level directory) - this preprocesses and compiles the code
+3: 'make mm5.deck' - this creates the deck according to RUNTIME_SYSTEM
+4: edit mm5.deck (other switches in namelist)
+5: execute './mm5.deck' (create mmlif and runs mm5.exe)
+
+-------------------------
+Modifying and Recompiling
+-------------------------
+
+All the code is in a directory structure divided logically according to
+functions and options. Debugging or testing changes to a single routine
+would be simple as long as you were not changing the configure.user.
+Assuming you have already compiled the code as above once
+and run the mm5.deck to link the files, you would
+
+1: edit the .F routine(s)
+2: 'make -i -r' (in the routine's directory) to compile
+3: 'make -i -r' in the Run directory to add the new .o file
+4: (optionally) edit mmlif in the Run directory
+5: execute 'mm5.exe' in the Run directory
+
+Alternative simpler method
+
+1: edit the .F routine(s)
+2: 'make' at top level (re-archives all .o files, re-compiles changed files)
+3: edit mm5.deck (if necessary)
+4: run './mm5.deck'
+
+*** IMPORTANT
+
+Changing anything in the configure.user (such as number or size of domains,
+and adding certain physics options) requires a top-level 'make', as does
+a change to .incl files.
+
+-------------------
+Making restart runs
+-------------------
+
+To make a restart run, you must set IFSAVE = .TRUE. in your first run. Then
+your first run will create restart files SAVE_DOMAIN1{,2,...}. Rename these
+files to corresponding RESTART_DOMAIN1{,2,..} before you restart. Also set
+IFREST = .TRUE., and IXTIMR in the deck, where IXTIMR can be found in the 
+mm5.print.out file whenever a save file is written.
+
+-------------------
+Making one-way runs
+-------------------
+
+If one wants to do one-way run, Nestdown may create input files for MM5 with
+a domain ID that is the same as one specifies from Terrain. However MM5 always
+thinks the first domain is domain 1. One must specify all appropriate options
+MM5 uses in the first column of configure.user and mm5.deck for this one-way run.
+So if Nestdown created filetype_DOMAIN3, you should either link it to 
+filetype_DOMAIN1, or copy it to file_DOMAIN1 in the Run directory.
+
+----------------
+Using LSM option
+----------------
+
+Please read online Tutorial Notes/Users' Guide Appendix D for instructions on
+how to set up to run MM5 with LSM option. If you would like to run MM5 with
+a nest, it is recommended that the nest should start at hour 0 (unless you have
+no water body, such as ocean or lake, in your domain). The nest input file may
+be generated using coarse domain input files in NESTDOWN.
+
+---------------------------
+Cleaning up the directories
+---------------------------
+
+'make clean' will remove .o files, mm5.exe and other junk from directories. 
+It is recommended to do a top-level 'make clean' when you want to start over 
+re-using old directories, or as a first step in debugging a failed
+compilation or run. You can also use 'make clean' in individual
+directories and it will act recursively on its subdirectories.
+
+* If things don't work out, always do a 'make clean' and recompile the code
+  again as the first step to check if something is wrong.
+
+-----------------------------
+Getting a Source-Code Listing
+-----------------------------
+
+To make a source listing of the fortran code, type 'make code' at the 
+top directory, and 'cd pick/'. This will place all subroutines selected
+for compilation into pick/ directory. Read the README file in pick/ directory 
+for instructions on making a single listing of all *.f files. The pick/
+directory is useful for browsing the code because all the selected
+routines are in a single directory. The *.F files with cpp commands are
+also put here.
+
+---------------------------------
+Compiling and Running MM5 on a PC
+---------------------------------
+
+Copy configure.user.linux file to configure.user file, and follow
+the steps above to compile and run MM5 on a PC running Linux.
+
+-----------------------------------------
+
+Files and directories in this directory:
+
+CHANGES:   will contain changes made to this tar file
+Diff:      directory that stores difference files between current and previous releases
+Makefile:  top-level makefile for MM5
+README:    contains basic information on how to run MM5
+README.MPP: contains basic information on how to run distributed-memory version of MM5
+Run:       directory where mm5 executable resides, and all input and output files reside
+Templates: directory containing templates of mm5 deck 
+Util:      directory contains utility program for developers
+configure.user: compiler options and MM5 compile options 
+configure.user.linux: configure.user file for Linux PC
+domain:    source code directory
+dynamics:  source code directory
+fdda:      source code directory
+include:   include file directory
+memory:    source code directory
+physics:   source code directory
+pick:      directory to hold source code files when make code is executed
+

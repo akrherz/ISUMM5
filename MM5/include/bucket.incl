@@ -1,0 +1,3 @@
+      REAL ERATE,MAMAX,MAMIN                                                     BUCKET.1
+      COMMON /BUCKET/ERATE,MAMAX,MAMIN                                           BUCKET.2
+      DIMENSION ERATE(NLU),MAMAX(NLU),MAMIN(NLU)                                 BUCKET.3

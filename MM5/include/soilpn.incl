@@ -1,0 +1,39 @@
+C                                                                                SOILPN.1
+      INTEGER NMON                                                               05DEC01.660
+      PARAMETER (NMON=12)                                                        05DEC01.661
+      REAL ACEVAPN,ACSNOMN,ACSNOWN,BGROFFN,CMCAN,CMCBN,GRNFLXN,SFCEVPN,          SOILPN.2
+     & SFCEXCN,SMCAN,SMCBN,SMSTAVN,SMSTOTN,SNOAN,SNOBN,SNOPCXN,SSROFFN,          SOILPN.3
+     & STCAN,STCBN,VEGFRCN,XICEN,VEGFMON,ALBMONN,XVEGMNN,ALBEDON,                19DEC02.1335
+     & ALBMAXN,SWCAN,SWCBN,SNOWHAN,SNOWHBN                                       19DEC02.1336
+      INTEGER ISLOPEN,ISLTYPN,IVGTYPN                                            SOILPN.5
+C-- ADDITIONAL ARRAYS FOR PXPBL                                                  07NOV00.1166
+      REAL LAIN,RADNETN,THZ1OBN,RHOBSN,RAN,RSN,RSTMINN                           19DEC02.1337
+      REAL XLAIN,XVEGN,XLAIMNN                                                   19DEC02.1338
+      POINTER                                                                    SOILPN.6
+     & (INSFC,SFCEXCN(MIXL,MJXL)),(INSMS,SMSTAVN(MIXL,MJXL)),                    SOILPN.7
+     & (INSMT,SMSTOTN(MIXL,MJXL)),(INGRF,GRNFLXN(MIXL,MJXL)),                    SOILPN.8
+     & (INSLO,ISLOPEN(MIXL,MJXL)),(INVGF,VEGFRCN(MIXL,MJXL)),                    SOILPN.9
+     & (INSRO,SSROFFN(MIXL,MJXL)),(INBRO,BGROFFN(MIXL,MJXL)),                    SOILPN.10
+     & (INASM,ACSNOMN(MIXL,MJXL)),(INACE,ACEVAPN(MIXL,MJXL)),                    SOILPN.11
+     & (INACS,ACSNOWN(MIXL,MJXL)),(INSFE,SFCEVPN(MIXL,MJXL)),                    SOILPN.12
+     & (INSNP,SNOPCXN(MIXL,MJXL)),(INXIC,XICEN(MIXL,MJXL)),                      SOILPN.13
+     & (INLAI,   LAIN(MIXL,MJXL)),(INALB,ALBEDON(MIXL,MJXL)),                    07NOV00.1169
+     & (INRAD,RADNETN(MIXL,MJXL)),(INTHZ,THZ1OBN(MIXL,MJXL)),                    07NOV00.1170
+     & (INRHO, RHOBSN(MIXL,MJXL)),(INRA,RAN(MIXL,MJXL)),                         07NOV00.1171
+     & (INRS,     RSN(MIXL,MJXL)),(INRST,RSTMINN(MIXL,MJXL)),                    07NOV00.1172
+     & (INXLA,  XLAIN(MIXL,MJXL)),(INXVG,  XVEGN(MIXL,MJXL)),                    07NOV00.1173
+     & (INXLM,XLAIMNN(MIXL,MJXL)),(INXVM,XVEGMNN(MIXL,MJXL)),                    07NOV00.1174
+     & (INALM,ALBMAXN(MIXL,MJXL)),                                               19DEC02.1339
+     & (INCMA,CMCAN(MIXL,MJXL)),(INSNA,SNOAN(MIXL,MJXL)),                        SOILPN.14
+     & (INCMB,CMCBN(MIXL,MJXL)),(INSNB,SNOBN(MIXL,MJXL)),                        SOILPN.15
+     & (INSNHA,SNOWHAN(MIXL,MJXL)), (INSNHB,SNOWHBN(MIXL,MJXL)),                 19DEC02.1340
+     & (INVGT,IVGTYPN(MIXL,MJXL)),(INSLT,ISLTYPN(MIXL,MJXL)),                    SOILPN.16
+     & (INSMA,SMCAN(MIXL,MJXL,MLX)),(INSTA,STCAN(MIXL,MJXL,MLX)),                SOILPN.17
+     & (INSMB,SMCBN(MIXL,MJXL,MLX)),(INSTB,STCBN(MIXL,MJXL,MLX)),                05DEC01.663
+     & (INSWA,SWCAN(MIXL,MJXL,MLX)),(INSWB,SWCBN(MIXL,MJXL,MLX)),                19DEC02.1341
+     & (INVGM,VEGFMON(MIXL,MJXL,NMON)),(INAMN,ALBMONN(MIXL,MJXL,NMON))           19DEC02.1342
+      COMMON /LANDSFN/INSFC,INSMS,INSMT,INGRF,INSLO,INVGF,                       SOILPN.19
+     &     INSRO,INBRO,INASM,INACE,INACS,INSFE,INSNP,INXIC,INLAI,INALB,          07NOV00.1175
+     &     INRAD,INTHZ,INRHO,INRA,INRS,INRST,INXLA,INXVG,INXLM,INXVM,            07NOV00.1176
+     &     INALM,INCMA,INSNA,INCMB,INSNB,INSNHA,INSNHB,INVGT,INSLT,              19DEC02.1343
+     &     INSMA,INSTA,INSMB,INSTB,INSWA,INSWB,INVGM,INAMN                       19DEC02.1344

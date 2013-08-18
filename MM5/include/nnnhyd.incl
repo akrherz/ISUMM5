@@ -1,0 +1,6 @@
+      REAL PPAN,PPBN,WAN,WBN                                                     NNNHYD.1
+      POINTER  (INNWA,WAN(MIXNH,MJXNH,KXP1NH)),                                  NNNHYD.2
+     1         (INNWB,WBN(MIXNH,MJXNH,KXP1NH)),                                  NNNHYD.3
+     2         (INNPPA,PPAN(MIXNH,MJXNH,MKXNH)),                                 NNNHYD.4
+     3         (INNPPB,PPBN(MIXNH,MJXNH,MKXNH))                                  NNNHYD.5
+      COMMON /NNNHYD/ INNWA,INNWB,INNPPA,INNPPB                                  NNNHYD.6

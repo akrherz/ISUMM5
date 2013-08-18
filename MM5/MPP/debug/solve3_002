@@ -1,0 +1,30 @@
+C#ifdef DEBUGGAL
+C#  include <solve3_002>
+C#endif
+C                                                                                 SOLVE3.193
+CC                                                                                SOLVE3.194
+CC--- NORTH AND SOUTH BOUNDARIES                                                  SOLVE3.195
+CC                                                                                SOLVE3.196
+CC                                                                                SOLVE3.197
+      if (inest.eq.NESTDEBUG) then
+        i = IDEBUG
+        j = JDEBUG
+        k = KDEBUG
+        print*,'solve3_002: entering solve3',inest,i,j,k,'mkx=',mkx
+        print*,'psa',psa(i,j)
+        print*,'ua',ua(i,j,k)
+        print*,'ub',ub(i,j,k)
+        print*,'va',va(i,j,k)
+        print*,'vb',vb(i,j,k)
+        print*,'ta',ta(i,j,k)
+        print*,'tb',tb(i,j,k)
+        print*,'tc',tc(i,j,k)
+        print*,'ppa',ppa(i,j,k)
+        print*,'ppb',ppb(i,j,k)
+        print*,'wa',wa(i,j,k)
+        print*,'wb',wb(i,j,k)
+        print*,'qva',qva(i,j,k)
+        print*,'qvb',qvb(i,j,k)
+        print*,'qvc',qvc(i,j,k)
+      endif
+

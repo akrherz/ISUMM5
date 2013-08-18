@@ -1,0 +1,50 @@
+C... These are common blocks need to include in the PX land/surface model.       COMICL.1
+C... These are only used inside PXPBL module                                     COMICL.2
+C                                                                                COMICL.3
+C.. 11 soil types                                                                COMICL.4
+      INTEGER NSTPS                                                              COMICL.5
+      PARAMETER(NSTPS=11)                                                        COMICL.6
+C                                                                                COMICL.7
+      INTEGER ISNOW                                                              COMICL.8
+      REAL WG,W2,WR,QSS,QFC,TG,T2                                                COMICL.9
+      COMMON/SOILM/WG(MIX),W2(MIX),WR(MIX),QSS(MIX),QFC(MIX)                     COMICL.10
+     &                    ,TG(MIX),T2(MIX),ISNOW(MIX)                            COMICL.11
+C                                                                                COMICL.12
+      REAL SIGMAH, DSIGHI,DSIGH,SIGMAF,DSIGFI                                    COMICL.13
+      COMMON/SIG/SIGMAH(MKX),  DSIGHI(MKX), DSIGH(MKX),                          COMICL.14
+     &                SIGMAF(0:MKX),DSIGFI(0:MKX)                                COMICL.15
+C                                                                                COMICL.16
+      REAL WSAT,WFC,WWLT,B,CGSAT,AS,C2R,C1SAT,BETAP                              COMICL.17
+      INTEGER JP                                                                 COMICL.18
+      COMMON/SOILPX/ WSAT(NSTPS),WFC(NSTPS),WWLT(NSTPS),B(NSTPS),                COMICL.19
+     &             CGSAT(NSTPS),AS(NSTPS),JP(NSTPS),C2R(NSTPS)                   COMICL.20
+     &            ,C1SAT(NSTPS),BETAP(MIX)                                       COMICL.21
+C                                                                                COMICL.22
+      REAL TAUINV,ALN10,CV,DS1,DS2,DENW,SIGF,PI,                                 COMICL.23
+     &             CPAIR,SQADR,G1000,CRANKP,C1ACM,C2ACM                          COMICL.24
+      COMMON/CONST/TAUINV,ALN10,CV,DS1,DS2,DENW,SIGF,PI,                         COMICL.25
+     &             CPAIR(MIX),SQADR,G1000,CRANKP,C1ACM,C2ACM                     COMICL.26
+C                                                                                COMICL.27
+      REAL RG,RLWU,EG,ER,ETR,FASS                                                COMICL.28
+      COMMON/FLUX/RG(MIX),RLWU(MIX),EG(MIX),ER(MIX),                             COMICL.29
+     &            ETR(MIX),FASS(MIX)                                             COMICL.30
+C                                                                                COMICL.31
+      REAL TT,TV,THETA,THETAV,US,VS,QVS,RHX,DENS,TH0,                            COMICL.32
+     &           P,PF,Z,ZF,DZZ,PRECIP,THETAG,                                    COMICL.33
+     &           PBLSIG,EDDYZ,TST,WST,QST,USTM,                                  19DEC02.1306
+     &           TEVA,RUNOFFR,QCS,QIS,QNCS,DENSX                                 COMICL.35
+      INTEGER KCLOUD,NOCONV,KLPBL                                                COMICL.36
+      COMMON/AIR/TT(MIX,MKX),TV(MIX,MKX),THETA(MIX,MKX),THETAV(MIX,MKX),         COMICL.37
+     &           US(MIX,MKX),VS(MIX,MKX),QVS(MIX,MKX),RHX(MIX,MKX),              COMICL.38
+     &           DENS(MIX,MKX),TH0(MIX),                                         COMICL.39
+     &           KCLOUD(MIX,3),P(MIX,MKX),PF(MIX,0:MKX),Z(MIX,MKX),              COMICL.40
+     &           ZF(MIX,0:MKX),                                                  COMICL.41
+     &           DZZ(MIX,MKX),PRECIP(MIX),THETAG(MIX),                           COMICL.42
+     &           NOCONV(MIX),                                                    COMICL.43
+     &           KLPBL(MIX),PBLSIG(MIX),EDDYZ(MIX,MKX),                          COMICL.44
+     &           TST(MIX,MJX),WST(MIX,MJX),QST(MIX),USTM(MIX),                   19DEC02.1307
+     &           TEVA,RUNOFFR(MIX),QCS(MIX,MKX),                                 COMICL.46
+     &           QIS(MIX,MKX),QNCS(MIX,MKX)                                      COMICL.47
+     &           ,DENSX(MIX,MKX)    !  REF DENSITY -- ADDED 9/96 FOR NH RUNS     COMICL.48
+C----------------------------------------------------------------------          COMICL.49
+c$omp threadprivate (/soilm/,/soilpx/,/const/,/flux/,/air/)                      COMICL.50

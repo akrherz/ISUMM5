@@ -1,0 +1,466 @@
+*n* denotes an action item; X*n* denotes one that's been dealt with
+
+970130------------------------------------------------------------
+
+Here's some notes on the first run of DM on a munged version of
+DECPU (what I consider the worst chunk of code in the model).  If
+we can do this'n, it's probably ducks.
+
+X*1*.  The tool generates a separate temp var and assignment for every
+instance of a constant expression as an index.  That gets pretty
+long.  E.g.:
+
+      IRSLT_175=G2L_NS(2,mix)
+      IRSLT_174=G2L_NS(ilx,mix)
+      IRSLT_173=G2L_NS(2,mix)
+      IRSLT_172=G2L_NS(ilx,mix)
+
+Should collapse to just one for each i index.
+
+X*2*.  The tool doesn't yet realize that the whole mess is called from within
+a J loop.  That needs to be fixed; maybe something on the command line.
+
+X*3*.  The tool doesn't look at or convert references in conditionals:
+
+            IF(V(1,IB_1,K).LT.0)THEN
+              V(1,IB_1,K)=V(1,IB_2,K)
+            ENDIF
+
+         becomes:
+
+            IF(v(1,1,k).lt.0)THEN
+              v(1,IRSLT_167,k)=v(1,IRSLT_166,k)
+            ENDIF
+
+X*4*.  The tool needs to consider instances of the loop index
+      in conditionals as requiring conversion to their global
+      form:
+
+            IF(j.eq.jlx)THEN
+
+      Should be converted to
+
+            IF(jg.eq.jlx) THEN
+
+      or something equivalent.
+            
+X*5*.  Need to deal with POINTER, DIMENSION, COMMON, etc.
+
+970203------------------------------------------------------------
+
+This is after the first big stab at running MM5 through the
+translator.
+
+Some serious problems remain; must notable is the business about
+setting all the temporaries at the top of the program.  It causes
+some to be set before the variables they depend on are set (oh no!).
+Need to keep track of where identifiers are first set in the program
+and then not allow the definitions of the teporaries to occur
+before then.
+
+Note, that as a first order of correctness, we *could* just set them
+where they are used -- this would incur a performance penalty, but it
+would probably give correctness.  Once the APR tools are more fully
+developed, this will be much less of a problem.
+
+*1* the mix, mjx, ... constants are still hard coded entities
+
+970204------------------------------------------------------------
+
+*1* Calls to j-callable routines are getting J converted to (J-JDIF).
+Then inside the J-callable routine, the index is being treated as local
+(and then reconverted to global).  Eg: in solve3:
+
+        CALL HADV(...,(J-JDIF),...)
+
+Perhaps modify the translator so it doesn't consider J refs in function and
+subroutine calls to be "bare" and so, does not convert them?
+     
+  ---
+
+Added a new routine, depends_on, that does a set/def analysis on
+variables appearing in conditionals (should be global) and on variables
+appearing as indices (should be local), either of which may be
+expressions depenedent on a loop variable but not the loop var itself.
+
+mithril[284]% cat b.f
+      real a(mix,mjx)
+      do j = 1, 20
+        jp1 = j + 1
+        jn1 = 1
+        ia2 = 33
+        if ( jp1-2 .eq. 3 ) then
+          a(ia2,jp1) = 2
+          a(i,jp1) = 2
+          a(i,jn1) = 3
+        endif
+      enddo
+      end
+
+
+mithril[285]% dm b.t
+
+--- dm   DM: Preprocessor For MM5 ---
+Created by J. Michalakes, ANL.  January 1997
+
+
+      REAL A(MIX,MJX)
+      INTEGER IRSLT_0
+      INTEGER JRSLT_1
+      INTEGER IRSLT_2
+      IRSLT_0=G2L_NS(i,mix)
+      RSL_DO_N( j, 1, 20 )
+        JP1=J+1
+        JN1=1
+      JRSLT_1=G2L_EW(jn1,mjx)
+        IA2=33
+      IRSLT_2=G2L_NS(ia2,mix)
+        IF(((JP1-2)-JDIF).EQ.3)THEN             <<<<<<<
+          A(IRSLT_2,JP1)=2
+          A(IRSLT_0,JP1)=2
+          A(IRSLT_0,JRSLT_1)=3
+        ENDIF
+      RSL_ENDDO
+      END 
+
+970205------------------------------------------------------------
+
+X*1* Still some problems with the placement of constant definitions:
+    Note how JRSLT_22 is defined inside an if and won't be set unless
+    INEST .gt. 1, even though JBNES has been properly set further up,
+    before the if.  One way to address this might be to insist that
+    these not be set within but rather after any conditional body unless 
+    doing so would put the definition further down than the use.
+
+      IENES=ILX
+      JBNES=2
+      JENES=JLX
+      DTBC=(XTIME+DTMIN-TBDYBE)*60.
+      DTBA=(XTIME-TBDYBE)*60.
+      DTB=DTBC
+      IF(INEST.GT.1)THEN
+        IBNES=3
+        IENES=ILXM
+        JBNES=3
+      JRSLT_22=G2L_EW(jbnes-1,mjx)
+        JENES=JLXM
+        DTB=NN*DTMIN*60.
+        DTBC=DTMIN*60.*NN
+        DTBA=DTMIN*60.*(NN-1)
+      ENDIF
+
+X*2* Still need to add some preamble code for declaring the RSL loop macros,
+    and for inserting 'C Inside J's when necessary.
+
+970206------------------------------------------------------------
+
+X*1*  There is a i-loop from 1,mix (and a j loop) in mm5.F that initialize
+     some quanti6ties to zero.  These should iterate without modification.
+     How recognize: MIX and MJX are in the loop ranges.  Since these
+     have been specified as decomposed dimensions we already now that
+     the loop ranges are decomposed.
+
+970213------------------------------------------------------------
+
+X*1*  The tool chokes on the file mpouttap.F.  Something to do with the
+     repeated usage of the index variable NEX in referencing junk.  Here's
+     a stack trace (if I had let this go, it would have done an infinite
+     recursion, repeatedly calling sym_get on 'nex' until it croaked).
+
+stopped in sym_get at line 44 in file "/Net/antireo/antireo4/michalak/N32/DM/sym.c"
+   44   fprintf(stderr,"get %s\n",name ) ;
+(dbx) where
+sym_get(name = 0x3086c8 "nex"), line 44 in "/Net/antireo/antireo4/michalak/N32/DM/sym.c"
+depends_on(expr = 0x308820, LI = 0x45f7a4 "NOT_IN_LOOP", currline = 669, retnode = 0xefffe348, sw = 0), line 90 in "/Net/antireo/antireo4/michalak/N32/DM/depends_on.c"
+depends_on(expr = 0x308a60, LI = 0x45f7a4 "NOT_IN_LOOP", currline = 669, retnode = 0xefffe408, sw = 0), line 48 in "/Net/antireo/antireo4/michalak/N32/DM/depends_on.c"
+depends_on(expr = 0x3097c0, LI = 0x45f7a4 "NOT_IN_LOOP", currline = 671, retnode = 0xefffe4b0, sw = 0), line 113 in "/Net/antireo/antireo4/michalak/N32/DM/depends_on.c"
+handle_refs(node = 0x309b60), line 241 in "/Net/antireo/antireo4/michalak/N32/DM/handle_executable.c"
+walk_depth(node = 0x309b60, f = &handle_refs() at 0x3ea0, order = 0), line 41 in "/Net/antireo/antireo4/michalak/N32/Parser/traverse.c"
+walk_depth(node = 0x309da0, f = &handle_refs() at 0x3ea0, order = 0), line 37 in "/Net/antireo/antireo4/michalak/N32/Parser/traverse.c"
+handle_executable(node = 0x309da0), line 199 in "/Net/antireo/antireo4/michalak/N32/DM/handle_executable.c"
+walk_statements1(node = 0x309da0, f2 = &handle_executable() at 0x3510, depth = 0, level = 0), line 151 in "/Net/antireo/antireo4/michalak/N32/Parser/traverse.c"
+handle_executable(node = 0x30b8c8), line 161 in "/Net/antireo/antireo4/michalak/N32/DM/handle_executable.c"
+new_statement(node = 0x30b8c8), line 27 in "/Net/antireo/antireo4/michalak/N32/DM/new_statement.c"
+walk_statements1(node = 0x403a68, f2 = &new_statement() at 0x2db8, depth = 0, level = 0), line 151 in "/Net/antireo/antireo4/michalak/N32/Parser/traverse.c"
+walk_statements(ast = 0x403b50, f1 = &new_module() at 0x28a8, f2 = &new_statement() at 0x2db8, depth = 0), line 91 in "/Net/antireo/antireo4/michalak/N32/Parser/traverse.c"
+user_backend(argc = 3, argv = 0xeffff2b8, env = 0xeffff2bc), line 98 in "/Net/antireo/antireo4/michalak/N32/DM/dm.c"
+main(argc = 3, argv = 0xeffff2b8, env = 0xeffff2bc), line 130 in "/Net/antireo/antireo4/michalak/N32/Parser/dflt_main.c"
+
+      Later--- I figured out that this is because of the way 
+      depends_on does its analysis.  This will choke it.
+
+        real xlong(mjx)
+        do 145 j=2,jlx
+        if (DLONG.LT.180.) a = b
+        DLONG=DLONG+2
+        DLONG=DLONG+1
+        a = xlong(j)
+   145  continue
+        end
+
+*2*     I ended up fixing it by saying that if the program is doing
+     recursive arithmetic on the variable in question, it doesn't
+     depend on the loop var.  That's NOT a completely correct way
+     to deal with this, since this is valid (it doesn't modify
+     the loop variable).
+
+        DO I = ...
+           II = I
+           II = II + 1
+
+     This is just gonna have to fall into the category of
+     "Doctor, it hurts when I do this..."  In other words, a "feature."
+
+
+970221------------------------------------------------------------
+
+*1*     It would be good if the program could figure out a way to warn
+        the user about routines that look a lot as though they might
+        be slab callable.  Perhaps check to see if the index is being
+        passed in as an argument?  They issue a strong warning that the
+        tool thinks that the routine might be slab callable (if the
+        user hasn't already specified it as such).
+
+*2*     This is related to 970205, #1.  The fix from before generated
+        a mistake in the case where the statement that used the index
+        was at the same conditional level as the setting, but both
+        were in an if already.  Here's a little test code:
+
+
+      real rho0(mix,mjx)
+      if ( j .eq. jbnes ) then
+         jb1 = jbnes-1 
+         rhos= rho0(i,jb1)
+      endif
+      stop
+      end
+
+        and what was being generated:
+
+define(INSIDE_MLOOP)
+define(INSIDE_NLOOP)
+      REAL RHO0(MIX,MJX)
+      INTEGER IFLICT_0
+      INTEGER JFLICT_1
+      IFLICT_0=FLIC_G2L_M(i,mix)
+      IF(J.EQ.JBNES)THEN 
+        JB1=JBNES-1
+        RHOS=RHO0(IFLICT_0,JFLICT_1)
+      ENDIF
+      JFLICT_1=FLIC_G2L_N(jb1,mjx)
+      STOP 
+      END 
+
+        I fixed this by adding a second clause to the conditional
+        in handle_executable.c :
+                        vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    if ( ifn != NULL && ifn != (NodePtr)(retsym->thisif) )
+
+        Before, ifn would be set by the initialization part
+        of the for loop above this conditional that traverses
+        the links of nested if statements.  Then here we
+        test for whether "place" should be altered on the basis
+        of whether ifn is NULL (a reasonable thing) but also
+        we want to make sure that we're not on the same node
+        we started with, since that would mean that the setting
+        and the use of the index are at the same if level.
+        I have just made this change; it works on the test program.
+        Where it was fouling up in the real model was in solve3.F:
+
+            IF(J.EQ.JBNES)THEN
+              JB1=JBNES-1
+              ...
+              RHO0S=TWT(K,1)*RHO0(I,1,K)+TWT(K,2)*RHO0(I,JB1,K-1)
+              ....
+            ENDIF
+
+        It was poutting the definition of the temporary that replaces
+        JB1 after the ENDIF !! 
+
+        If this doesn't do the trick, it might be possible to solve
+        this problem a different way... If the setting of the temporary
+        can't be put both before the statement and at the same if-level,
+        how bout generating the FLIC_G2L macro in place for the index?
+
+*3*     LATER... this is still pretty screwed up. Now the stuff that
+        I put it in originally for is not working.
+
+        Here's what I've done now.  And it involves a goto in handle_executable.
+
+        We look to see, befure changing the variable place, if the change
+        would cause the definition of the temp variable to be after the
+        use.  If that's the case, we do the insertion of the G2L macro in place
+        where the expression occurs.  The goto in handle_executable short circuits
+        the generation of the temporary variable declaration and assignment and
+        instead of inserting the string for the temporary variable, we insert
+        the string for the temporary macro.
+
+        For the line number of the temporary variable definition, I'm
+        checking the line number of the sibling of the enclosing if,
+        since this is where the temp assignment would go (to be outside
+        the conditional).  But if there's a use inside the conditional, that
+        would end up putting the definition of the temporary after the use.
+        So now, uses inside temporaries will be converted in place.
+
+        The other thing that was necessary was to guard against the case where
+        the global index set inside the conditional was used both inside and
+        outside (after) the conditional (I haven't thought about *before*!)
+        In this case, the rule that things in conditionals like that get
+        done in place should suffice.  Except that I got tripped up by
+        my 9000 series nodes that I use to add the temporary variable definitions
+        after the if.  These guys don't really have any tokens attached, so
+        the trick of looking at firsttok() and getting the line number
+        from there doesn't work.  Result is that if you handle the constant
+        value array indices in reverse order of occurrence, it doesn't do the
+        one inside the conditional right.  That's because it checks the line
+        number of the next statement after the conditional (which is, by
+        now, one of the sugically added 9000 nodes), it gives a bad line number
+        (-1), and the test fails to recognize that the def is after the use
+        (-1 be less than any valid line number).  The fix for this was to
+        change the traversal of the sweep over array reference.  With a stupid-
+        linked-list-trick in the code for handling the endK exp node, I reverse
+        the list (which was built stackwise) by putting on another stack and
+        swapping pointers.  This then fixes the problem.  Here's a sample
+        of code that has what I've been talking about -- references to
+        an index variable set in the conditional that's used in indices both
+        inside and outside the conditional:
+
+                real psa(mix,mjx)
+                real qca(mix,mjx)
+                real qra(mix,mjx)
+                integer imoist(3)
+              IB2=2
+              IML=ILX
+              JML=JLX
+              KML=KL
+          560 IF(IMOIST(IN).EQ.1)THEN
+                IB2=1
+                z = psa(2,ib2)
+                IML=1
+                JML=1
+                KML=1
+                RETURN
+              ENDIF
+        cmic$ do all autoscope
+              DO 730 K=1,KML
+        C
+        C.....WEST BOUNDARY:
+        C
+                DO 690 I=1,IML
+                  QCX2=QCA(I,IB2,K)/PSA(I,2)
+                  QRX2=QRA(I,IB2,K)/PSA(I,2)
+          690   continue
+          730 continue
+              stop
+              end
+
+        and here's what got generated:
+
+        define(INSIDE_NLOOP)
+              REAL PSA(MIX,MJX)
+              REAL QCA(MIX,MJX)
+              REAL QRA(MIX,MJX)
+              INTEGER IMOIST(3)
+              INTEGER IFLICT_0
+              INTEGER JFLICT_1
+              INTEGER JFLICT_2
+              IFLICT_0=FLIC_G2L_M(2,mix)
+              IB2=2
+              IML=ILX
+              JML=JLX
+              KML=KL
+          560 IF(IMOIST(IN).EQ.1)THEN 
+                IB2=1
+                Z=PSA(IFLICT_0,
+             +FLIC_G2L_N(IB2,MJX)
+             +)
+                IML=1
+                JML=1
+                KML=1
+                RETURN 
+              ENDIF
+              JFLICT_2=FLIC_G2L_N(2,mjx)
+              JFLICT_1=FLIC_G2L_N(ib2,mjx)
+        cmic$ do all autoscope
+              DO  K=1,KML
+        C
+        C.....WEST BOUNDARY:
+        C
+                FLIC_DO_M( i, 1,iml )
+                  QCX2=QCA(I,JFLICT_1,K)/PSA(I,JFLICT_2)
+                  QRX2=QRA(I,JFLICT_1,K)/PSA(I,JFLICT_2)
+          690     CONTINUE 
+                FLIC_ENDDO
+          730   CONTINUE 
+              ENDDO
+              STOP 
+              END 
+
+
+        How bout that....  I added my first GOTO and list-traversal order dependent
+        behavior in one fell swoop.  Must be the beginning of the end.
+
+
+
+970225------------------------------------------------------------
+
+*1*	Write statements I had inserted for debugging were not being converted.
+	This was because prback had some logic in it that avoided statements
+	with strings.  Instead, it opened the original file and inserted the
+	statement with the string in it as-was.  I think this had something
+	to do with formatting problems when I was developing the prettifier
+	for NCAR to use on MM5v2.  Indentation would push strings past the
+	end of col 72 and I didn't have a good way of fixing that
+	(sorry that's vague.  I don't remember the exact problem right
+	now).   I'm hoping that since we aren't as concerned w/ beauty
+	of the generated code that disabling this will be okay.  The
+	code has been modified so that it treats statements w/ strings
+	in them the same as others.
+
+X*2*     Something wrong in mpnudge.F -- the j in the conditional associated
+	with some of my debugging prints isn't converting to global.
+	I changed the calls to li_loc2glob when processing and endK token
+	at the end of a routine.  It was passing in first_e.  I added
+	a new global variable, first_statement.  The problem was that with
+	all the tree surgery going on, the first_e pointer someone can end
+	up pointing into the body of a statement like a do-body.  So it'll
+	go and process the statements in the body, but leave the other
+	instances alone.  Couple of things bug me about this fix:
+
+	   - first_e pointer *should* be kept current to the first
+	     executable!  I don't know why it isn't, actually.  That's
+	     something that needs to be looked at (I'm adding this as
+	     a bug now).
+
+	   - I'm worried about running the walk_statement1 through the
+	     declaration part.  It *should* be okay.
+
+*3*	The first_e pointer doesn't seem to point at the right thing
+	(the first executable statement) by the time the tree surgery
+	has been accomplished (see *2* above).
+
+
+970228------------------------------------------------------------
+
+*1*	I got bit by *3* above today.  First_e pointer was being erroneously
+	reset in handle_executable.c (where I've flagged w/ this date).  I removed
+	that.
+
+970311------------------------------------------------------------
+
+*1*     Fixed a nasty in the logic that was inappropriately converting "RI"
+        below to FLIC_L2G_M(RI):
+
+        DO 3201 I=1,ILX
+          RI=
+     +             VX(I,KL)
+          IF((RI.GT.RC(I,KL)))THEN
+            KZM(I,KL)=KZO
+          ELSE
+            KZM(I,KL)=KZO+SQRT(SSKLM)*SZKM*(RC(I,KL)-RI)/RC(I,KL)
+          ENDIF
+ 3201   CONTINUE
+
+	It has to do with the fact that VX is on a separate line.
+
+

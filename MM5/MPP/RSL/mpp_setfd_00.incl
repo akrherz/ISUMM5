@@ -1,0 +1,26 @@
+CSTART   mpp_setfd_00.incl
+c stencil exchange needed here:
+c -----------------------------------------------------
+c           ne
+c
+c           ++
+c           *+
+c
+c
+c 2d:
+c mpsd      x
+c psod      x
+c psbd      x
+c
+c 3d:
+c ub        x
+c ubo       x
+c uboten    x
+c vb        x
+c vbo       x
+c vboten    x
+c
+c -----------------------------------------------------
+	call rsl_exch_stencil( domains(inest), sten_fdda_1(inest) )
+
+CEND   mpp_setfd_00.incl

@@ -1,0 +1,7 @@
+CSTART   mpp_initsav_20.incl
+        IF(IXTIME.NE.IXTIMR)THEN
+         PRINT*,'STOPPING'
+         CALL RSL_SHUTDOWN
+         STOP
+        ENDIF
+CEND   mpp_initsav_20.incl

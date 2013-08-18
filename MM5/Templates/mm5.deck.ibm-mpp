@@ -1,0 +1,492 @@
+#!/bin/csh
+# @ job_type   = parallel
+# @ environment = COPY_ALL;MP_EUILIB=us
+# @ job_name   = mppjob
+# @ output     = mm5.out
+# @ error      = mm5.err
+# @ node       = 1,1
+# @ network.MPI    = css0,shared,us
+# @ tasks_per_node = 4
+# @ node_usage = not_shared
+# @ checkpoint = no
+# @ wall_clock_limit = 3600
+# @ class      = com_reg
+# @ queue
+
+set MP_SHARED_MEMORY = yes
+
+
+if ( ! -e /ptmp/$USER ) then
+   mkdir /ptmp/$USER
+endif
+set TMPDIR=/ptmp/$USER
+
+
+############################################################################
+#####         IBM batch job for MM5 MPP model run ONLY                 #####
+#####                                                                  #####
+#####  This deck has been set up to run on NCAR's IBM machines.        #####
+#####  If you are not working with NCAR's IBM machines, this deck will #####
+#####  not be much use to you.                                         #####
+#####                                                                  #####
+#####  This deck has been set up to run the MM5 MPP code, on 4         #####
+#####  processors. This code expects to find the input files on mass   #####
+#####  storage.                                                        #####
+#####                                                                  #####
+#####   This script is still in the experimental phase, and cover      #####
+#####   only the basic features of the MM5 model.                      #####
+#####   Capabilities and options are likely to change.                 #####
+#####               Please be patient.                                 #####
+#####                                                                  #####
+#####   Questions and comments should be directed to:                  #####
+#####                        mesouser@ucar.edu                         #####
+#####                                                                  #####
+############################################################################
+
+#
+#       this should be the user's case or experiment (used in MS name)
+#
+  set ExpName = MM5V3/TEST            # MSS path name for output
+  set InName  = MM5V3/TEST/DATA       # MSS path name for input
+  set RetPd   = 365                   # MSS retention period in days
+
+#
+#       type of mm5 job
+#
+  set compile   = yes         # if yes, compile the mm5 code
+# set compile   = no          # if no, the deck expects to read mm5.exe
+
+  set execute   = yes         # if yes, execute model run
+# set execute   = no          # if no, complie only
+#
+  set STARTsw   = NoReStart   # start model run at hour 0
+# set STARTsw   = ReStart     # restart model run
+#
+  if ( $STARTsw == ReStart ) then
+     set compile = no
+  endif
+
+  set UseMySource = no        # Use "standard" version of MM5
+# set UseMySource = yes       # Use my version of MM5
+#
+  set SourceCode = /home/username
+                              # Path to my mm5.tar and mpp.tar files
+#
+  set FDDAsw    = NoFDDA      # no FDDA input files
+# set FDDAsw    = Anly        # gridded FDDA input files
+# set FDDAsw    = Obs         # obs FDDA input files
+# set FDDAsw    = Both        # gridded and obs FDDA input files
+#
+#------------------------------------------------------------------------------
+#
+#    Input files:
+#        1. lateral and lower boundary files
+#
+  set InBdy  =  ( BDYOUT_DOMAIN1 )
+  set InLow  =  ( LOWBDY_DOMAIN1 LOWBDY_DOMAIN2 )
+#
+#        2. initial conditions and/or nest terrain file
+#
+# set InMM    = ( MMINPUT_DOMAIN1 )
+  set InMM    = ( MMINPUT_DOMAIN1 \
+                  TERRAIN_DOMAIN2 \
+                  MMINPUT_DOMAIN2 )
+#
+#        3. 4dda surface analyses - if this is a 4DDA run
+#
+if (( $FDDAsw == Anly ) || ( $FDDAsw == Both )) then
+  set In4DSfc  = ( SFCFDDA_DOMAIN1 \
+                   SFCFDDA_DOMAIN2  )
+endif
+#
+#        4. 4dda observations - if this is a 4DDA run
+#
+if (( $FDDAsw == Obs  ) || ( $FDDAsw == Both )) then
+  set In4DObs  = ( MM5OBS_DOMAIN1 \
+                   MM5OBS_DOMAIN2 )
+endif
+#
+#-----------------------------------------------------------------------------
+#                 Get source code
+#
+if ( $compile == yes ) then
+  if ( $UseMySource == yes ) then
+    echo "Making use of own source code"
+    cp $SourceCode/mm5.tar .
+    tar -xvf mm5.tar
+    rm mm5.tar
+    cd MM5
+    cp $SourceCode/mpp.tar .
+    tar -xvf mpp.tar
+    rm mpp.tar
+  else
+    echo "Getting source code from mass storage"
+    msread mm5v3.tar.gz /MESOUSER/MM5V3/MM5.TAR.gz
+    gunzip mm5v3.tar
+    tar -xvf mm5v3.tar
+    rm mm5v3.tar
+    cd MM5
+    msread mpp.tar.gz /MESOUSER/MM5V3/MPP.TAR.gz
+    gunzip mpp.tar
+    tar -xvf mpp.tar
+    rm mpp.tar
+  endif
+else
+  echo "Compile is no, so get compiled code from mass storage"
+  mkdir MM5
+  cd MM5
+  msread mm5exe.tar $ExpName/mm5exe.tar
+  tar -xvf mm5exe.tar 
+  rm mm5exe.tar
+endif
+  
+#
+#========================================================================
+# configure.user file - User editting required for sections 5 and 6
+#  **Please read Release-note for how to make changes in configure.user
+#------------------------------------------------------------------------
+#
+cat >! ./configure.user << "EOF"
+# Sections
+# 1. System Variables
+# 4. General commands
+# 5. Options for making "./include/parame.incl"
+# 6. Physics Options (memory related)
+# 7. MPP Options 
+#
+#-----------------------------------------------------------------------------
+# 1. System Variables 
+#-----------------------------------------------------------------------------
+SHELL = 	/bin/sh
+.SUFFIXES: .F .i .o .f .c
+#-----------------------------------------------------------------------------
+# 4. General commands
+#-----------------------------------------------------------------------------
+AR = ar ru
+RM = rm -f
+RM_CMD = $(RM) *.CKP *.ln *.BAK *.bak *.o *.i core errs ,* *~ *.a \
+.emacs_* tags TAGS make.log MakeOut *.f !
+GREP = grep -s
+CC = cc
+#-----------------------------------------------------------------------------
+# 5. Options for making ./include/parame.incl
+#-----------------------------------------------------------------------------
+#
+# FDDAGD (integer)                  - "1" -> FDDA gridded run
+FDDAGD = 0
+#
+# FDDAOBS (integer)                 - "1" -> FDDA obs run
+FDDAOBS = 0
+#
+# MAXNES (integer)                  - Max Number of Domains in simulation
+MAXNES = 2
+#
+# MIX,MJX (integer)                 - Maximum Dimensions of any Domain
+MIX = 49
+MJX = 52
+# MKX (integer)                     - Number of half sigma levels in model
+MKX = 23
+#-----------------------------------------------------------------------------
+# 6. Physics Options
+#    The first MAXNES values in the list will be used for the corresponding
+#        model nests; the rest in the list can be used to compile other options.
+#        The exception is FRAD, of which only the first value is used in the model,
+#        (i.e., only one radiation option is used for all nests). The rest allow 
+#        other options to be compiled.
+#    Compilation of Arakawa-Schubert cumulus scheme requires imsl.
+#-----------------------------------------------------------------------------
+# IMPHYS - for explicit moisture schemes (array,integer)
+IMPHYS = "4,4,1,1,1,1,1,1,1,1"      
+#                                   - Dry,stable,warm rain,simple ice,mix phase,
+#                                   - 1  ,2     ,3        ,4         ,5
+#                                   - graupel(gsfc),graupel(reisner2),schultz
+#                                   -,6            ,7                ,8
+MPHYSTBL = 0
+#                                   - 0=do not use look-up tables for moist 
+#                                     physics
+#                                   - 1=use look-up tables for moist physics 
+#                                     (currently only simple ice and mix phase 
+#                                      are available)
+#
+# ICUPA - for cumulus schemes (array,integer)
+#                                   - None,Kuo,Grell,AS,FC,KF,BM,KF2 - 1,2,3,4,5,6,7,8
+ICUPA  = "3,3,1,1,1,1,1,1,1,1"
+#
+# IBLTYP - for planetary boundary layer (array,integer)
+#                                   - 0=no PBL fluxes,1=bulk,2=Blackadar,
+#                                     3=Burk-Thompson,4=Eta M-Y,5=MRF,
+#                                     6=Gayno-Seaman,7=Pleim-Xiu
+IBLTYP  = "5,5,0,0,0,0,0,0,0,0"
+#
+# FRAD - for atmospheric radiation (integer)
+#                                   - Radiation cooling of atmosphere 
+#                                     0=none,1=simple,2=cloud,3=ccm2,4=rrtm
+FRAD = "2,0,0,0,0"
+#
+# IPOLAR - (integer) for polar model used only if ISOIL=1
+#                                     0=not polar (5-layer soil model)
+#                                     1=polar (7-layer snow/soil model)
+IPOLAR = 0
+#
+# ISOIL - for multi-layer soil temperature model (integer)
+#                                   - 0=no,1=yes (only works with IBLTYP=2,4,5,6)
+#                                     2=OSU land-surface scheme (IBLTYP=5 only)
+#                                     3=Pleim-Xiu LSM (IBLTYP=7 only)
+ISOIL = 1
+#
+# ISHALLO (array,integer)           - Shallow Convection Option
+#                                     1=shallow convection,0=No shallow convection
+ISHALLO  = "0,0,0,0,0,0,0,0,0,0"
+#-----------------------------------------------------------------------------
+# 7. MPP options
+#
+# For general information and updated "helpdesk" information see
+#    http://www.mmm.ucar.edu/mm5/mpp
+#    http://www.mmm.ucar.edu/mm5/mpp/helpdesk
+#
+#-----------------------------------------------------------------------------
+#
+#                                 Presently, of the MPP platforms only the "sp2"
+#                                 is supplied with the "make deck" capability.
+#
+# MPP Software Layer
+MPP_LAYER=RSL
+#MPP_LAYER=NNTSMS
+# 
+# PROCMIN_NS - minimum number of processors allowed in N/S dim
+#
+PROCMIN_NS = 1
+#
+# PROCMIN_EW - minimum number of processors allowed in E/W dim
+#
+PROCMIN_EW = 1
+#
+# ASSUME_HOMOGENOUS_ENVIRONMENT - on a machine with a heterogeneous
+# mix of processors (different speeds) setting this compile time
+# constant to 0 (zero) allows the program to detect the speed of each
+# processor at the beginning of a run and then to attempt to come up with
+# an optimal (static) mapping.  Set this to 0  for a heterogeneous
+# mix of processors, set it to 1 for a homogeneous mix.  Unless you
+# are certain you have a heterogeneous mix of processors, leave this
+# set to 1.  Currently, this option is ignored on platforms other
+# than the IBM SP.
+#
+ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
+#
+#-----------------------------------------------------------------------------
+#    7a. IBM SP2
+#         type 'make mpp' for the SP2
+#-----------------------------------------------------------------------------
+RUNTIME_SYSTEM = "sp2"
+MPP_TARGET=$(RUNTIME_SYSTEM)
+MFC = xlf
+MCC = mpcc
+MLD = mpxlf
+FCFLAGS = -O3 -qstrict -qarch=auto -qhsflt
+LDOPTIONS =
+##LOCAL_LIBRARIES = -lmass
+#LOCAL_LIBRARIES = -lessl
+LOCAL_LIBRARIES =
+MAKE = make -i -r
+AWK = awk
+SED = sed
+CAT = cat
+CUT = cut
+EXPAND = expand
+M4 = m4
+CPP = /lib/cpp -C -P
+CPPFLAGS = -DMPI -Drs6000
+CFLAGS = -DNOUNDERSCORE -DMPI
+ARCH_OBJS =  milliclock.o
+IWORDSIZE = 4
+RWORDSIZE = 4
+LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+# Don't touch anything below this line
+#-----------------------------------------------------------------------------
+.F.i:
+	$(RM) $@
+	$(CPP) $(CPPFLAGS) $*.F > $@
+	mv $*.i $(DEVTOP)/pick/$*.f
+	cp $*.F $(DEVTOP)/pick
+.c.o:
+	$(RM) $@ && \
+	$(CC) -c $(CFLAGS) $*.c
+
+.F.o:
+	$(RM) $@
+	$(FC) -c $(FCFLAGS) $*.F
+
+.F.f:
+	$(RM) $@
+	$(CPP) $(CPPFLAGS) $*.F > $@
+
+.f.o:
+	$(RM) $@
+	$(FC) -c $(FCFLAGS) $*.f
+#-----------------------------------------------------------------------
+"EOF"
+#
+#=======================================================================
+# Options for namelist ("mmlif") - User editting required
+#   (Comments in the namelist are removed during execution)
+#-----------------------------------------------------------------------
+#
+#	The first dimension (column) of the arrays denotes the domain
+#	identifier.
+#		Col 1 = Domain #1, Col 2 = Dom #2, etc.
+#
+cat > ./Run/oparam << EOF
+ &OPARAM
+#INCLUDE oparam
+ /
+EOF
+cat > ./Run/lparam << EOF
+ &LPARAM
+#INCLUDE lparam
+EOF
+cat > ./Run/nparam << EOF
+ &NPARAM
+#INCLUDE nparam
+ /
+EOF
+cat > ./Run/pparam << EOF
+ &PPARAM
+#INCLUDE pparam
+ /
+EOF
+cat > ./Run/fparam << EOF
+ &FPARAM
+#INCLUDE fparam
+ /
+EOF
+#
+#----------------------------------------------------------------------------
+#                    Make code
+if ( $compile == yes ) then
+  echo "CODE are now being compiled"
+  make mpp
+  tar -cvf mm5exe.tar * 
+  echo "mswrite executable files"
+  mswrite -t $RetPd mm5exe.tar $ExpName/mm5exe.tar
+else
+  echo "Code will not be COMPILED"
+endif
+#----------------------------------------------------------------------------
+#
+#      create namelist: mmlif, and remove comments from namelist:
+#
+if ( $execute == no ) then
+  echo "NO execution"
+  exit
+endif
+
+echo "RUN model"
+
+make mmlif
+cd ./Run
+sed -f ../Util/no_comment.sed mmlif | grep "[A-Z,a-z,/]" > mmlif.tmp
+mv mmlif.tmp mmlif
+rm fparam lparam nparam oparam pparam
+#----------------------------------------------------------------------------
+#
+#       get boundary conditions from MS
+#
+   foreach fil ( $InBdy )
+       echo "msread " $fil
+       msread $fil $InName/$fil
+   end
+   foreach fil ( $InLow )
+       echo "msread " $fil
+       msread $fil $InName/$fil
+   end
+#
+#       1. initial conditions
+#
+   foreach fil ( $InMM )
+       echo "msread " $fil
+       msread $fil $InName/$fil
+   end
+
+set NUMFIL = 1
+while ( $NUMFIL <= ${#InMM} )
+   if (( $FDDAsw == Anly ) || ( $FDDAsw == Both ) && ( -e MMINPUT_DOMAIN$NUMFIL)) then
+      cp MMINPUT_DOMAIN$NUMFIL MMINPUT2_DOMAIN$NUMFIL
+   endif
+   @ NUMFIL ++
+end
+#
+#       2. get surface analyses files for nudging
+#
+if (( $FDDAsw == Anly ) || ( $FDDAsw == Both )) then
+   foreach fil ( $In4DSfc )
+       echo "msread " $fil
+       msread $fil $InName/$fil
+   end
+endif
+#
+#       3. observations if OBS nudging
+#
+if (( $FDDAsw == Obs ) || ( $FDDAsw == Both )) then
+   foreach fil ( $In4DObs )
+       echo "msread " $fil
+       msread $fil $InName/$fil
+   end
+endif
+#
+#      4.  Restart files
+#
+if ( $STARTsw == ReStart ) then
+  echo "Get restart files from mass storage"
+  msread restart.tar $ExpName/restart.tar
+  tar -xvf restart.tar
+  rm restart.tar
+else
+  mkdir restrts
+endif
+
+#----------------------------------------------------------------------------
+#
+#       run MM5
+#
+
+timex poe ./mm5.mpp
+
+#
+#       Write to MSS all output files
+#
+ls -ls
+foreach file ( MMOUT_DOMAIN* )
+   echo "mswrite" $file
+   mswrite -t $RetPd $file $ExpName/$file
+end
+#
+tar -cvf restart.tar ./restrts
+echo "mswrite restart files"
+mswrite -t $RetPd restart.tar $ExpName/restart.tar
+#
+if ( -e fort.26 ) then
+   set NUM = 1
+   foreach file ( fort.2? )
+      echo "mswrite time series data"
+      mswrite -t $RetPd $file $ExpName/TIMESERIES_DOMAIN$NUM
+      @ NUM++
+   end
+endif
+#
+   tar -cvf mm5out.tar rsl.* show* mmlif
+   echo " mswrite -t $RetPd mm5out.tar $ExpName/mm5out.tar "
+   mswrite -t $RetPd mm5out.tar $ExpName/mm5out.tar
+
+
+#Clean up
+
+cd $TMPDIR
+cd ..
+rm -r $TMPDIR
+cd
+
+echo "DONE"
+
+exit
+#ENDTEMPLATE

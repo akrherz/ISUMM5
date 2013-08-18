@@ -1,0 +1,150 @@
+      integer pig_prev, pjg_prev, pig_prev2, pjg_prev2
+      common /pack_down_com/
+     $       pig_prev, pjg_prev, pig_prev2, pjg_prev2
+C Equiv of VECX_var starts here
+      real   ta_var       ,
+     $       ta_sav_var   ,
+     $       qva_var      ,
+     $       qva_sav_var ,
+     $       qca_var     ,
+     $       qca_sav_var ,
+     $       qra_var     ,
+     $       qra_sav_var ,
+     $       qia_var     ,
+     $       qia_sav_var ,
+     $       qnia_var    ,
+     $       qnia_sav_var,
+     $       qga_var     ,
+     $       qga_sav_var ,
+     $       qnca_var    ,
+     $       qnca_sav_var
+      common /pack_down_com/
+     $       ta_var       (mkx, -IOR:IOR, -IOR:IOR),
+     $       ta_sav_var   (mkx, -IOR:IOR, -IOR:IOR),
+     $       qva_var      (mkx, -IOR:IOR, -IOR:IOR),
+     $       qva_sav_var  (mkx, -IOR:IOR, -IOR:IOR),
+     $       qca_var      (mkx, -IOR:IOR, -IOR:IOR),
+     $       qca_sav_var  (mkx, -IOR:IOR, -IOR:IOR),
+     $       qra_var      (mkx, -IOR:IOR, -IOR:IOR),
+     $       qra_sav_var  (mkx, -IOR:IOR, -IOR:IOR),
+     $       qia_var      (mkx, -IOR:IOR, -IOR:IOR),
+     $       qia_sav_var  (mkx, -IOR:IOR, -IOR:IOR),
+     $       qnia_var     (mkx, -IOR:IOR, -IOR:IOR),
+     $       qnia_sav_var (mkx, -IOR:IOR, -IOR:IOR),
+     $       qga_var      (mkx, -IOR:IOR, -IOR:IOR),
+     $       qga_sav_var  (mkx, -IOR:IOR, -IOR:IOR),
+     $       qnca_var     (mkx, -IOR:IOR, -IOR:IOR),
+     $       qnca_sav_var (mkx, -IOR:IOR, -IOR:IOR)
+      real   ppa_var  ,
+     $       ppa_sav_var,
+     $       wa_var     ,
+     $       wa_sav_var ,
+     $       rainc_sav_var,
+     $       rainnc_sav_var,
+c 000901
+     $       mavail_sav_var,
+     $       pd_dummy1
+      common /pack_down_com/
+     $       ppa_var      (mkx, -IOR:IOR, -IOR:IOR),
+     $       ppa_sav_var  (mkx, -IOR:IOR, -IOR:IOR),
+     $       wa_var       (mkx+1, -IOR:IOR, -IOR:IOR),
+     $       wa_sav_var   (mkx+1, -IOR:IOR, -IOR:IOR),
+     $       rainc_sav_var(   -IOR:IOR, -IOR:IOR),
+     $       rainnc_sav_var(  -IOR:IOR, -IOR:IOR),
+c 000901
+     $       mavail_sav_var(  -IOR:IOR, -IOR:IOR),
+     $       pd_dummy1(10,-IOR:IOR, -IOR:IOR)
+C Equiv of VECD_var starts here
+      real
+     $       va_var,
+     $       va_sav_var,
+     $       ua_var,
+     $       ua_sav_var,
+     $       pd_dummy2
+      common /pack_down_com/
+     $       va_var       (mkx, -IOR:IOR, -IOR:IOR),
+     $       va_sav_var   (mkx, -IOR:IOR, -IOR:IOR),
+     $       ua_var       (mkx, -IOR:IOR, -IOR:IOR),
+     $       ua_sav_var   (mkx, -IOR:IOR, -IOR:IOR),
+     $       pd_dummy2(10,-IOR:IOR, -IOR:IOR)
+      real
+     $       ppa_sav,
+     $       qca_sav,
+     $       qia_sav,
+     $       qnia_sav,
+     $       qga_sav,
+     $       qnca_sav,
+     $       qra_sav,
+     $       qva_sav,
+     $       ta_sav,
+     $       ua_sav,
+     $       va_sav,
+     $       wa_sav
+      common /pack_down_com/
+     $       ppa_sav(mix,mjx,mkx,maxnes),
+     $       qca_sav(mix,mjx,mkx,maxnes),
+     $       qia_sav(mix,mjx,mkx,maxnes),
+     $       qnia_sav(mix,mjx,mkx,maxnes),
+     $       qga_sav(mix,mjx,mkx,maxnes),
+     $       qnca_sav(mix,mjx,mkx,maxnes),
+     $       qra_sav(mix,mjx,mkx,maxnes),
+     $       qva_sav(mix,mjx,mkx,maxnes),
+     $       ta_sav(mix,mjx,mkx,maxnes),
+     $       ua_sav(mix,mjx,mkx,maxnes),
+     $       va_sav(mix,mjx,mkx,maxnes),
+     $       wa_sav(mix,mjx,mkx+1,maxnes)
+
+      real
+     $       wc,
+     $       ppc,
+     $       turke_sav,
+     $       pthlsb_sav,
+     $       pqwsb_sav,
+     $       pthlqwb_sav,
+     $       rainc_sav,
+     $       rainnc_sav,
+C 000901
+     $       mavail_sav
+      common /pack_down_com/
+     $       wc(mix,mjx,mkx+1),
+     $       ppc(mix,mjx,mkx)
+      common /pack_down_com/
+     $       turke_sav(mix,mjx,mkx),
+     $       pthlsb_sav(mix,mjx,mkx),
+     $       pqwsb_sav(mix,mjx,mkx),
+     $       pthlqwb_sav(mix,mjx,mkx)
+      common /pack_down_com/
+     $       rainc_sav(mix,mjx),
+     $       rainnc_sav(mix,mjx),
+C 000901
+     $       mavail_sav(mix,mjx)
+
+C 20021217 - Change tkea_sav from 4D to 3D field
+      real   tkea_sav       ! added 20000105 for gspbl jm
+      real   tkea_sav_var
+      common /pack_down_com/
+     $       tkea_sav(mix,mjx,mkx+1),
+     $       tkea_sav_var (mkx+1, -IOR:IOR, -IOR:IOR)
+
+      real   stca_sav       ! added 20001024 for v3.4
+      real   stca_sav_var
+      real   smca_sav
+      real   smca_sav_var
+      real   swca_sav
+      real   swca_sav_var
+      common /pack_down_com/
+     $       stca_sav(mix,mjx,mlx),
+     $       stca_sav_var (mlx, -2:2, -2:2),
+     $       smca_sav(mix,mjx,mlx),
+     $       smca_sav_var (mlx, -2:2, -2:2),
+     $       swca_sav(mix,mjx,mlx),
+     $       swca_sav_var (mlx, -2:2, -2:2)
+
+      integer vecx_len
+      parameter (vecx_len= 20*mkx+4)
+      real      VECX_var ( vecx_len , -IOR:IOR, -IOR:IOR)
+      equivalence (VECX_var, ta_var)
+      integer vecd_len
+      parameter (vecd_len= 4*mkx+4)
+      real      VECD_var ( vecd_len , -IOR:IOR, -IOR:IOR)
+      equivalence (VECD_var, va_var)

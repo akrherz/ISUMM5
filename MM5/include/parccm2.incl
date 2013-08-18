@@ -1,0 +1,14 @@
+C---------------------------------------------------------------------           PARCCM2.1
+C     !   BASIC GRID POINT RESOLUTION PARAMETERS                                 PARCCM2.2
+      INTEGER IPLEV,IPLON,IPLAT,IPLONP2,IPLEVP,IPLOND,IPLATD                     PARCCM2.3
+C                                                                                PARCCM2.4
+C                                                                                PARCCM2.5
+#ifndef MPP1                                                                     PARCCM2.6
+      PARAMETER(IPLEV=MKX,IPLEVP=MKX+1,IPLON=MIX-1,IPLOND=MIX-1,                 PARCCM2.7
+     1          IPLONP2=MIX+1,IPLAT=1,IPLATD=MJX-1)                              PARCCM2.8
+#else                                                                            PARCCM2.9
+      PARAMETER(IPLEV=MKX,IPLEVP=MKX+1,IPLON=MIX,IPLOND=MIX,                     PARCCM2.10
+     1          IPLONP2=MIX,IPLAT=1,IPLATD=MJX)                                  PARCCM2.11
+#endif                                                                           PARCCM2.12
+C                                                                                PARCCM2.13
+C----------------------------------------------------------------------          PARCCM2.14

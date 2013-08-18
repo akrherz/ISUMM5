@@ -1,0 +1,7 @@
+CSTART   mpp_initnest_35.incl
+      DO J = 1,MJX
+        DO I = 1,MIX
+          PSAN(I,J) = 1.
+        ENDDO
+      ENDDO
+CEND   mpp_initnest_35.incl

@@ -1,0 +1,9 @@
+CSTART   mpp_setupgd_60.incl
+        DO J = 1, JL
+          DO I = 1, IL
+            WDT(I,J) = 1.
+            WCS(I,J) = 1.
+          ENDDO
+        ENDDO
+
+CEND   mpp_setupgd_60.incl

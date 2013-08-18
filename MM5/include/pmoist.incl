@@ -1,0 +1,28 @@
+C                                                                                PMOIST.1
+C----------------------------------------------------------------------          PMOIST.2
+C                                                                                PMOIST.3
+      REAL AVT,AVTS,BETAI,BVT,BVTS,CONF,EP1,EP2,G3PB,G4PB,G5PB,HYDPRE,           PMOIST.4
+     1 PPI,PPIS,PRAC,PRACS1,PREC1,PREC2,PRECS1,PRECS2,QCK1,QCTH,QDCRIT,          PMOIST.5
+     2 QWGHT,RV,SVP1,SVP2,SVP3,SVPT0,TO,TWGHT,VQFLX,VTC,VTCS,XLF0,XLS,           PMOIST.6
+     3 XLV,XLV0,XLV1,XLVOCP,XM0,XMMAX,XMOIST,XN0                                 PMOIST.7
+      INTEGER IEVAP                                                              PMOIST.8
+      COMMON/PMOIST/     RV,   XLV,   EP1,   EP2,XLVOCP,  SVP1,  SVP2,           PMOIST.9
+     1                 SVP3,  CONF,  QCTH,  QCK1,   AVT,   BVT,  G4PB,           PMOIST.10
+     2                 G3PB,  G5PB,   N0R,   PPI,   VTC,  PRAC, PREC1,           PMOIST.11
+     3                PREC2,XMOIST,HYDPRE, IEVAP,QDCRIT, TWGHT, VQFLX,           PMOIST.12
+     4                BVTS,BETAI,PRACS1,PRECS1,QWGHT,                            PMOIST.13
+     5               PRECS2,PPIS,TO,VTCS,XLS,XLV0,XLV1,XN0,                      PMOIST.14
+     6               XMMAX,XM0,XLF0,AVTS,SVPT0                                   PMOIST.15
+C                                                                                PMOIST.16
+      REAL N0R                                                                   PMOIST.17
+      DIMENSION XMOIST(MAXSES),HYDPRE(MAXSES),IEVAP(MAXSES)                      PMOIST.18
+#ifndef NOKUO                                                                    07NOV00.1130
+      DIMENSION TWGHT(MKX,5:MKX,1:MKX-3),VQFLX(MKX,5:MKX,1:MKX-3)                PMOIST.19
+#endif                                                                           07NOV00.1131
+#ifndef VECTOR                                                                   07NOV00.1132
+      DIMENSION QWGHT(MJX,MKX)                                                   PMOIST.20
+#else                                                                            07NOV00.1133
+C_FLIC_BEGIN_NOFLIC                                                              07NOV00.1134
+      DIMENSION QWGHT(MJX,MKX)                                                   07NOV00.1135
+C_FLIC_END_NOFLIC                                                                07NOV00.1136
+#endif                                                                           07NOV00.1137

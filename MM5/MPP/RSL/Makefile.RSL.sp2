@@ -1,0 +1,459 @@
+#############################################################################
+#
+# This is the makefile for generating the MPP version of MM5 automatically
+# using FLIC and mapping down to the RSL runtime communication and 
+# parallelization library.
+# 
+#############################################################################
+#
+# Macros to locate position in the source tree.
+#
+DEVTOP = ../..
+MPPTOP = $(DEVTOP)/MPP
+RSLLOC = $(MPPTOP)/RSL/RSL
+# this next can be overridden
+FLIC_MACROS = LMexp.m4
+#
+# Include configuration information derived from the configure.user file
+#
+include $(DEVTOP)/MPP/conf.mpp
+include $(DEVTOP)/include/config.INCL
+#
+# Directories to search to resolve CPP includes
+#
+INCLUDES = -I$(MPPTOP) -I$(MPPTOP)/$(MPP_LAYER)  \
+           -I$(DEVTOP)/pick -I$(MPPTOP)/debug -I$(RSLLOC)
+#
+# Command line options to CPP 
+#
+CPP_FLAGS = -DMPP1 -DIOR=2           \
+            -DIWORDSIZE=$(IWORDSIZE) \
+            -DRWORDSIZE=$(RWORDSIZE) \
+            -DLWORDSIZE=$(LWORDSIZE) \
+            -DASSUME_HOMOGENEOUS_ENVIRONMENT=$(ASSUME_HOMOGENEOUS_ENVIRONMENT)\
+            $(CPPFLAGS)
+#
+# Command line options to C compiler for compiling .c files
+#
+CC_FLAGS = $(INCLUDES) $(CPP_FLAGS) $(CFLAGS)
+LINK_FLAGS = $(RSLLOC)/librsl.a $(LDOPTIONS) $(LOCAL_LIBRARIES)
+#
+# Preprocessing and run-time library support
+#
+M4_FLIC = $(M4) $(MPPTOP)/$(MPP_LAYER)/$(FLIC_MACROS)
+FLICFLAGS = -F=$(MPPTOP)/FLICFILE -CPP='include<rsl.inc>' \
+            -CPP='include<rslcom.inc>' -H='FLIC_RUN_DECL' -STOP=FKILL_MODEL
+FLIC = $(MPPTOP)/FLIC/FLIC/flic $(FLICFLAGS)
+CUTTER = $(MPPTOP)/col_cutter
+#
+# Redefine RM if you want to preserve the intermediary file
+RM = echo
+#
+##########
+
+.SUFFIXES: .F .o .c
+
+include .tmpobjs
+
+all : parame.incl $(OBJS) $(ARCH_OBJS)
+	$(MLD) -o mm5.mpp $(OBJS) $(ARCH_OBJS) $(LINK_FLAGS)
+	/bin/mv mm5.mpp $(DEVTOP)/Run/mm5.mpp
+
+####### generic make rules (covers most source files) #######
+
+.F.o:
+	$(CUT) -c1-72 $*.F | $(SED) -e 's/`//' -e 's/  *$$//' |\
+           $(EXPAND) | $(CPP) $(INCLUDES) $(CPP_FLAGS) | $(M4) - > $*.b
+	$(FLIC) $*.b > $*.dm
+	$(M4_FLIC) $*.dm | sed '/^$$/d' | $(CPP) $(INCLUDES) | $(CUTTER) >$*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.b $*.dm $*.f
+
+.c.o:
+	$(MCC) -c $(CC_FLAGS) $<
+
+####### special cases #######
+
+parame.incl :
+	@echo '      INTEGER MAXNES  ' > parame.incl
+	@echo '      INTEGER MAXMV   ' >> parame.incl
+	@echo '      INTEGER MIX_G   ' >> parame.incl
+	@echo '      INTEGER MJX_G   ' >> parame.incl
+	@echo '      INTEGER MKX_G   ' >> parame.incl
+	@echo '      INTEGER MIX     ' >> parame.incl
+	@echo '      INTEGER MJX     ' >> parame.incl
+	@echo '      INTEGER MKX     ' >> parame.incl
+	@echo '      INTEGER MLX     ' >> parame.incl
+	@echo '      INTEGER IEXMS   ' >> parame.incl
+	@echo '      INTEGER IARASC  ' >> parame.incl
+	@echo '      INTEGER IRDDIM  ' >> parame.incl
+	@echo '      INTEGER ISLDIM  ' >> parame.incl
+	@echo '      INTEGER ILDDIM  ' >> parame.incl
+	@echo '      INTEGER INAV    ' >> parame.incl
+	@echo '      INTEGER INAV2   ' >> parame.incl
+	@echo '      INTEGER INAV3   ' >> parame.incl
+	@echo '      INTEGER IGSPBL  ' >> parame.incl
+	@echo '      INTEGER IICE    ' >> parame.incl
+	@echo '      INTEGER IICEG   ' >> parame.incl
+	@echo '      INTEGER IKFFC   ' >> parame.incl
+	@echo '      INTEGER IFDDAG  ' >> parame.incl
+	@echo '      INTEGER IFDDAO  ' >> parame.incl
+	@echo '      INTEGER INHYD   ' >> parame.incl
+	@echo '      INTEGER PROCMIN_NS,PROCMIN_EW' >> parame.incl
+	@echo '      PARAMETER(MAXNES = $(MAXNES))' >> parame.incl
+	@echo '      PARAMETER(MAXMV  = 10 )' >> parame.incl
+	@echo '      PARAMETER(MIX_G  = $(MIX))' >> parame.incl
+	@echo '      PARAMETER(MJX_G  = $(MJX))' >> parame.incl
+	@echo '      PARAMETER(MKX_G  = $(MKX))' >> parame.incl
+	@ RDP=`fgrep RSL_DEFAULT_PADAREA $(RSLLOC)/rsl.h | cut -f 3 -d ' '` ; export RDP ; \
+          if [ $(MPP_TARGET) = vpp ] ; then \
+	   echo '      PARAMETER(MIX=MIX_G+2)' >>parame.incl ;\
+	   else \
+	   echo "      PARAMETER(MIX=MIX_G/$(PROCMIN_NS)+2*$$RDP+2)" >>parame.incl ;\
+          fi ; \
+	  echo "      PARAMETER(MJX=MJX_G/$(PROCMIN_EW)+2*$$RDP+2)" >>parame.incl
+	@echo '      PARAMETER(MKX  = $(MKX))' >> parame.incl
+	@echo '      PARAMETER(MLX  = $(MLX))' >> parame.incl
+	@echo '      PARAMETER(IEXMS   = $(EXMS))' >> parame.incl
+	@echo '      PARAMETER(IARASC  = $(ARASC))' >> parame.incl
+	@echo '      PARAMETER(IRDDIM  = $(RDDIM))' >> parame.incl
+	@echo '      PARAMETER(ISLDIM  = $(SLDIM))' >> parame.incl
+	@echo '      PARAMETER(ILDDIM  = $(LDDIM))' >> parame.incl
+	@echo '      PARAMETER(INAV    = $(NAV))' >> parame.incl
+	@echo '      PARAMETER(INAV2   = $(NAV2))' >> parame.incl
+	@echo '      PARAMETER(INAV3   = $(NAV3))' >> parame.incl
+	@echo '      PARAMETER(IGSPBL  = $(GSPBL))' >> parame.incl
+	@echo '      PARAMETER(IICE    = $(ICE))' >> parame.incl
+	@echo '      PARAMETER(IICEG   = $(ICEG))' >> parame.incl
+	@echo '      PARAMETER(IKFFC   = $(KFFC))' >> parame.incl
+	@echo '      PARAMETER(IFDDAG  = $(FDDAGD))' >> parame.incl
+	@echo '      PARAMETER(IFDDAO  = $(FDDAOBS))' >> parame.incl
+	@echo '      PARAMETER(INHYD   = 1         )' >> parame.incl
+	@echo '      PARAMETER(PROCMIN_NS = $(PROCMIN_NS))' >> parame.incl
+	@echo '      PARAMETER(PROCMIN_EW = $(PROCMIN_EW))' >> parame.incl
+	cat $(DEVTOP)/include/parame >> parame.incl
+	/bin/mv parame.incl $(DEVTOP)/pick
+
+#
+# This module deals with namelists.  On most architectures, one processor
+# reads in the namelist and then broadcasts the settings to the others.
+# Packing and unpacking code for such operations is usually the most
+# error prone and tedious to write.  Therefore, generation of pack and
+# unpack code for the namelists has been automated using 'awk' and tables
+# in the file MPP/namelist.data .  The mechanism for this is limited to
+# this one routine, param.F.
+#
+
+param.o : param.F
+	$(SED) '/^#/d' $(MPPTOP)/namelist.data |\
+	  $(AWK) -f $(MPPTOP)/namedata.awk DIR=f DECLFILE=read_config1.h \
+		  PACKFILE=read_config2.h -
+	/bin/mv read_config2.h $(DEVTOP)/pick
+	$(SED) '/^#/d' $(MPPTOP)/namelist.data |\
+	$(AWK) -f $(MPPTOP)/namedata.awk DIR=b DECLFILE=read_config1.h \
+		  PACKFILE=read_config3.h -
+	/bin/mv read_config1.h $(DEVTOP)/pick
+	/bin/mv read_config3.h $(DEVTOP)/pick
+	$(CUT) -c1-72 $*.F | $(EXPAND) |\
+	  $(CPP) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+#
+# This module defines communication (stencils and inter-domain).  M4 is
+# called to allow the use of useful stencil and message definition 
+# macros, contained in this file only.  This file source file appears
+# only in the MPP version of the code when RSL is used as a comm layer.
+#
+define_comms.o : define_comms.F
+	$(M4_FLIC) $*.F | $(CPP) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+#
+# This routine contains FLIC macros already inserted.  Don't run through FLIC.
+#
+mp_initdomain.o : mp_initdomain.F
+	$(M4_FLIC) $*.F | $(CPP) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+dm_io.o : dm_io.F
+	$(CUT) -c1-72 $*.F | $(M4_FLIC) - | $(CPP) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+#
+# These modules are column callable as written, and do not need FLIC.
+#
+initpb.o : initpb.F
+	$(CUT) -c1-72 $*.F | $(M4_FLIC) - | $(CPP) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+hoskeep.o : hoskeep.F
+	$(CUT) -c1-72 $*.F | $(M4_FLIC) - | $(CPP) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+bound.o : bound.F
+	$(CUT) -c1-72 $*.F | $(M4_FLIC) - | $(CPP) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+outpb.o : outpb.F
+	$(CUT) -c1-72 $*.F | $(M4_FLIC) - | $(CPP) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+schultz_mic.o : schultz_mic.F
+	$(CUT) -c1-72 $*.F | $(M4_FLIC) - | $(CPP) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+
+#
+# These modules have to do with nesting and interdomain communication
+# between processors for nest forcing and feedback.  They do not use FLIC.
+# They do use M4 macros to automate and simplify packing and unpacking
+# of messages for interdomain communcation.
+#
+mp_stotndt.o : mp_stotndt.F
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F | \
+ 	    $(CUT) -c1-72 | \
+            $(M4_FLIC) - | \
+            $(CPP) |\
+            $(EXPAND) |\
+            $(SED) 's/qv \(.b[t(]\)/q \1/' | \
+            $(CUTTER) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+vpp_stotndt.o : vpp_stotndt.F
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F | \
+ 	    $(CUT) -c1-72 | \
+            $(M4_FLIC) - | \
+            $(CPP) |\
+            $(EXPAND) |\
+            $(SED) 's/qv \(.b[t(]\)/q \1/' | \
+            $(CUTTER) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+mp_feedbk.o : mp_feedbk.F
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F | \
+ 	    $(CUT) -c1-72 | \
+            $(M4_FLIC) - | \
+            $(CPP) |\
+            $(EXPAND) |\
+            $(SED) 's/qv \(.b[t(]\)/q \1/' | \
+            $(CUTTER) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+bcast_size.o : bcast_size.F
+	$(M4_FLIC) $*.F | $(CPP) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+merge_size.o : merge_size.F
+	$(M4_FLIC) $*.F | $(CPP) $(INCLUDES) $(CPP_FLAGS) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+#
+# These are functions.  They do not need to be run through FLIC.
+#
+
+tp.o : tp.F
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+rslf.o : rslf.F
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+gamma.o : gamma.F
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+dtfrz.o : dtfrz.F
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+dtfrznew.o : dtfrznew.F
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+tpdd.o : tpdd.F
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+tpfc.o : tpfc.F
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+#
+# These are parts of CCM radiation, and need to be handled a little
+# differently
+#
+wheneq.o : wheneq.o
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F | \
+ 	    $(CUT) -c1-72 | \
+            $(SED) 's/  *$$//' |\
+            $(M4_FLIC) - | \
+            $(CPP) |\
+            $(EXPAND) |\
+            $(CUTTER) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+whenfgt.o : whenfgt.o
+	$(CPP) $(INCLUDES) $(CPP_FLAGS) $*.F | \
+ 	    $(CUT) -c1-72 | \
+            $(SED) 's/  *$$//' |\
+            $(M4_FLIC) - | \
+            $(CPP) |\
+            $(EXPAND) |\
+            $(CUTTER) > $*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.f
+
+# this next set of rules is peculiar to the IBM and adds the '-qstrict' option
+# to several routines in the microphysics code
+
+exmoiss.o :
+	$(CUT) -c1-72 $*.F | $(SED) -e 's/`//' -e 's/  *$$//' |\
+           $(EXPAND) | $(CPP) $(INCLUDES) $(CPP_FLAGS) | $(M4) - > $*.b
+	$(FLIC) $*.b > $*.dm
+	$(M4_FLIC) $*.dm | sed '/^$$/d' | $(CPP) $(INCLUDES) | $(CUTTER) >$*.f
+	$(MFC) -c $(FCFLAGS) -qstrict $*.f 2> $*.lis
+	$(RM) $*.b $*.dm $*.f
+
+exmoisr.o :
+	$(CUT) -c1-72 $*.F | $(SED) -e 's/`//' -e 's/  *$$//' |\
+           $(EXPAND) | $(CPP) $(INCLUDES) $(CPP_FLAGS) | $(M4) - > $*.b
+	$(FLIC) $*.b > $*.dm
+	$(M4_FLIC) $*.dm | sed '/^$$/d' | $(CPP) $(INCLUDES) | $(CUTTER) >$*.f
+	$(MFC) -c $(FCFLAGS) -qstrict $*.f 2> $*.lis
+	$(RM) $*.b $*.dm $*.f
+
+lexmoiss.o :
+	$(CUT) -c1-72 $*.F | $(SED) -e 's/`//' -e 's/  *$$//' |\
+           $(EXPAND) | $(CPP) $(INCLUDES) $(CPP_FLAGS) | $(M4) - > $*.b
+	$(FLIC) $*.b > $*.dm
+	$(M4_FLIC) $*.dm | sed '/^$$/d' | $(CPP) $(INCLUDES) | $(CUTTER) >$*.f
+	$(MFC) -c $(FCFLAGS) -qstrict $*.f 2> $*.lis
+	$(RM) $*.b $*.dm $*.f
+
+lexmoisr.o :
+	$(CUT) -c1-72 $*.F | $(SED) -e 's/`//' -e 's/  *$$//' |\
+           $(EXPAND) | $(CPP) $(INCLUDES) $(CPP_FLAGS) | $(M4) - > $*.b
+	$(FLIC) $*.b > $*.dm
+	$(M4_FLIC) $*.dm | sed '/^$$/d' | $(CPP) $(INCLUDES) | $(CUTTER) >$*.f
+	$(MFC) -c $(FCFLAGS) -qstrict $*.f 2> $*.lis
+	$(RM) $*.b $*.dm $*.f
+
+#
+# This one differs from the generic rule only in that it does not
+# include the call to SED to remove back-quotes.  These are left
+# in this routine because the routine has M4 macros inside.
+#
+initnest.o: initnest.F
+	$(CUT) -c1-72 $*.F | $(EXPAND) |\
+	   $(CPP) $(INCLUDES) $(CPP_FLAGS) | $(M4) - > $*.b
+	$(FLIC) $*.b > $*.dm
+	$(M4_FLIC) $*.dm | $(SED) '/^$$/d' \
+	    | $(CPP) $(INCLUDES) | $(CUTTER) >$*.f
+	$(MFC) -c $(FCFLAGS) $*.f 2> $*.lis
+	$(RM) $*.b $*.dm $*.f
+
+#
+# The Blackadar PBL scheme is somewhat problematic in the MPP code
+# because of the way in which the number mitre steps are computed and
+# sometimes recomputed in the original vector code.  The vector version
+# computes a number of mitre steps for an entire NS strip, chosing the
+# maximum number necessary for any one point on the NS strip.  Unfortunately,
+# in the MPP code, this would necessitate a NS communication (for computation
+# of a maximum).  Rather, the MPP version, computes the number of mitre
+# steps individually for each point and does that number.  Meteorologically,
+# these are equivalent in that it doesn't hurt for the vector code to do
+# more, smaller steps than necessary for some of the points (but the answers
+# do differ slightly).
+#
+# The special rules below for HIRPBL and the routines that it calls are
+# used to generate column-callable versions of the routines, taking advantage
+# of the -Cm option (collapse loops and data in M) in FLIC.
+# NOTE: The -Cm option was changed to -cm per request by J. Michalakes. Mar23.1998 dlh
+#
+# Note that some of these routines (slab, for example) are also used in their
+# non-column-callable form.  The routines in their normall form are
+# compiled from the normal file names; the routines in the column-callable
+# form are compiled from intermediate files, generated here, named
+# file_col.F  (the _col is added).  Since these _col files are generated
+# automatically during compilation, they are temporary, and there is no
+# need to save them.
+#
+
+hirpbl.o: hirpbl.F
+	$(CUT) -c1-72 hirpbl.F | $(SED) 's/`//' | $(EXPAND) |\
+	   $(CPP) -DMPP1_COLUMNWISE $(INCLUDES) $(CPP_FLAGS) |\
+           $(M4) - > hirpbl.b
+	$(FLIC) -cm hirpbl.b > hirpbl.dm
+	$(M4_FLIC) hirpbl.dm | sed '/^$$/d' \
+	    | $(CPP) $(INCLUDES) | $(CUTTER) \
+            | sed 's/CMPP1//' >hirpbl.f
+	$(MFC) -c $(FCFLAGS) hirpbl.f 2> $*.lis
+	$(RM) hirpbl.b hirpbl.dm hirpbl.f
+
+slab_col.o: slab.F
+	$(CUT) -c1-72 slab.F | $(SED) 's/`//' | $(EXPAND) |\
+	   $(CPP) -DMPP1_COLUMNWISE $(INCLUDES) $(CPP_FLAGS) |\
+           $(M4) - > slab_col.b
+	$(FLIC) -cm slab_col.b > slab_col.dm
+	$(M4_FLIC) slab_col.dm | sed '/^$$/d' \
+	    | $(CPP) $(INCLUDES) | $(CUTTER) \
+            | sed 's/CMPP1//' > slab_col.f
+	$(MFC) -c $(FCFLAGS) slab_col.f 2> $*.lis
+	$(RM) slab_col.b slab_col.dm slab_col.f
+
+sfcrad_col.o: sfcrad.F
+	$(CUT) -c1-72 sfcrad.F | $(SED) 's/`//' | $(EXPAND) |\
+	   $(CPP) -DMPP1_COLUMNWISE $(INCLUDES) $(CPP_FLAGS) |\
+           $(M4) - > sfcrad_col.b
+	$(FLIC) -cm sfcrad_col.b > sfcrad_col.dm
+	$(M4_FLIC) sfcrad_col.dm | sed '/^$$/d' \
+	    | $(CPP) $(INCLUDES) | $(CUTTER) \
+            | sed 's/CMPP1//' > sfcrad_col.f
+	$(MFC) -c $(FCFLAGS) sfcrad_col.f 2> $*.lis
+	$(RM) sfcrad_col.b sfcrad_col.dm sfcrad_col.f
+
+transm_col.o: transm.F
+	$(CUT) -c1-72 transm.F | $(SED) 's/`//' | $(EXPAND) |\
+	   $(CPP) -DMPP1_COLUMNWISE $(INCLUDES) $(CPP_FLAGS) |\
+           $(M4) - > transm_col.b
+	$(FLIC) -cm transm_col.b > transm_col.dm
+	$(M4_FLIC) transm_col.dm | sed '/^$$/d' \
+	    | $(CPP) $(INCLUDES) | $(CUTTER) \
+            | sed 's/CMPP1//' > transm_col.f
+	$(MFC) -c $(FC_FLAGS) transm_col.f 2> $*.lis
+	$(RM) transm_col.b transm_col.dm transm_col.f
+
+#
+# No optimization for this routine -- it times the processor.
+#
+mhz.o:
+	$(MCC) -c $(CC_FLAGS) mhz.c
+
+#
+# clean rule
+#
+clean:
+	/bin/rm -f *.f *.o *.b *.dm \
+                   read_config1.h read_config2.h read_config3.h parame.incl
+

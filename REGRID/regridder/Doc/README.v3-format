@@ -1,0 +1,100 @@
+!  The following write statements are iterated for as many 2d arrays as there
+!  are to be put in the file:
+!  
+!     WRITE (iunit) iversion
+!     WRITE (iunit) hdate, xfcst, field, units, desc, level, idim, jdim, llflag
+!     IF      (llflag.eq.0) THEN
+!        WRITE (iunit) startlat, startlon, deltalat, deltalon
+!     ELSE IF (llflag.eq.3) THEN
+!        WRITE (iunit) lat1, lon1, deltax, deltay, xlonc, truelat1, truelat2
+!     ELSE IF (llflag.eq.5) THEN
+!        WRITE (iunit) lat1, lon1, deltax, deltay, xlonc, truelat1
+!     END IF
+!     WRITE (iunit) array
+
+!  Where:
+!     INTEGER           :: iversion
+!     CHARACTER(LEN=24) :: hdate
+!     REAL              :: xfcst
+!     CHARACTER(LEN=8)  :: field
+!     CHARACTER(LEN=16) :: units
+!     CHARACTER(LEN=56) :: desc
+!     REAL              :: level
+!     INTEGER           :: idim
+!     INTEGER           :: jdim
+!     INTEGER           :: llflag
+!     REAL              :: startlat
+!     REAL              :: startlon
+!     REAL              :: deltalat
+!     REAL              :: deltalon
+!     REAL              :: lat1
+!     REAL              :: lon1
+!     REAL              :: deltax
+!     REAL              :: deltay
+!     REAL              :: xlonc
+!     REAL              :: truelat1
+!     REAL              :: truelat2
+
+!     IVERSION is a format version number.  Currently, the most recent
+!           version is = 3.  
+!     HDATE is a 24-character string, of which only the first 19 characters
+!           are used, of the form YYYY-MM-DD_hh:mm:ss. The hh:mm:ss is 
+!           assumed to be 00:00:00 for this program.
+!     XFCST is the foreast hour of the first guess field (this is set
+!           to zero if the data is from an analysis).
+!     FIELD is an 8-character label for the field.  Labels understood
+!           so far are:
+!                'T       ', Temperature (K)
+!                'U       ', U wind component (m/s)
+!                'V       '  V wind component (m/s)
+!                'HGT     ', Geopotential Height (not geopotential) (m)
+!                'RH      ', Relative Humidity (%)
+!                'SNOWCOVR', Snow-cover flag (0/1)
+!                'SST     ', Sea-surface Temperature (K)
+!                'PRESSURE', Pressure (Pa) (You can tell whether it is
+!                            sea-level pressure or surface pressure by
+!                            checking on the value given for the pressure
+!                            level.  This is to let someone put in sea level
+!                            pressure in a different way than PMSL.
+!                'SOILTxxx', Soil temperature (K), where xxx is the bottom
+!                            of the level in cm
+!                'SOILMxxx', Soil moisture fraction, where xxx is the bottom 
+!                            of the level in cm
+!                'WEASD   ', Water equivalent of accumulated snow depth (mm)
+!                'SEAICE  ', Sea ice flag (0/1)
+!                'PMSL    ', Mean sea level pressure (Pa)
+!                'LANDSEA ', Flag field: 1=land, 0=water
+!                'SOILHGT ', Terrain height of the analysis data (m)
+
+!     UNITS is a 24 character string of the field's units.
+!     DESC is a 48 character string of the contents of the field (the
+!           first 46 characters are used).
+!     IDIM is the number of points in the first dimension.
+!     JDIM is the number of points in the second dimension.
+!     LEVEL is a floating-point pressure-level value, in Pa.  Special
+!           values are 201300 for sea-level and 200100 for surface.
+
+!     LLFLAG is a flag saying that the next record defines the projection
+!           of the grid.  Valid values so far are 0 (regular latitude
+!           longitude), 3 (Lambert conformal), and 5 (polar stereographic).
+
+!     STARTLAT is the starting latitude, in degrees N
+!     STARTLON is the starting longitude, in degrees E
+!     DELTALAT is the latitude increment, in degrees N
+!     DELTALON is the longitude increment, in degrees E
+
+!     LAT1 is the starting latitude, in degrees N
+!     LON1 is the starting longitude, in degrees E
+!     DELTAX is the x increment in km
+!     DELTAY is the y increment in km
+!     XLONC is the center longitude of the projection, in degrees E
+!     TRUELAT1 is the first true latitude
+!     TRUELAT2 is the second true latitude (not required for polar)
+
+!     ARRAY is the actual 2d slab, dimensioned (IDIM,JDIM)
+
+!  Note that ANY 2d array is allowed to be passed into this program.  This 
+!  will allow an easier usage of the data later in the modeling system data 
+!  stream.  Assumptions are made about only a few fields regarding the
+!  possibilities of masking.  All unknown fields are assumed to be cross 
+!  point on output.

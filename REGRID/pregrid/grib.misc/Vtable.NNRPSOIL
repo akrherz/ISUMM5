@@ -1,0 +1,12 @@
+GRIB | Level| Level| Level| REGRID   |  REGRID  | REGRID                                      |
+Code | Code |   1  |   2  | Name     |  Units   | Description                                 |
+-----+------+------+------+----------+----------+---------------------------------------------+
+ 11  | 112  |   0  |  10  | SOILT010 | K        | T of 0-10 cm ground layer                   |
+ 11  | 112  |  10  | 200  | SOILT200 | K        | T of 10-200 cm ground layer                 |
+ 11  | 111  | 300  |      | SOILT400 | K        | T of 200-400 cm ground layer                |
+ 144 | 112  |   0  |  10  | SOILM010 | fraction | Soil Moisture of 0-10 cm ground layer       |
+ 144 | 112  |  10  | 200  | SOILM200 | fraction | Soil Moisture of 10-200 cm ground layer     |
+ 91  |  1   |   0  |      | SEAICE   | 0/1 Flag | Ice flag                                    |
+ 81  |  1   |   0  |      | LANDSEA  | 0/1 Flag | Land/Sea flag                               |
+ 7   |  1   |   0  |      | SOILHGT  | m        | Terrain field of source analysis            |
+-----+------+------+------+----------+----------+---------------------------------------------+

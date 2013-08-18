@@ -1,0 +1,4 @@
+      REAL TSLAN,TSLBN                                                           SOILN.1
+      POINTER (ITSLAN,TSLAN(MIXS,MJXS,MLX)),                                     SOILN.2
+     -        (ITSLBN,TSLBN(MIXS,MJXS,MLX))                                      SOILN.3
+      COMMON /SOILN/ITSLAN,ITSLBN                                                SOILN.4

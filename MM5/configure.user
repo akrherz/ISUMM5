@@ -1,0 +1,1052 @@
+# Sections
+# 1. System Variables
+# 3. Fortran options
+#    3a. Cray (YMP, J90)
+#        Note: set RUNTIME_SYSTEM="CRAY_IA" for Cray interactive job
+#   3a2. Cray X1 Single Node OpenMP version
+#    3b. IRIX.6.X (SGI_Origin,SGI_R10000,SGI_R8000 which support OpenMP)
+#   3b2. IRIX.6.X (SGI_Origin,SGI_R10000,SGI_R8000)
+#    3c. IRIX.5.2/5.3, IRIX.6.X (SGI_R4000/SGI_R4400/SGI_R5000)
+#        Note: set RUNTIME_SYSTEM="SGI_R4000" for SGI_R4400/SGI_R5000
+#    3d. SUN Fortran (solaris,SPARC20/SPARC64)
+#    3e. DEC_ALPHA (OSF/1)
+#   3e2. DEC_ALPHA (4100/8400; use OpenMP parallel directives)
+#    3f. IBM (AIX)
+#   3f2. IBM, OpenMP (AIX)
+#    3g. HP (UX)
+#    3h. HP (SPP-UX) for HP Exemplar S/X-Class Systems
+#   3i1. PC_PGF (LINUX/Portland Group Inc.)
+#   3i2. PC_INTEL (LINUX/INTEL)
+#    3j. MAC (OSX/xlf)
+# 4. General commands
+# 5. Options for making "./include/parame.incl"
+# 6. Physics Options (memory related)
+# 7. MPP Options (Set no options in section 3)
+#    7a.  IBM SP2
+#    7a.1 IBM SP2 with SMP nodes
+#    7b.  Cray T3E
+#    7c.  SGI Origin 2000
+#    7d.  HP Exemplar
+#    7e.  Compaq ALPHA/MPI
+#    7e.1 ALPHA Linux with MPI
+#    7f.  Fujitsu VPP
+#   7g1.  Network of Linux PCs with MPI (PGI)
+#   7g2.  Network of Linux PCs with MPI (INTEL)
+#   7g3.  SGI Altix with Intel compilers and SGI MPI
+#    7h.  NEC SX/5 (under development)
+#    7i.  Sun MPI
+#    7j.  Cray X1
+#    7k.  Cray XD1, PGI Fortran
+#
+#-----------------------------------------------------------------------------
+# 1. System Variables 
+#-----------------------------------------------------------------------------
+SHELL = 	/bin/sh
+RANLIB =	echo
+.SUFFIXES: .F .i .o .f .c
+#-----------------------------------------------------------------------------
+# 3. Fortran options
+#    Uncomment the ones you need, including RUNTIME_SYSTEM
+#-----------------------------------------------------------------------------
+LIBINCLUDE = $(DEVTOP)/include
+#-----------------------------------------------------------------------------
+#    3a. Cray
+#    Note: - imsl library is only needed if running Arakawa-Schubert cumulus scheme;
+#          and the location of the library may be different on non-NCAR Crays.
+#          - if you are using the new program environment on Cray, should set
+#          CPP = /opt/ctl/bin/cpp
+#          - select the right compilation option for Cray - you may use
+#          f90 option on paiute
+#          - -x omp is needed for f90 compiler version 3.0.2.6 and above.
+#          Check man page.
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "CRAY_IA"
+#FC = f90
+#FCFLAGS = -D$(RUNTIME_SYSTEM) -I$(LIBINCLUDE) -O task1 -x omp
+#CFLAGS =
+#CPP = /opt/ctl/bin/cpp
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P
+#LDOPTIONS =
+#LOCAL_LIBRARIES = -L /usr/local/lib -l imsl
+#MAKE = make -i -r
+#-----------------------------------------------------------------------------
+#   3a2. Cray X1 Single Node OpenMP version
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "crayx1"
+## Use these for X1 cross compiler
+#X1_CROSS_COMP = "gcc"
+#X1_CROSS_CFLG = ""
+## Use these for X1 native (trigger) compiler
+##X1_CROSS_COMP = "cc"
+##X1_CROSS_CFLG = "-hcommand"
+#FC = ftn
+### OpenMP in SSP mode
+#FCFLAGS = -Ossp,task1,inline0 -xcsd,mic -sword_pointer -I$(LIBINCLUDE) -D$(RUNTIME_SYSTEM)
+#LDOPTIONS = -Ossp,task1
+### Multi-streaming single MSP mode
+###FCFLAGS = -O3 -Ogen_private_callee -xomp,mic -sword_pointer -I$(LIBINCLUDE) -D$(RUNTIME_SYSTEM)
+### LDOPTIONS =
+#CFLAGS =
+#CPP = cpp
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#-----------------------------------------------------------------------------
+#    3b. IRIX.6.X (SGI_Origin,SGI_R10000,SGI_R8000 which support OpenMP)
+#        Use OpenMP directives for multi-processor runs.
+#        - set RUNTIME_SYSTEM = SGI_Origin
+#        - works with 7.2.1 and above compiler
+#        - select appropriate XLOCAL0 macro for loader option
+#
+#    - For parallel execution of MM5 set the following environment variables:
+# setenv OMP_NUM_THREADS <number_of_processors>
+# setenv _DSM_PLACEMENT ROUND_ROBIN
+#    - For parallel execution on a processor set without contention:
+# setenv _DSM_WAIT SPIN
+# setenv OMP_DYNAMIC FALSE
+# setenv MPC_GANG OFF
+#    - For parallel execution on a contented set of processors:
+# setenv _DSM_WAIT YEILD
+# setenv OMP_DYNAMIC TRUE
+# setenv MPC_GANG OFF
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "SGI_Origin"
+#FC = f77
+#ABI = -n32 # 2 GB address space
+##ABI = -64 # For 64-bit address space
+#IO = -mpio
+#PREC = # default 32-bit floating-point presicion.
+##PREC = -r8 # 64-bit floating-point precision.
+##Conversion program between different precisions of mminput and bdyout available from wesley@sgi.com
+#MP = -mp -MP:old_mp=OFF
+##MP = -mp -MP:open_mp=OFF # Use SGI multiprocessing directives
+#OPT = -O3 -OPT:roundoff=3:IEEE_arithmetic=3 -OPT:reorg_common=OFF
+##debugging#OPT = -g -DEBUG:div_check:subscript_check=ON:trap_uninitialized=ON
+##select appropriate XLOCAL loader
+#XLOCAL0 =
+### Burk-Thompson PBL (IBLTYP=3) option mp directives
+##XLOCAL0 = -Wl,-Xlocal,bt1_,-Xlocal,blk1_,-Xlocal,blk2_
+### Noah LSM (ISOIL=2) option mp directives
+##XLOCAL0 = -Wl,-Xlocal,rite_,-Xlocal,abci_
+### Gayno-Seaman PBL (IBLTYP=6) option mp directives
+##XLOCAL0 = -Wl,-Xlocal,fog1d_,-Xlocal,surface1_,-Xlocal,surface2_,-Xlocal,surface3_,-Xlocal,comsurfslab_
+#FCFLAGS = -I$(LIBINCLUDE) -D$(RUNTIME_SYSTEM) $(ABI) $(IO) $(PREC) $(MP) $(OPT)
+#CFLAGS =
+#CPP = /usr/lib/cpp
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P
+#LDOPTIONS = $(ABI) $(PREC) $(MP) $(OPT) $(XLOCAL0)
+#LOCAL_LIBRARIES = -lfastm
+#MAKE = make -i -r -P
+#-----------------------------------------------------------------------------
+#   3b2. IRIX.6.X (SGI_Origin,SGI_R10000,SGI_R8000)
+#        Use SGI directives for multi-processor runs.
+#        - set RUNTIME_SYSTEM = SGI_R8000
+#        - use the appropriate LDOPTIONS if compiling Burk-Thompson PBL,
+#          Gayno-Seaman PBL, or Noah land-surface module
+#        - use 7.0 and above compiler
+#        - do not use -lfastm for R10000 and Origin series for compiler
+#          versions 7.0 and 7.1, unless patches are installed. For more
+#          information please see MM5 Web page:
+#            http://www.mmm.ucar.edu/mm5/mm5v2-sgi.html
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "SGI_R8000"
+#FC = f77
+#FCFLAGS = -I$(LIBINCLUDE) -O3 -n32 -mips4 -mp -OPT:roundoff=3:IEEE_arithmetic=3
+#CFLAGS = 
+#CPP = /usr/lib/cpp 
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P
+#LDOPTIONS = -n32 -mips4 -mp
+###Burk-Thompson (IBLTYP=3) option mp directives
+##LDOPTIONS = -n32 -mips4 -mp -Wl,-Xlocal,bt1_,-Xlocal,blk1_,-Xlocal,blk2_
+###Noah LSM (ISOIL=2) option mp directives
+##LDOPTIONS = -n32 -mips4 -mp -Wl,-Xlocal,rite_,-Xlocal,abci_
+### Gayno-Seaman (IBLTYP=6) option mp directives
+##LDOPTIONS = -n32 -mips4 -mp -Wl,-Xlocal,fog1d_,-Xlocal,surface1_,-Xlocal,surface2_,-Xlocal,surface3_,-Xlocal,comsurfslab_
+#LOCAL_LIBRARIES = -lfastm
+##LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#-----------------------------------------------------------------------------
+#    3c. IRIX.6.X (SGI_R4400/SGI_R4000/SGI_R5000)
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "SGI_R4000"
+#FC = f77
+#FCFLAGS = -I$(LIBINCLUDE) -mips2 -32 -O2 -Nn30000 -Olimit 1500
+#CFLAGS = 
+#CPP = /usr/lib/cpp
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P
+#LDOPTIONS = 
+#LOCAL_LIBRARIES = -lfastm
+#MAKE = make -i -r
+#-----------------------------------------------------------------------------
+#    3d. SUN (solaris,SPARC20/SPARC64)
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "SUN"
+#FC = f90
+#FCFLAGS = -fast -O2 -I$(LIBINCLUDE)
+#CFLAGS = 
+#LDOPTIONS = -fast -O2
+#CPP = /usr/lib/cpp
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P
+#LOCAL_LIBRARIES = 
+#MAKE = make -i -r
+#-----------------------------------------------------------------------------
+#    3e. DEC_ALPHA (OSF/1)
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "DEC_ALPHA"
+#FC = f90
+#FCFLAGS = -cpp -D$(RUNTIME_SYSTEM) -I$(LIBINCLUDE) -c -O4 -Olimit 2000 -automatic \
+#     -fpe0 -align dcommons -align records -convert big_endian
+###FCFLAGS = -cpp -D$(RUNTIME_SYSTEM) -DIBMopt -DvsLIB -I$(LIBINCLUDE) -c -O4 -Olimit 2000 -automatic \
+###     -fpe0 -align dcommons -align records -convert big_endian
+#CFLAGS = 
+#CPP = cpp
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P
+#LDOPTIONS = -math_library accurate
+#LOCAL_LIBRARIES = 
+#MAKE = make -i -r
+#-----------------------------------------------------------------------------
+#   3e2. DEC_ALPHA (4100/8400 Series)
+#        Use OpenMP directives for multi-processor runs.
+#        - set RUNTIME_SYSTEM = DEC_ALPHA
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "DEC_ALPHA"
+#FC = f90
+#FCFLAGS = -omp -cpp -D$(RUNTIME_SYSTEM) -I$(LIBINCLUDE) -c -O4 -Olimit 2000 \
+#-automatic -fpe0 -align dcommons -align records -convert big_endian
+#CFLAGS = 
+#CPP = cpp
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P
+#LDOPTIONS = -omp -math_library accurate
+#LOCAL_LIBRARIES = 
+#MAKE = make -i -r
+#-----------------------------------------------------------------------------
+#    3f. IBM (AIX)
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "IBM"
+#FC = xlf
+#FCFLAGS = -I$(LIBINCLUDE) -O3 -qarch=auto -qmaxmem=-1
+#CPP = /usr/lib/cpp
+#CFLAGS =
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P -Drs6000
+#LDOPTIONS = -qmaxmem=-1 -O3 -qarch=auto
+#LOCAL_LIBRARIES = -lmass
+#MAKE = make -i
+#-----------------------------------------------------------------------------
+#    3f2. IBM (AIX)
+#       - Depending on problem size and machine memory size, the settings
+#         of maxstack and maxdata may need to be modified.
+#       - If the newer thread-safe mass library is available, add
+#         the -lmass_r option to LOCAL_LIBRARIES.
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "IBM"
+#FC = xlf_r
+#FCFLAGS = -I$(LIBINCLUDE) -O2 -qarch=auto -qmaxmem=-1 -qsmp=omp:noauto -qnosave -qstrict -qnocclines
+#CPP = /usr/lib/cpp
+#CFLAGS =
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P -Drs6000
+#LDOPTIONS = -qmaxmem=-1 -O2 -qarch=auto -bmaxstack:512000000 -bmaxdata:2000000000
+#LOCAL_LIBRARIES = -lxlsmp -lmass_r
+#LOCAL_LIBRARIES = -lxlsmp
+#MAKE = make -i
+#-----------------------------------------------------------------------------
+#    3g. HP (UX)
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "HP"
+#FC = f77
+#FCFLAGS = -I$(LIBINCLUDE) -O  
+#CPP = /usr/lib/cpp 
+#CFLAGS = -Aa
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P 
+#LDOPTIONS = 
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#-----------------------------------------------------------------------------
+#    3h. HP-SPP (SPP-UX), and HP-SPP_IA
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "HP-SPP"
+#FC        = f77
+#PA8K      = +DA2.0N +DS2.0a
+#ARCH      = ${PA8K}
+#PROFILE   =
+#INLINE    = +Olimit +Oinline=_saxpy,vadv,hadv,sinty,sintx,slab,diffut
+#PARALLEL  = +O3 +Oparallel +Onofail_safe +Onoautopar +Onodynsel
+#
+## Use the following FCFLAGS to build single-threaded executable
+##FCFLAGS   = ${PROFILE} ${ARCH} -I$(LIBINCLUDE) +O3 +Oaggressive \
+##            +Olibcalls ${INLINE}
+#
+## Use the following FCFLAGS to build a parallel executable
+#FCFLAGS   = ${PROFILE} ${ARCH} -I$(LIBINCLUDE) ${PARALLEL} \
+#             +O3 +Oaggressive +Olibcalls ${INLINE}
+#
+#CPP = /usr/lib/cpp
+#CFLAGS = ${PROFILE} -Aa
+#CPPFLAGS = -I$(LIBINCLUDE) -C -P
+#LDOPTIONS = ${FCFLAGS} -Wl,-aarchive_shared -Wl,+FPD
+#LOCAL_LIBRARIES = -Wl,/usr/lib/pa1.1/libm.a
+#MAKE = gmake -j 4 -i -r
+#-----------------------------------------------------------------------------
+#    3i1. PC_PGF77 (LINUX/Portland Group Inc.)
+#         pgf77 version 1.6 and above
+#         May use pgf90 if the version is 3.1-4
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "linux"
+#FC = pgf90
+#FCFLAGS = -I$(LIBINCLUDE) -O2 -Mcray=pointer -tp p6 -pc 32 -Mnoframe -byteswapio
+##FCFLAGS = -I$(LIBINCLUDE) -O2 -Mcray=pointer -tp p6 -pc 32 -Mnoframe -byteswapio -mp \
+##-Mnosgimp
+#CPP = /lib/cpp
+#CFLAGS = -O
+#CPPFLAGS = -I$(LIBINCLUDE)
+#LDOPTIONS = -O2 -Mcray=pointer -tp p6 -pc 32 -Mnoframe -byteswapio
+##LDOPTIONS = -O2 -Mcray=pointer -tp p6 -pc 32 -Mnoframe -byteswapio -mp
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#-----------------------------------------------------------------------------
+#    3i2. PC_INTEL (LINUX/INTEL)
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "linux"
+#FC = ifort
+#FCFLAGS = -I$(LIBINCLUDE) -O2 -tp p6 -pc 32 -convert big_endian
+#CPP = /lib/cpp
+#CFLAGS = -O
+#CPPFLAGS = -I$(LIBINCLUDE)
+#LDOPTIONS = -O2 -tp p6 -pc 32 -convert big_endian
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#-----------------------------------------------------------------------------
+#    3j. MAC (OSX/xlf)
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "macxlf"
+#FC = xlf
+#FCFLAGS = -I$(LIBINCLUDE) -qarch=auto
+#CPP = /usr/bin/cpp
+#CFLAGS = -O -DNOUNDERSCORE
+#CPPFLAGS = -I$(LIBINCLUDE) -I. -C -P -DIBM -xassembler-with-cpp
+#LDOPTIONS = -Wl,-stack_size,10000000,-stack_addr,0xc0000000
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#RANLIB = ranlib
+#-----------------------------------------------------------------------------
+# 4. General commands
+#-----------------------------------------------------------------------------
+AR = ar ru
+RM = rm -f
+RM_CMD = $(RM) *.CKP *.ln *.BAK *.bak *.o *.i core errs ,* *~ *.a \
+.emacs_* tags TAGS make.log MakeOut *.f !
+GREP = grep -s
+CC = cc
+#-----------------------------------------------------------------------------
+# 5. Options for making ./include/parame.incl
+#-----------------------------------------------------------------------------
+#
+# FDDAGD (integer)                  - "1" -> FDDA gridded run
+FDDAGD = 0
+#
+# FDDAOBS (integer)                 - "1" -> FDDA obs run
+FDDAOBS = 0
+#
+# MAXNES (integer)                  - Max Number of Domains in simulation
+MAXNES = 2
+#
+# MIX,MJX (integer)                 - Maximum Dimensions of any Domain
+MIX = 49
+MJX = 52
+# MKX (integer)                     - Number of half sigma levels in model
+MKX = 23
+#-----------------------------------------------------------------------------
+# 6. Physics Options
+#    The first MAXNES values in the list will be used for the corresponding
+#        model nests; the rest in the list can be used to compile other options.
+#        The exception is FRAD, of which only the first value is used in the model,
+#        (i.e., only one radiation option is used for all nests). The rest allow 
+#        other options to be compiled.
+#    Compilation of Arakawa-Schubert cumulus scheme requires imsl.
+#-----------------------------------------------------------------------------
+# IMPHYS - for explicit moisture schemes (array,integer)
+IMPHYS = "4,4,1,1,1,1,1,1,1,1"      
+#                                   - Dry,stable,warm rain,simple ice,mix phase,
+#                                   - 1  ,2     ,3        ,4         ,5
+#                                   - graupel(gsfc),graupel(reisner2),schultz
+#                                   -,6            ,7                ,8
+MPHYSTBL = 0
+#                                   - 0=do not use look-up tables for moist 
+#                                     physics
+#                                   - 1=use look-up tables for moist physics 
+#                                     (currently only simple ice and mix phase 
+#                                      are available)
+#                                   - 2=optimized exmoisr routine (need vslib, if not
+#                                       available set -DvsLIB in compile flags)
+#
+# ICUPA - for cumulus schemes (array,integer)
+#                                   - None,Kuo,Grell,AS,FC,KF,BM,KF2 - 1,2,3,4,5,6,7,8
+ICUPA  = "3,3,1,1,1,1,1,1,1,1"
+#
+# IBLTYP - for planetary boundary layer (array,integer)
+#                                   - 0=no PBL fluxes,1=bulk,2=Blackadar,
+#                                     3=Burk-Thompson,4=Eta M-Y,5=MRF,
+#                                     6=Gayno-Seaman,7=Pleim-Xiu
+IBLTYP  = "5,5,0,0,0,0,0,0,0,0"
+#
+# FRAD - for atmospheric radiation (integer)
+#                                   - Radiation cooling of atmosphere 
+#                                     0=none,1=simple,2=cloud,3=ccm2,rrtm=4
+FRAD = "2,0,0,0,0"
+#
+# IPOLAR - (integer) for polar model used only if ISOIL=1
+#                                     0=not polar (5-layer soil model)
+#                                     1=polar (7-layer snow/soil model)
+IPOLAR = 0
+# 
+# ISOIL - for multi-layer soil temperature model (integer)
+#                                   - 0=no,1=yes (only works with IBLTYP=2,4,5,6)
+#                                     2=Noah land-surface scheme (IBLTYP=4,5 only)
+#                                     3=Pleim-Xiu LSM (IBLTYP=7 only)
+ISOIL = 1
+#
+# ISHALLO (array,integer)           - Shallow Convection Option
+#                                     1=shallow convection,0=No shallow convection
+ISHALLO  = "0,0,0,0,0,0,0,0,0,0"
+#-----------------------------------------------------------------------------
+# 6a. ISU Defined Options
+#
+# Set to 1 to hard code the number of days in February to 28 
+NOLEAP = 0
+#
+# Set the number of grid points to read from the boundary
+# NOTE, if not 5, this requires a modification to INTERPF/src/module_bdy.F
+NSPGX = 15
+#
+# Sets the number of grid points in the boundary to use for modifying
+# the tendencies
+NSPGD = 15
+#
+# Set to 1 to turn on Exponential Boundary Conditions, default is linear
+EXPOBC = 1
+
+#-----------------------------------------------------------------------------
+# 7. MPP options
+#
+# For general information and updated "helpdesk" information see
+#    http://www.mmm.ucar.edu/mm5/mpp
+#    http://www.mmm.ucar.edu/mm5/mpp/helpdesk
+#
+#-----------------------------------------------------------------------------
+#
+#                                 Presently, of the MPP platforms only the "sp2"
+#                                 is supplied with the "make deck" capability.
+#
+# MPP Software Layer
+MPP_LAYER=RSL
+#MPP_LAYER=NNTSMS
+# 
+# PROCMIN_NS - minimum number of processors allowed in N/S dim
+#
+PROCMIN_NS = 1
+#
+# PROCMIN_EW - minimum number of processors allowed in E/W dim
+#
+PROCMIN_EW = 1
+#
+# ASSUME_HOMOGENOUS_ENVIRONMENT - on a machine with a heterogeneous
+# mix of processors (different speeds) setting this compile time
+# constant to 0 (zero) allows the program to detect the speed of each
+# processor at the beginning of a run and then to attempt to come up with
+# an optimal (static) mapping.  Set this to 0  for a heterogeneous
+# mix of processors, set it to 1 for a homogeneous mix.  Unless you
+# are certain you have a heterogeneous mix of processors, leave this
+# set to 1.  Currently, this option is ignored on platforms other
+# than the IBM SP.
+#
+ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
+#
+#-----------------------------------------------------------------------------
+#    7a. IBM SP2
+#         type 'make mpp' for the SP2
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "sp2"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+#MFC = mpxlf_r
+#MCC = mpcc_r
+#MLD = mpxlf_r
+#FCFLAGS = -O2 -qmaxmem=-1 -qarch=auto -qfloat=hsflt
+#LDOPTIONS = -bmaxdata:0x70000000
+#LOCAL_LIBRARIES = -lmassv
+##LOCAL_LIBRARIES = -lmass
+###LOCAL_LIBRARIES = -lessl
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = /lib/cpp -C -P
+#CPPFLAGS = -DMPI -Drs6000 -DSYSTEM_CALL_OK -DIBMopt
+##CPPFLAGS = -DMPI -Drs6000 -DSYSTEM_CALL_OK -DIBMopt -DvsLIB
+#CFLAGS = -DNOUNDERSCORE -DMPI
+#ARCH_OBJS =  milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+#    7a.1 IBM SP with Silver or Winterhawk nodes
+#         type 'make mpp' for the SP2
+#       - You must compile with XLF or MPXLF version 6.1 or greater.
+#       - Check with your system admin before linking to lessl or lmass.
+#       - Note for running on blue.llnl.gov: 
+#          newmpxlf_r is LLNL specific wrapper around HPF 6.1 w/ HPF off.
+#       - If the newer thread-safe mass library is available, add
+#         the -lmass_r option to LOCAL_LIBRARIES.
+#       - For very large domains, use -bmaxdata:2000000000 -bmaxstack:268435456
+#         for load options (Peter Morreale/SCD)
+#       - If you enable -O3 optimization, add -qstrict as well
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "sp2"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+## On llnl.blue.gov, (3/99)
+##MFC = time newmpxlf_r
+##MCC = mpcc_r
+##MLD = newmpxlf_r
+## On systems with R6.1 or greater of IBM Fortran.
+#MFC = time mpxlf_r
+#MCC = mpcc_r
+#MLD = mpxlf_r
+#FCFLAGS = -O2 -qarch=auto -qcache=auto -qzerosize -qsmp=noauto -qnosave -qmaxmem=-1 \
+#          -qspillsize=2000
+#LDOPTIONS =  -qsmp=noauto -bmaxdata:0x70000000
+##LOCAL_LIBRARIES = -lmass_r
+##LOCAL_LIBRARIES = -lessl
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = /lib/cpp -C -P
+#CPPFLAGS = -DMPI -Drs6000 -DSYSTEM_CALL_OK
+#CFLAGS = -DNOUNDERSCORE -DMPI
+#ARCH_OBJS =  milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+#    7b. T3E
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "t3e"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+#MFC = f90
+#MCC = cc
+#MLD = $(MFC)
+##FCFLAGS = -g
+#FCFLAGS = -O2
+#LDOPTIONS =
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = /opt/ctl/bin/cpp -C -P
+#CPPFLAGS = -DMPI -DT3E
+#CFLAGS = -DNOUNDERSCORE -Dt3e -DT3E -DMPI
+#ARCH_OBJS = error_dupt3d.o t3etraps.o set_to_nan.o milliclock.o
+#IWORDSIZE = 8
+#RWORDSIZE = 8
+#LWORDSIZE = 8
+#-----------------------------------------------------------------------------
+#    7c. Origin 2000
+#    Note that the MPP version of MM5 is not supported for compilation under
+#    the "modules" environment.  To see if you are using modules to control
+#    compiler versions on your machine, type "module list".
+#    
+#    It may be necessary to modify the MPI run time environment on the
+#    Origin as follows:
+#
+#         setenv MPI_MSGS_PER_PROC 4096
+#
+#    See also http://www.mmm.ucar.edu/mm5/mpp/helpdesk/20000621.txt
+#
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "o2k"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+#MFC = f90 -64 -mips4 -w
+#MCC = cc -64 -mips4 -w
+#MLD = f90 -64 -mips4
+##FCFLAGS = -g
+#FCFLAGS = -O3 -OPT:roundoff=3:IEEE_arithmetic=3 -OPT:fold_arith_limit=2001
+#LDOPTIONS =
+#LOCAL_LIBRARIES = -lfastm -lmpi 
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = /lib/cpp -C -P
+#CPPFLAGS = -DMPI -DO2K -DDEC_ALPHA -DSYSTEM_CALL_OK
+#CFLAGS = -DO2K -DMPI -DDEC_ALPHA
+#ARCH_OBJS = milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+#    7d. HP Exemplar
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "hp"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+#MFC = f77
+#MCC = mpicc
+#MLD = mpif77
+##FCFLAGS   =  +DA2.0N +DS2.0a -g
+#FCFLAGS   = +DA2.0N +DS2.0a +O3
+#LDOPTIONS =
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = /lib/cpp -C -P
+#CPPFLAGS = -DMPI -DSYSTEM_CALL_OK
+#CFLAGS = -DNOUNDERSCORE -DMPI
+#ARCH_OBJS = milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+#    7e. Compaq ALPHA/MPI/OpenMP (Thanks to Dave Sherden)
+#        - For multi-threaded MPI processes (useful on dm-clusters of SMP
+#          nodes; such as fir.mmm.ucar.edu), uncomment the definition
+#          of the macro: SPECIAL_OMP.
+#        - If running with MPICH (public domain MPI) uncomment
+#          first set of definitions for MFC, MCC, MLD and LDOPTIONS.  If using
+#          the Compaq/DEC MPI, uncomment the second set.
+#        - On prospect.ucar.edu (ES40), add the -lelan option to LDOPTIONS.
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "alpha"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+###### If using OpenMP for SMP parallelism on each MPI process ###
+##SPECIAL_OMP = -omp
+###### If using MPICH ###
+#MFC = f77
+#MCC = mpicc
+#MLD = mpif77
+#LDOPTIONS = $(SPECIAL_OMP)
+###### If using DEC MPI (e.g. on fir.mmm.ucar.edu) ###
+###### Compaq ES40 Cluster (prospect.ucar.edu) requires -lelan for OpenMP
+##MFC = f90
+##MCC = cc
+##MLD = f90
+##LDOPTIONS = -lmpi -lelan $(SPECIAL_OMP)
+##LDOPTIONS = -lmpi $(SPECIAL_OMP)
+###### 
+#FCFLAGS = -O4 -Olimit 2000 -fpe0 -align dcommons -align records \
+#          -convert big_endian $(SPECIAL_OMP)
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = cpp -C -P
+#CPPFLAGS = -DMPI -DDEC_ALPHA -DSYSTEM_CALL_OK
+#CFLAGS = -DMPI -DDEC_ALPHA
+#ARCH_OBJS = milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+#    7e.1  ALPHA Linux with MPI (Thanks Greg Lindahl, HPTi)
+#          (This has run on jet.fsl.noaa.gov)
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "alpha"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+####### If using OpenMP for SMP parallelism on each MPI process ###
+##SPECIAL_OMP = -omp
+#######
+#MFC = fort
+#MCC = mpicc
+#MLD = mpif77
+#UNDERSCORE = -DF2CSTYLE
+#LDOPTIONS = $(SPECIAL_OMP) -static
+#FCFLAGS = -O5 -arch ev6 -tune ev6 -align dcommons -align records \
+#          -convert big_endian $(SPECIAL_OMP)
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = /lib/cpp -traditional -C -P
+#CPPFLAGS = -DMPI -DDEC_ALPHA $(UNDERSCORE) -DSYSTEM_CALL_OK
+#CFLAGS = -DMPI -DDEC_ALPHA $(UNDERSCORE)
+#ARCH_OBJS = milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+#    7f. Fujitsu VPP
+#
+# These options have been updated for the newer VPP5000 system. If you
+# find that you have trouble compiling on your system, try removing the
+# -KA32 and -Ka4 option from FCFLAGS, LDOPTIONS, CFLAGS and from
+# MPP/RSL/RSL/makefile.vpp. Note that to successfully compile the RSL
+# library (MPP/RSL/RSL) you need the following two environment variables
+# set (syntax may vary with shells other than csh):
+#
+# Older systems:
+#
+#    setenv MPIINCDIR /usr/lang/mpi/include
+#    setenv MPILIBS '-Wl,-P -L/usr/lang/mpi/lib -lmpi -lmp'
+#
+# Newer systems:
+#
+#    setenv MPIINCDIR /usr/lang/mpi2/include32
+#    setenv MPILIBS '-Wl,-P -L/usr/lang/mpi2/lib32 -lmpi -lmp'
+#
+# Note for older systems. The configure.user is set up for VPP5000.
+# For older (VPP300/700) systems, it may be necessary to remove the
+# -KA32 and -Ka4 flags in the settings below.
+#
+# Note with v3.4: VECTOR=1 works only with IMPHYS=5, IBLTYP=5, and ICUPA=3. 
+# Other IMPHYS options and ICUPA options will work but won't be vector
+# optimized.  IBLTYP=2 will not compile with VECTOR=1.
+#
+# Debugging VECTOR=1 option on non-vector platforms: see MPP/README_VECDEBUG
+#
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "vpp"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+#MFC = frt
+#MCC = cc
+#MLD = frt
+### debugging
+### FCFLAGS = -Sw -g -Pdos -lmpi -lmp
+### debugging; for debugging without MPI (also need to compile RSL with -DSTUBS)
+### FCFLAGS = -Sw -g -Pdos -Of,-P,-E
+#FCFLAGS = -Sw -Wv,-Of,-te,-ilfunc,-noalias,-m3,-P255 \
+#          -Oe,-P -Kfast -Pdos -lmpi -lmp -KA32
+#FCVFLAGS = -Sw -Wv,-te,-noalias,-ilfunc,-Of,-m3,-P255 \
+#           -Of,-e,-P,-u -Kfast -Pdos -lmpi -lmp -KA32
+#LDOPTIONS = -Wl,-P -L$(MPILIBS) -lmpi -J -lmp -KA32
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = $(CAT)
+#M4 = m4
+#CPP = /lib/cpp -C -P
+### Uncomment only for debugging without MPI
+### CPPFLAGS = -DMPI -Dvpp -I$(MPIINCDIR) -DKMA -DSTUBS  -DSYSTEM_CALL_OK
+### CFLAGS = -DMPI -Dvpp -I$(MPIINCDIR) -KA32 -Ka4 -DSTUBS
+### Normal settings for CPPFLAGS and CFLAGS
+#CPPFLAGS = -DMPI -Dvpp -I$(MPIINCDIR) -DKMA -DSYSTEM_CALL_OK
+#CFLAGS = -DMPI -Dvpp -I$(MPIINCDIR) -KA32 -Ka4
+#ARCH_OBJS = milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#FLIC_MACROS = LMvpp.m4
+#VECTOR = 1
+#-----------------------------------------------------------------------------
+#   7g1. Linux PCs.  Need Portland Group pgf77 and MPICH.
+#
+# The following information has been added to this file with MM5v3.2:
+#
+# This expects mpif77 and mpicc to be installed on your system in
+# $(LINUX_MPIHOME)/bin .  These should be configured to use the Portland Group
+# pgf77 (v3 or higher) and gcc, respectively.  For information on how to
+# download, install, and configure mpich on your system, see:
+# 
+#   http://www.mcs.anl.gov/mpi/mpich
+# 
+# Information on Portland Group compiler: 
+#
+#   http://www.pgroup.com
+#
+# If using a different Fortran compiler, modify FCFLAGS and LDOPTIONS as
+# needed.  The compiler should be capable of doing little- to big-endian
+# conversion and it should understand integer (Cray-style) pointers.  It
+# is recommended that the same fortran compiler be used to compile
+# mpich.  Edit the LINUX_MPIHOME macro, below, to point to the top level mpich
+# directory.  See also: 
+#
+#   http://www.mmm.ucar.edu/mm5/mpp/linuxhelp.html (by Steve Webb, NCAR/RAP)
+#
+# Note for pgf77 on RedHat Linux6: patches available from Portland Group at:
+#
+#   http://www.pgroup.com/downloads/rh6patches.html
+#
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "linux"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+## edit the following definition for your system
+#LINUX_MPIHOME = /usr/local/mpich
+#MFC = $(LINUX_MPIHOME)/bin/mpif90
+#MCC = $(LINUX_MPIHOME)/bin/mpicc
+#MLD = $(LINUX_MPIHOME)/bin/mpif90
+#FCFLAGS = -O2 -Mcray=pointer -tp p6 -pc 32 -Mnoframe -byteswapio
+#LDOPTIONS = -O2 -Mcray=pointer -tp p6 -pc 32 -Mnoframe -byteswapio
+#LOCAL_LIBRARIES = -L$(LINUX_MPIHOME)/build/LINUX/ch_p4/lib -lfmpich -lmpich
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = /lib/cpp -C -P -traditional
+#CPPFLAGS = -DMPI -Dlinux -DSYSTEM_CALL_OK
+#CFLAGS = -DMPI -I$(LINUX_MPIHOME)/include
+#ARCH_OBJS =  milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+#   7g2. Linux PCs.  Need INTEL and MPICH.
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "linux"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+### edit the following definition for your system
+#LINUX_MPIHOME = /usr/local/mpich-intel
+#MFC = $(LINUX_MPIHOME)/bin/mpif77
+#MCC = $(LINUX_MPIHOME)/bin/mpicc
+#MLD = $(LINUX_MPIHOME)/bin/mpif77
+#FCFLAGS = -O2 -convert big_endian -pc32
+#LDOPTIONS = -O2 -convert big_endian -pc32
+#LOCAL_LIBRARIES = -L$(LINUX_MPIHOME)/build/LINUX/ch_p4/lib -lfmpich -lmpich
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = /usr/bin/expand
+#M4 = m4
+#CPP = /lib/cpp -C -P -traditional
+#CPPFLAGS = -traditional -DMPI -Dlinux
+#CFLAGS = -DMPI -I/usr/local/mpi/include
+#ARCH_OBJS =  milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+#   7g3. SGI Altix with Intel compilers and SGI MPI
+#        Thanks to Dr. Gerardo Cisneros  |SGI (Silicon Graphics, S.A. de C.V.)
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "altix"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+#LINUX_MPIHOME=/usr
+## LINUX_MPIHOME=/sw/sdev/mpt-ia64/1.11-100
+#OPT = -O3 -IPF_fp_relaxed -ip -tpp2 -w -ftz -fno-alias -fno-fnalias -g
+#FC = ifort
+#CC = icc
+#MFC = ifort
+#MCC = icc
+#MLD = ifort
+#FCFLAGS = -I$(LIBINCLUDE) $(OPT) -safe_cray_ptr -DDEC_ALPHA -DMPI
+#LDOPTIONS = -O3 -ip
+#LOCAL_LIBRARIES = -lmpi
+## LOCAL_LIBRARIES = -L/sw/sdev/mpt-ia64/1.11-100/lib -lmpi
+#MAKE = make -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = /usr/bin/cpp -C -P -traditional
+#CPPFLAGS = -DMPI -DDEC_ALPHA
+#CFLAGS = $(OPT) -DMPI -DDEC_ALPHA  -DSGI_IA64 -DMPI2_SUPPORT
+#ARCH_OBJS =  milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+#    7h.  NEC SX-4 (under development)
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = sx
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+#MFC = f90
+#MCC = cc
+#MLD = $(MFC)
+#FCFLAGS = -V -E P -Wf"-init stack=zero heap=zero -O nooverlap" -USX  -float0 \
+#          -D$(RUNTIME_SYSTEM) -I$(LIBINCLUDE) -Wf"-L transform fmtlist summary" -g
+#FCFLAGS = -V -E P -C vopt -Wf"-init stack=zero heap=zero -O nooverlap" \
+#          -ew -USX  -float0 -D$(RUNTIME_SYSTEM) -I$(LIBINCLUDE) \
+#          -Wf"-L transform fmtlist summary"
+#LDOPTIONS = -float0 -lmpi -lmpiw -g
+#CFLAGS =
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = /lib/cpp -C -P
+#CPPFLAGS = -DMPI -Dvpp -I$(LIBINCLUDE) -C -P -DDEC_ALPHA -DSYSTEM_CALL_OK
+#CFLAGS = -DMPI -Dvpp -DDEC_ALPHA
+#ARCH_OBJS = milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
+#FLIC_MACROS = LMvpp.m4
+#VECTOR = 1
+#-----------------------------------------------------------------------------
+#    7i. Sun MPI (tested on k2.ucar.edu)
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "sunmpi"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+###### If using OpenMP for SMP parallelism on each MPI process ###
+##SPECIAL_OMP = ??
+#MFC = mpf90
+#MCC = mpcc
+#MLD = mpf90
+#LDOPTIONS =  -fast -O2 -lmpi
+#######
+#FCFLAGS =  -fast -O2 $(SPECIAL_OMP)
+#LOCAL_LIBRARIES =
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = cpp -C -P
+#CPPFLAGS = -DMPI -DSYSTEM_CALL_OK
+#CFLAGS = -DMPI
+#ARCH_OBJS = milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+#    7j. Cray X1
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "crayx1"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+#MFC = ftn
+#MCC = cc
+#MLD = $(MFC)
+## Use these for X1 cross compiler
+#X1_CROSS_COMP = "gcc"
+#X1_CROSS_CFLG = ""
+## Use these for X1 native (trigger) compiler
+##X1_CROSS_COMP = "cc"
+##X1_CROSS_CFLG = "-hcommand"
+#
+#FCFLAGS = -x omp,mic -O3 -Ofp3 -Ogen_private_callee -V -ra -sword_pointer -D$(RUNTIME_SYSTEM)
+##FCFLAGS = -x omp,mic -Oscalar2,stream3,vector3 -Ofp3 -Ogen_private_callee -V -ra -sword_pointer -D$(RUNTIME_SYSTEM)
+#
+#LDOPTIONS =
+#LOCAL_LIBRARIES = -lmalloc
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = cpp -C -P
+#CPPFLAGS = -DMPI -D$(RUNTIME_SYSTEM) -DKMA
+#CFLAGS = -V -O3 -h display_opt -h report=imsvf -DMPI -D$(RUNTIME_SYSTEM)
+#ARCH_OBJS = error_dupt3d.o set_to_nan.o milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+#    7k. Cray XD1, Linux Opteron.  Need Portland Group pgf90.
+#
+# The following information has been added to this file with MM5v3.6.3:
+#
+# Information on Portland Group compiler:
+#
+#   http://www.pgroup.com
+#
+# If using a different Fortran compiler, modify FCFLAGS and LDOPTIONS as
+# needed.  The compiler should be capable of doing little- to big-endian
+# conversion and it should understand integer (Cray-style) pointers.  It
+# is recommended that the same fortran compiler be used to compile
+# mpich.  Edit the LINUX_MPIHOME macro, below, to point to the top level mpich
+# directory.  See also:
+#
+#   http://www.mmm.ucar.edu/mm5/mpp/linuxhelp.html (by Steve Webb, NCAR/RAP)
+#
+# Note for pgf77 on RedHat Linux6: patches available from Portland Group at:
+#
+#   http://www.pgroup.com/downloads/rh6patches.html
+#
+#-----------------------------------------------------------------------------
+#RUNTIME_SYSTEM = "linux"
+#MPP_TARGET=$(RUNTIME_SYSTEM)
+# edit the following definition for your system
+#LINUX_MPIHOME = /usr/mpich/mpich-1.2.5
+### mpif77, mpicc are not yet installed on XD1
+#MFC = $(LINUX_MPIHOME)/bin/mpif77
+#MCC = $(LINUX_MPIHOME)/bin/mpicc
+#MLD = $(LINUX_MPIHOME)/bin/mpif77
+#MFC = pgf90
+#MCC = pgcc
+#MLD = pgf90
+#FCFLAGS = -DDEC_ALPHA -O3 -fastsse -Mnoreentrant -Mcray=pointer -Mnoframe -byteswapio
+#LDOPTIONS = -DDEC_ALPHA -O3 -Mcray=pointer -Mnoframe -byteswapio
+#
+### need to point to header and libs for mpich explicitly for XD1
+#OBJS_PATH = /opt/benchmark/shome/CONTRIB
+#LOCAL_OBJS = $(OBJS_PATH)/if.o $(OBJS_PATH)/strdup.o $(OBJS_PATH)/farg.o
+#LIB_PATH = -L $(PGI)/linux86-64/5.1/lib -L $(LINUX_MPIHOME)/lib -L /lib64
+#LOCAL_LIBRARIES = $(LIB_PATH) -lgcc -lmpich -lfmpich -lrapl -lmpichfsup -lpthread $(LOCAL_OBJS)
+#
+#MAKE = make -i -r
+#AWK = awk
+#SED = sed
+#CAT = cat
+#CUT = cut
+#EXPAND = expand
+#M4 = m4
+#CPP = /lib/cpp -C -P -traditional
+#CPPFLAGS = -DDEC_ALPHA -DMPI -Dlinux -DSYSTEM_CALL_OK
+#CFLAGS = -O3 -DDEC_ALPHA -DMPI -I$(LINUX_MPIHOME)/include
+#ARCH_OBJS =  milliclock.o
+#IWORDSIZE = 4
+#RWORDSIZE = 4
+#LWORDSIZE = 4
+#-----------------------------------------------------------------------------
+# Don't touch anything below this line
+#-----------------------------------------------------------------------------
+.F.i:
+	$(RM) $@
+	$(CPP) $(CPPFLAGS) $*.F > $@
+	mv $*.i $(DEVTOP)/pick/$*.f
+	cp $*.F $(DEVTOP)/pick
+.c.o:
+	$(RM) $@ && \
+	$(CC) -c $(CFLAGS) $*.c
+
+.F.o:
+	$(RM) $@
+	$(FC) -c $(FCFLAGS) $*.F
+
+.F.f:
+	$(RM) $@
+	$(CPP) $(CPPFLAGS) $*.F > $@
+
+.f.o:
+	$(RM) $@
+	$(FC) -c $(FCFLAGS) $*.f

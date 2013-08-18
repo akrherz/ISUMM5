@@ -1,0 +1,114 @@
+C                                                                                POINTBCN.1
+C----------------------------------------------------------------------          POINTBCN.2
+C                                                                                POINTBCN.3
+                                                                                 POINTBCN.4
+                                                                                 POINTBCN.5
+      REAL QEBN,QEBTN,QWBN,QWBTN,TEBN,TEBTN,TWBN,TWBTN,UEBN,UEBTN,UWBN,          POINTBCN.6
+     1 UWBTN,VEBN,VEBTN,VWBN,VWBTN                                               POINTBCN.7
+      POINTER (INAUE,UEBN(MIX,MKX,NSPGD)),(INAUW,UWBN(MIX,MKX,NSPGD)),           POINTBCN.8
+     1(INAUET,UEBTN(MIX,MKX,NSPGD)),(INAUWT,UWBTN(MIX,MKX,NSPGD)),               POINTBCN.9
+     2        (INAVE,VEBN(MIX,MKX,NSPGD)),(INAVW,VWBN(MIX,MKX,NSPGD)),           POINTBCN.10
+     3     (INAVET,VEBTN(MIX,MKX,NSPGD)),(INAVWT,VWBTN(MIX,MKX,NSPGD)),          POINTBCN.11
+     4        (INATE,TEBN(MIX,MKX,NSPGX)),(INATW,TWBN(MIX,MKX,NSPGX)),           POINTBCN.12
+     4     (INATET,TEBTN(MIX,MKX,NSPGX)),(INATWT,TWBTN(MIX,MKX,NSPGX)),          POINTBCN.13
+     6        (INAQE,QEBN(MIX,MKX,NSPGX)),(INAQW,QWBN(MIX,MKX,NSPGX)),           POINTBCN.14
+     6     (INAQET,QEBTN(MIX,MKX,NSPGX)),(INAQWT,QWBTN(MIX,MKX,NSPGX))           POINTBCN.15
+      REAL QCEBN,QCEBTN,QCWBN,QCWBTN,QREBN,QREBTN,QRWBN                          POINTBCN.16
+      POINTER (INAQCE,QCEBN(MIXM,MKXM,NSPGX)),                                   POINTBCN.17
+     1(INAQCW,QCWBN(MIXM,MKXM,NSPGX)),                                           POINTBCN.18
+     1(INAQCET,QCEBTN(MIXM,MKXM,NSPGX)),                                         POINTBCN.19
+     1 (INAQCWT,QCWBTN(MIXM,MKXM,NSPGX)),                                        POINTBCN.20
+     1(INAQRE,QREBN(MIXM,MKXM,NSPGX)),(INAQRW,QRWBN(MIXM,MKXM,NSPGX)),           POINTBCN.21
+     4 (INAQRET,QREBTN(MIXM,MKXM,NSPGX))                                         POINTBCN.22
+      REAL QRWBTN                                                                POINTBCN.23
+      POINTER (INAQRWT,QRWBTN(MIXM,MKXM,NSPGX))                                  POINTBCN.24
+      REAL QIEBN,QIWBN                                                           POINTBCN.25
+      POINTER (INAQIE,QIEBN(MIXIC,MKXIC,NSPGX)),                                 POINTBCN.26
+     1(INAQIW,QIWBN(MIXIC,MKXIC,NSPGX))                                          POINTBCN.27
+      REAL QGEBN,QGEBTN,QGWBN,QGWBTN,QIEBTN,QIWBTN,QNIEBN,QNIEBTN,               POINTBCN.28
+     1 QNIWBN,QNIWBTN                                                            POINTBCN.29
+      POINTER (INAQIET,QIEBTN(MIXIC,MKXIC,NSPGX)),                               POINTBCN.30
+     1 (INAQIWT,QIWBTN(MIXIC,MKXIC,NSPGX)),                                      POINTBCN.31
+     1(INAQNIE,QNIEBN(MIXIC,MKXIC,NSPGX)),                                       POINTBCN.32
+     3(INAQNIW,QNIWBN(MIXIC,MKXIC,NSPGX)),                                       POINTBCN.33
+     4 (INAQNIET,QNIEBTN(MIXIC,MKXIC,NSPGX)),                                    POINTBCN.34
+     3 (INAQNIWT,QNIWBTN(MIXIC,MKXIC,NSPGX)),                                    POINTBCN.35
+     1        (INAQGE,QGEBN(MIXIG,MKXIG,NSPGX)),                                 POINTBCN.36
+     1        (INAQGW,QGWBN(MIXIG,MKXIG,NSPGX)),                                 POINTBCN.37
+     2        (INAQGET,QGEBTN(MIXIG,MKXIG,NSPGX)),                               POINTBCN.38
+     3        (INAQGWT,QGWBTN(MIXIG,MKXIG,NSPGX))                                POINTBCN.39
+      REAL QCNBN,QCSBN,QNBN,QNBTN,QNCEBN,QNCEBTN,QNCWBN,QNCWBTN,QSBN,            POINTBCN.40
+     1 QSBTN,TNBN,TNBTN,TSBN,TSBTN,UNBN,UNBTN,USBN,USBTN,VNBN,VNBTN,             POINTBCN.41
+     2 VSBN,VSBTN                                                                POINTBCN.42
+      POINTER (INAQNCE,QNCEBN(MIXIG,MKXIG,NSPGX)),                               POINTBCN.43
+     1        (INAQNCW,QNCWBN(MIXIG,MKXIG,NSPGX)),                               POINTBCN.44
+     2        (INAQNCET,QNCEBTN(MIXIG,MKXIG,NSPGX)),                             POINTBCN.45
+     3        (INAQNCWT,QNCWBTN(MIXIG,MKXIG,NSPGX)),                             POINTBCN.46
+     1        (INAUN,UNBN(MJX,MKX,NSPGD)),(INAUS,USBN(MJX,MKX,NSPGD)),           POINTBCN.47
+     1(INAUNT,UNBTN(MJX,MKX,NSPGD)),(INAUST,USBTN(MJX,MKX,NSPGD)),               POINTBCN.48
+     3        (INAVN,VNBN(MJX,MKX,NSPGD)),(INAVS,VSBN(MJX,MKX,NSPGD)),           POINTBCN.49
+     3     (INAVNT,VNBTN(MJX,MKX,NSPGD)),(INAVST,VSBTN(MJX,MKX,NSPGD)),          POINTBCN.50
+     5        (INATN,TNBN(MJX,MKX,NSPGX)),(INATS,TSBN(MJX,MKX,NSPGX)),           POINTBCN.51
+     5     (INATNT,TNBTN(MJX,MKX,NSPGX)),(INATST,TSBTN(MJX,MKX,NSPGX)),          POINTBCN.52
+     7        (INAQN,QNBN(MJX,MKX,NSPGX)),(INAQS,QSBN(MJX,MKX,NSPGX)),           POINTBCN.53
+     7     (INAQNT,QNBTN(MJX,MKX,NSPGX)),(INAQST,QSBTN(MJX,MKX,NSPGX)),          POINTBCN.54
+     1(INAQCN,QCNBN(MJXM,MKXM,NSPGX)),(INAQCS,QCSBN(MJXM,MKXM,NSPGX))            POINTBCN.55
+      REAL QCNBTN,QCSBTN,QRNBN,QRNBTN,QRSBN,QRSBTN                               POINTBCN.56
+      POINTER (INAQCNT,QCNBTN(MJXM,MKXM,NSPGX)),                                 POINTBCN.57
+     2 (INAQCST,QCSBTN(MJXM,MKXM,NSPGX)),                                        POINTBCN.58
+     1(INAQRN,QRNBN(MJXM,MKXM,NSPGX)),(INAQRS,QRSBN(MJXM,MKXM,NSPGX)),           POINTBCN.59
+     6 (INAQRNT,QRNBTN(MJXM,MKXM,NSPGX)),                                        POINTBCN.60
+     4 (INAQRST,QRSBTN(MJXM,MKXM,NSPGX))                                         POINTBCN.61
+      REAL QINBN,QINBTN,QISBN,QISBTN,QNINBN,QNINBTN,QNISBN,QNISBTN               POINTBCN.62
+      POINTER (INAQIN,QINBN(MJXIC,MKXIC,NSPGX)),                                 POINTBCN.63
+     2(INAQIS,QISBN(MJXIC,MKXIC,NSPGX)),                                         POINTBCN.64
+     2 (INAQINT,QINBTN(MJXIC,MKXIC,NSPGX)),                                      POINTBCN.65
+     2 (INAQIST,QISBTN(MJXIC,MKXIC,NSPGX)),                                      POINTBCN.66
+     4(INAQNIN,QNINBN(MJXIC,MKXIC,NSPGX)),                                       POINTBCN.67
+     4(INAQNIS,QNISBN(MJXIC,MKXIC,NSPGX)),                                       POINTBCN.68
+     6 (INAQNINT,QNINBTN(MJXIC,MKXIC,NSPGX)),                                    POINTBCN.69
+     4 (INAQNIST,QNISBTN(MJXIC,MKXIC,NSPGX))                                     POINTBCN.70
+      REAL QGNBN,QGNBTN,QGSBN,QGSBTN                                             POINTBCN.71
+      POINTER (INAQGN,QGNBN(MJXIG,MKXIG,NSPGX)),                                 POINTBCN.72
+     1        (INAQGS,QGSBN(MJXIG,MKXIG,NSPGX)),                                 POINTBCN.73
+     2        (INAQGNT,QGNBTN(MJXIG,MKXIG,NSPGX)),                               POINTBCN.74
+     3        (INAQGST,QGSBTN(MJXIG,MKXIG,NSPGX))                                POINTBCN.75
+      REAL QNCNBN,QNCNBTN,QNCSBN,QNCSBTN                                         POINTBCN.76
+      POINTER (INAQNCN,QNCNBN(MJXIG,MKXIG,NSPGX)),                               POINTBCN.77
+     1        (INAQNCS,QNCSBN(MJXIG,MKXIG,NSPGX)),                               POINTBCN.78
+     2        (INAQNCNT,QNCNBTN(MJXIG,MKXIG,NSPGX)),                             POINTBCN.79
+     3        (INAQNCST,QNCSBTN(MJXIG,MKXIG,NSPGX))                              POINTBCN.80
+      REAL PEBN,PEBTN,PNBN,PNBTN,PSBTN,PSSN,PWBN,PWBTN                           POINTBCN.81
+      POINTER (INAPE,PEBN(MIX,NSPGX)), (INAPW,PWBN(MIX,NSPGX)),                  POINTBCN.82
+     2     (INAPET,PEBTN(MIX,NSPGX)), (INAPWT,PWBTN(MIX,NSPGX)),                 POINTBCN.83
+     1        (INAPN,PNBN(MJX,NSPGX)), (INAPS,PSSN(MJX,NSPGX)),                  POINTBCN.84
+     3     (INAPNT,PNBTN(MJX,NSPGX)), (INAPST,PSBTN(MJX,NSPGX))                  POINTBCN.85
+      REAL UNI1,UNI2,UNINL,UNINLX,UNJ1,UNJ2,UNJNL,UNJNLX,VNI1,VNI2,              POINTBCN.86
+     1 VNINL,VNINLX,VNJ1,VNJ2,VNJNL,VNJNLX                                       POINTBCN.87
+      POINTER (INAUJ1, UNJ1(MIX,MKX)), ( INAUJL,  UNJNL(MIX,MKX)),               POINTBCN.88
+     1        (INAUJ2, UNJ2(MIX,MKX)), (INAUJLX, UNJNLX(MIX,MKX)),               POINTBCN.89
+     2        (INAVJ1, VNJ1(MIX,MKX)), ( INAVJL,  VNJNL(MIX,MKX)),               POINTBCN.90
+     3        (INAVJ2, VNJ2(MIX,MKX)), (INAVJLX, VNJNLX(MIX,MKX)),               POINTBCN.91
+     4        (INAUI1, UNI1(MJX,MKX)), ( INAUIL,  UNINL(MJX,MKX)),               POINTBCN.92
+     5        (INAUI2, UNI2(MJX,MKX)), (INAUILX, UNINLX(MJX,MKX)),               POINTBCN.93
+     6        (INAVI1, VNI1(MJX,MKX)), ( INAVIL,  VNINL(MJX,MKX)),               POINTBCN.94
+     7        (INAVI2, VNI2(MJX,MKX)), (INAVILX, VNINLX(MJX,MKX))                POINTBCN.95
+C                                                                                POINTBCN.96
+      COMMON/ADDRN3/INAUE,INAUW,INAUET,INAUWT,INAVE,INAVW,INAVET,INAVWT,         POINTBCN.97
+     1       INATE, INATW, INATET, INATWT, INAQE, INAQW, INAQET, INAQWT,         POINTBCN.98
+     1      INAQCE,INAQCW,INAQCET,INAQCWT,INAQRE,INAQRW,INAQRET,INAQRWT,         POINTBCN.99
+     1  INAQIE,INAQIW,INAQIET,INAQIWT,INAQNIE,INAQNIW,INAQNIET,INAQNIWT,         POINTBCN.100
+     1   INAQGE,INAQGW,INAQGET,INAQGWT,                                          POINTBCN.101
+     2   INAQNCE,INAQNCW,INAQNCET,INAQNCWT,                                      POINTBCN.102
+     2       INAUN, INAUS, INAUNT, INAUST, INAVN, INAVS, INAVNT, INAVST,         POINTBCN.103
+     3       INATN, INATS, INATNT, INATST, INAQN, INAQS, INAQNT, INAQST,         POINTBCN.104
+     1      INAQCN,INAQCS,INAQCNT,INAQCST,INAQRN,INAQRS,INAQRNT,INAQRST,         POINTBCN.105
+     1  INAQIN,INAQIS,INAQINT,INAQIST,INAQNIN,INAQNIS,INAQNINT,INAQNIST,         POINTBCN.106
+     1   INAQGN,INAQGS,INAQGNT,INAQGST,                                          POINTBCN.107
+     2   INAQNCN,INAQNCS,INAQNCNT,INAQNCST,                                      POINTBCN.108
+     4       INAPE, INAPW, INAPET, INAPWT, INAPN, INAPS, INAPNT, INAPST,         POINTBCN.109
+     5       INAUJ1,INAUJL,INAUJ2,INAUJLX, INAVJ1,INAVJL,INAVJ2,INAVJLX,         POINTBCN.110
+     6       INAUI1,INAUIL,INAUI2,INAUILX, INAVI1,INAVIL,INAVI2,INAVILX          POINTBCN.111
+C                                                                                POINTBCN.112
+C----------------------------------------------------------------------          POINTBCN.113
+C                                                                                POINTBCN.114

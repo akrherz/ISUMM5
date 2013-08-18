@@ -1,0 +1,6 @@
+      REAL PPA,PPB,WA,WB                                                         NONHYD.1
+      POINTER (INHWA,WA(MIXNH,MJXNH,KXP1NH)),                                    NONHYD.2
+     1         (INHWB,WB(MIXNH,MJXNH,KXP1NH)),                                   NONHYD.3
+     2         (INHPPA,PPA(MIXNH,MJXNH,MKXNH)),                                  NONHYD.4
+     3         (INHPPB,PPB(MIXNH,MJXNH,MKXNH))                                   NONHYD.5
+      COMMON /NONHYD/ INHWA,INHWB,INHPPA,INHPPB                                  NONHYD.6

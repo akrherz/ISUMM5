@@ -1,0 +1,24 @@
+C        CALL DECPU(IBOUDY(INEST),U,V,UA,VA,PSA,MSFD,IL,JL,KL,J,ILX,JLX,          SOLVE3.532
+C     +       ILXM,JLXM)                                                          SOLVE3.533
+C#ifdef DEBUGGAL
+C#  include <solve3_003a>
+C#endif
+CC                                                                                SOLVE3.534
+C        DO 457 K=1,KL                                                            SOLVE3.535
+
+        if ( j .eq. JDEBUG .and. inest.eq.NESTDEBUG ) then
+          i = IDEBUG
+          k = KDEBUG
+          print*,'solve3_003: after decpu ',inest
+          print*,'u',u(JD00,i,k)
+          print*,'v',v(JD00,i,k)
+          print*,'psa(i,j)',psa(i,j)
+          print*,'psa(i,j-1)',psa(i,j-1)
+          print*,'psa(i-1,j)',psa(i-1,j)
+          print*,'psa(i-1,j-1)',psa(i-1,j-1)
+          print*,'msfd',msfd(i,j)
+          print*,'ta   ',ta(i,j,k)
+          print*,'tc   ',tc(i,j,k)
+          print*,'loc(tc)   ',loc(tc(i,j,k))
+        endif
+

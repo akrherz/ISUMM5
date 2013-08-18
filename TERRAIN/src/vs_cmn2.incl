@@ -1,0 +1,12 @@
+C  VEGECOFILE -- VEGETATION COLOR TABLE FILE                                     VS_CMN2.1
+C  SOILCOFILE -- SOIL COLOR TABLE FILE                                           VS_CMN2.2
+C                                                                                VS_CMN2.3
+      INTEGER LBVG(NVC), LBSL(NSC)                                               VS_CMN2.4
+      CHARACTER*8 VEGECOFILE, SOILCOFILE                                         VS_CMN2.5
+      CHARACTER*29 LLBV(NVC),  LLBS(NSC),  LLBF(12)                              VS_CMN2.6
+      CHARACTER*2 LLBV2(NVC), LLBS2(NSC)                                         VS_CMN2.7
+      CHARACTER*8 LLBV3(NVC), LLBS3(NSC)                                         VS_CMN2.8
+      COMMON /VSGRAPH/ LBVG, LBSL, VEGECOFILE, SOILCOFILE,                       VS_CMN2.9
+     >                 LLBV,  LLBS,  LLBF, LLBV2, LLBV3,                         VS_CMN2.10
+     >                 LLBS2, LLBS3                                              VS_CMN2.11
+C                                                                                VS_CMN2.12

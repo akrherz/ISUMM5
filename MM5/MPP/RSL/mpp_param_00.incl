@@ -1,0 +1,4 @@
+CSTART   mpp_param_00.incl
+#     include <rsl.inc>
+#     include <rslcom.inc>
+CEND   mpp_param_00.incl

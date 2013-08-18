@@ -1,0 +1,35 @@
+C                                                                                POINT3DN.1
+C----------------------------------------------------------------------          POINT3DN.2
+C                                                                                POINT3DN.3
+C                                                                                POINT3DN.4
+      REAL QVAN,QVBN,TAN,TBN,UAN,UBN,VAN,VBN                                     POINT3DN.5
+      POINTER (INAUA,UAN(MIX,MJX,MKX)),( INAUB, UBN(MIX,MJX,MKX)),               POINT3DN.6
+     1     ( INAVA, VAN(MIX,MJX,MKX)), ( INAVB, VBN(MIX,MJX,MKX)),               POINT3DN.7
+     2     ( INATA, TAN(MIX,MJX,MKX)), ( INATB, TBN(MIX,MJX,MKX)),               POINT3DN.8
+     3     (INAQVA,QVAN(MIX,MJX,MKX)), (INAQVB,QVBN(MIX,MJX,MKX))                POINT3DN.9
+C                                                                                POINT3DN.10
+C----------------------------------------------------------------------          POINT3DN.11
+C                                                                                POINT3DN.12
+      REAL QCAN,QCBN,QRAN,QRBN                                                   POINT3DN.13
+      POINTER (INAQCA,QCAN(MIXM,MJXM,MKXM)),                                     POINT3DN.14
+     2        (INAQCB,QCBN(MIXM,MJXM,MKXM)),                                     POINT3DN.15
+     3        (INAQRA,QRAN(MIXM,MJXM,MKXM)),                                     POINT3DN.16
+     4        (INAQRB,QRBN(MIXM,MJXM,MKXM))                                      POINT3DN.17
+      REAL QIAN,QIBN,QNIAN,QNIBN                                                 POINT3DN.18
+      POINTER (INAQIA,QIAN(MIXIC,MJXIC,MKXIC)),                                  POINT3DN.19
+     1        (INAQIB,QIBN(MIXIC,MJXIC,MKXIC)),                                  POINT3DN.20
+     1        (INAQNIA,QNIAN(MIXIC,MJXIC,MKXIC)),                                POINT3DN.21
+     1        (INAQNIB,QNIBN(MIXIC,MJXIC,MKXIC))                                 POINT3DN.22
+      REAL QGAN,QGBN,QNCAN,QNCBN                                                 POINT3DN.23
+      POINTER (INAQGA,QGAN(MIXIG,MJXIG,MKXIG)),                                  POINT3DN.24
+     1        (INAQGB,QGBN(MIXIG,MJXIG,MKXIG)),                                  POINT3DN.25
+     1        (INAQNCA,QNCAN(MIXIG,MJXIG,MKXIG)),                                POINT3DN.26
+     1        (INAQNCB,QNCBN(MIXIG,MJXIG,MKXIG))                                 POINT3DN.27
+C                                                                                POINT3DN.28
+      COMMON/ADDRN1/INAUA,INAUB,INAVA,  INAVB,  INATA,  INATB, INAQVA,           POINT3DN.29
+     1  INAQVB,INAQCA,INAQCB,INAQRA,INAQRB,INAQIA,INAQIB,INAQNIA,                POINT3DN.30
+     2  INAQNIB                                                                  POINT3DN.31
+     2  ,INAQGA,INAQGB,INAQNCA,INAQNCB                                           POINT3DN.32
+C                                                                                POINT3DN.33
+C----------------------------------------------------------------------          POINT3DN.34
+C                                                                                POINT3DN.35

@@ -1,0 +1,259 @@
+C call_vector_mrfpbl.incl
+          IST = 1
+          IEN = ILX
+          JST = 1
+          JEN = JLX
+          CALL VECGATH( T3D,VEC_T3D,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( QV3D,VEC_QV3D,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( QV3DTEN,VEC_QV3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          IF(IEXMS.EQ.1)THEN
+            CALL VECGATH( QC3D,VEC_QC3D,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+            CALL VECGATH( QC3DTEN,VEC_QC3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+            IF(IICE.EQ.1)THEN
+              CALL VECGATH( QI3D,VEC_QI3D,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+              CALL VECGATH( QI3DTEN,VEC_QI3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+              IF(IICEG.EQ.1)THEN
+                CALL VECGATH( QNC3D,VEC_QNC3D,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+                CALL VECGATH( QNC3DTEN,VEC_QNC3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+              ENDIF
+            ENDIF
+          ENDIF
+          CALL VECGATH( PP3D,VEC_PP3D,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( T0,VEC_T0,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( PPB,VEC_PPB,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+c          CALL VECGATH( U3DTEN,VEC_U3DTEN,IST,IEN,
+c     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+c          CALL VECGATH( V3DTEN,VEC_V3DTEN,IST,IEN,
+c     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( UCD,VEC_U3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( UCD,VEC_V3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+c
+          CALL VECGATH( T3DTEN,VEC_T3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+
+          CALL VECGATH( PSB,VEC_PSB,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( RPSB,VEC_RPSB,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( TGA,VEC_TGA,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( TGB,VEC_TGB,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( XLAND,VEC_XLAND,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( MAVAIL,VEC_MAVAIL,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+
+          CALL VECGATH( REGIME,VEC_REGIME,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( HOL,VEC_HOL,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( ZOL,VEC_ZOL,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( MOL,VEC_MOL,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( PBL,VEC_PBL,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( UST,VEC_UST,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( HFX,VEC_HFX,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( QFX,VEC_QFX,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+
+          CALL VECGATH( TSLA,VEC_TSLA,IST,IEN,
+     +                  JST,JEN,MLX,MIX,MJX,MLX,IP)
+          CALL VECGATH( TSLB,VEC_TSLB,IST,IEN,
+     +                  JST,JEN,MLX,MIX,MJX,MLX,IP)
+
+          CALL VECGATH( ZNT,VEC_ZNT,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+
+          CALL VECGATH( EMISS,VEC_EMISS,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+
+          CALL VECGATH( GLW,VEC_GLW,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+
+          CALL VECGATH( GSW,VEC_GSW,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+
+          CALL VECGATH( TMN,VEC_TMN,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+
+          CALL VECGATH( CAPG,VEC_CAPG,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+
+          CALL VECGATH( SNOWC,VEC_SNOWC,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+
+          CALL VECGATH( XLAT,VEC_XLAT,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( XLONG,VEC_XLONG,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( RAINP,VEC_RAINP,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( RAINC,VEC_RAINC,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( RAINNC,VEC_RAINNC,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( PRW,VEC_PRW,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( ALB,VEC_ALB,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( SHC,VEC_SHC,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( THC,VEC_THC,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+C 000901
+          CALL VECGATH( TA2,VEC_TA2,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( QA2,VEC_QA2,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( UA10,VEC_UA10,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( VA10,VEC_VA10,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECGATH( INTERIOR_MASK,VEC_INTERIOR_MASK,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+C 001003
+          CALL VECGATH( SATBRT,VEC_SATBRT,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+
+          DO K=1,KL
+            DO J=JST,JEN
+              DO I=IST,IEN
+                U3DCRS(I,J,K) = 0.25*(U3D(I,J,K)+U3D(I+1,J,K)+
+     +                                U3D(I,J+1,K)+U3D(I+1,J+1,K))
+                V3DCRS(I,J,K) = 0.25*(V3D(I,J,K)+V3D(I+1,J,K)+
+     +                                V3D(I,J+1,K)+V3D(I+1,J+1,K))
+              ENDDO
+            ENDDO
+          ENDDO
+
+          CALL VECGATH( U3DCRS,VEC_U3DCRS,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          CALL VECGATH( V3DCRS,VEC_V3DCRS,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+
+          CALL MRFPBL(IYY,JXX,1,INEST,
+     +                VEC_U3DCRS,VEC_V3DCRS,VEC_T3D,VEC_QV3D,
+     +                VEC_PP3D,VEC_QC3D,VEC_QI3D,
+     1                VEC_QNC3D,VEC_U3DTEN,VEC_V3DTEN,VEC_QC3DTEN,
+     +                VEC_T3DTEN,
+     +                VEC_QV3DTEN,VEC_QI3DTEN,VEC_QNC3DTEN,
+     +                VEC_TGA,VEC_TGB,VEC_PSB,VEC_RPSB,XLV,
+     +                VEC_TA2,VEC_QA2,VEC_UA10,VEC_VA10,
+     +                SVP1,SVP2,SVP3,SVPT0,EP1,EP2,VEC_ZNT,VEC_XLAND,
+     +                VEC_UST,
+     +                VEC_MAVAIL,VEC_REGIME,VEC_HOL,VEC_PBL,VEC_ZOL,
+     +                VEC_MOL,VEC_QFX,VEC_HFX,RV,
+     +                VEC_TSLA,VEC_TSLB,VEC_T0,VEC_PPB,
+     +   VEC_EMISS,VEC_GLW,VEC_GSW,VEC_TMN,VEC_CAPG,VEC_SNOWC,
+     +                VEC_XLAT,VEC_XLONG,
+     +                VEC_RAINP,VEC_RAINC,VEC_RAINNC,
+     +                VEC_PRW,VEC_ALB,VEC_SHC,VEC_THC,VEC_SATBRT,
+     +                XMOIST,VEC_INTERIOR_MASK,1,IP,0)
+C     +                PTOP,ROVCP,STBOLT,EOMEG,
+
+c          CALL VECSCAT( VEC_U3DTEN,U3DTEN,IST,IEN,
+c     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+c          CALL VECSCAT( VEC_V3DTEN,V3DTEN,IST,IEN,
+c     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          CALL VECSCAT( VEC_U3DTEN,UCD,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          CALL VECSCAT( VEC_V3DTEN,VCD,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          CALL VECSCAT( VEC_T3DTEN,T3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          CALL VECSCAT( VEC_QV3DTEN,QV3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+          IF(IEXMS.EQ.1)THEN
+            CALL VECSCAT( VEC_QC3DTEN,QC3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+            IF(IICE.EQ.1)THEN
+              CALL VECSCAT( VEC_QI3DTEN,QI3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+              IF(IICEG.EQ.1)THEN
+                CALL VECSCAT( VEC_QNC3DTEN,QNC3DTEN,IST,IEN,
+     +                  JST,JEN,MKX,MIX,MJX,MKX,IP)
+              ENDIF
+            ENDIF
+          ENDIF
+          CALL VECSCAT( VEC_REGIME,REGIME,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_HOL,HOL,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_ZOL,ZOL,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_MOL,MOL,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_PBL,PBL,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_UST,UST,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_HFX,HFX,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_QFX,QFX,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_TSLA,TSLA,IST,IEN,
+     +                  JST,JEN,MLX,MIX,MJX,MLX,IP)
+          CALL VECSCAT( VEC_TSLB,TSLB,IST,IEN,
+     +                  JST,JEN,MLX,MIX,MJX,MLX,IP)
+          CALL VECSCAT( VEC_ZNT,ZNT,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_EMISS,EMISS,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_GLW,GLW,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_GSW,GSW,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_TMN,TMN,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_CAPG,CAPG,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_SNOWC,SNOWC,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_RAINP,RAINP,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_RAINC,RAINC,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_RAINNC,RAINNC,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_PRW,PRW,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_ALB,ALB,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_SHC,SHC,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_THC,THC,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+C 000901
+          CALL VECSCAT( VEC_TA2,TA2,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_QA2,QA2,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_UA10,UA10,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_VA10,VA10,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+C 001024 bug fix
+          CALL VECSCAT( VEC_TGA,TGA,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+          CALL VECSCAT( VEC_TGB,TGB,IST,IEN,
+     +                  JST,JEN,1,MIX,MJX,1,IP)
+C end call_vector_mrfpbl.incl

@@ -1,0 +1,48 @@
+c      DO 215 J=1,M                                                               SOUND.173
+c        DO 215 I=1,L                                                             SOUND.174
+c          WBTMP=WB(I,J,NP1)                                                      SOUND.175
+c          WB(I,J,NP1)=XMUT(I,J,INEST)*WA(I,J,NP1)+XNUT(I,J,INEST)*               SOUND.176
+c     +                WB(I,J,NP1)                                                SOUND.177
+c          WA(I,J,NP1)=WBTMP*RPSA(I,J)                                            SOUND.178
+c  215   CONTINUE                                                                 SOUND.179
+c#ifdef DEBUGGAL
+c#  include <sound_002>
+c#endif
+c                                                                                 SOUND.180
+cC                                                                                SOUND.181
+c      DO 700 IT=1,ISTEP                                                          SOUND.182
+
+      if(inest.eq.NESTDEBUG)then
+        print *,'sound_002:  (end of loop 215)'
+      i=IDEBUG
+      j=JDEBUG
+      do k = 1, mkx
+      print*, 'utens',k,utens(i,j,k)
+      print*, 'vtens',k,vtens(i,j,k)
+      print*, 'pptens',k,pptens(i,j,k)
+      print*, 'wtens',k,wtens(i,j,k)
+      print*, 'ua   ',k,ua(i,j,k)
+      print*, 'va   ',k,va(i,j,k)
+      print*, 'ta   ',k,ta(i,j,k)
+      print*, 'wa   ',k,wa(i,j,k)
+      print*, 'u3d   ',k,u3d(i,j,k)
+      print*, 'v3d   ',k,v3d(i,j,k)
+      print*, 't3d   ',k,t3d(i,j,k)
+      print*, 'w3d   ',k,w3d(i,j,k)
+      print*, 'wb   ',k,wb(i,j,k)
+      print*, 't0   ',k,t0(i,j,k)
+      print*, 'ub   ',k,ub(i,j,k)
+      print*, 'vb   ',k,vb(i,j,k)
+      print*, 'tb   ',k,tb(i,j,k)
+      print*, 'q3d  ',k,q3d(i,j,k)
+      print*, 'qvb  ',k,qvb(i,j,k)
+      print*, 'pp3d  ',k,pp3d(i,j,k)
+      print*, 'ppb  ',k,ppb(i,j,k)
+      print*, 'ppa  ',k,ppa(i,j,k)
+      enddo
+      print*, 'wa   ',mkx+1,wa(i,j,mkx+1)
+      print*, 'wb   ',mkx+1,wb(i,j,mkx+1)
+
+
+      endif
+

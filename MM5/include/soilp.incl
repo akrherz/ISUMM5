@@ -1,0 +1,38 @@
+C                                                                                SOILP.1
+      INTEGER NMO                                                                05DEC01.653
+      PARAMETER (NMO=12)                                                         05DEC01.654
+      REAL ACEVAP,ACSNOM,ACSNOW,BGROFF,CMCA,CMCB,GRNFLX,SFCEVP,SFCEXC,           SOILP.2
+     & SMCA,SMCB,SMSTAV,SMSTOT,SNOA,SNOB,SNOPCX,SSROFF,STCA,STCB,VEGFRC,         SOILP.3
+     & XICE,VEGFMO,ALBMON,XVEGMN,ALBEDO,ALBMAX,SWCA,SWCB,SNOWHA,SNOWHB           19DEC02.1326
+      INTEGER ISLOPE,ISLTYP,IVGTYP                                               SOILP.5
+C-- ADDITIONAL ARRAYS FOR PXPBL                                                  07NOV00.1152
+      REAL LAI,RADNET,THZ1OB,RHOBS,RA,RS,RSTMIN                                  19DEC02.1327
+      REAL XLAI,XVEG,XLAIMN                                                      19DEC02.1328
+      POINTER                                                                    SOILP.6
+     & (IASFC,SFCEXC(MIXL,MJXL)),(IASMS,SMSTAV(MIXL,MJXL)),                      SOILP.7
+     & (IASMT,SMSTOT(MIXL,MJXL)),(IAGRF,GRNFLX(MIXL,MJXL)),                      SOILP.8
+     & (IASLO,ISLOPE(MIXL,MJXL)),(IAVGF,VEGFRC(MIXL,MJXL)),                      SOILP.9
+     & (IASRO,SSROFF(MIXL,MJXL)),(IABRO,BGROFF(MIXL,MJXL)),                      SOILP.10
+     & (IAASM,ACSNOM(MIXL,MJXL)),(IAACE,ACEVAP(MIXL,MJXL)),                      SOILP.11
+     & (IAACS,ACSNOW(MIXL,MJXL)),(IASFE,SFCEVP(MIXL,MJXL)),                      SOILP.12
+     & (IASNP,SNOPCX(MIXL,MJXL)),(IAXIC,XICE(MIXL,MJXL)),                        SOILP.13
+     & (IALAI,   LAI(MIXL,MJXL)),(IAALB,ALBEDO(MIXL,MJXL)),                      07NOV00.1155
+     & (IARAD,RADNET(MIXL,MJXL)),(IATHZ,THZ1OB(MIXL,MJXL)),                      07NOV00.1156
+     & (IARHO, RHOBS(MIXL,MJXL)),(IARA,RA(MIXL,MJXL)),                           07NOV00.1157
+     & (IARS,     RS(MIXL,MJXL)),(IARST,RSTMIN(MIXL,MJXL)),                      07NOV00.1158
+     & (IAXLA,  XLAI(MIXL,MJXL)),(IAXVG,  XVEG(MIXL,MJXL)),                      07NOV00.1159
+     & (IAXLM,XLAIMN(MIXL,MJXL)),(IAXVM,XVEGMN(MIXL,MJXL)),                      07NOV00.1160
+     & (IAALM,ALBMAX(MIXL,MJXL)),                                                19DEC02.1329
+     & (IACMA,CMCA(MIXL,MJXL)),(IASNA,SNOA(MIXL,MJXL)),                          07NOV00.1161
+     & (IACMB,CMCB(MIXL,MJXL)),(IASNB,SNOB(MIXL,MJXL)),                          07NOV00.1162
+     & (IASNHA,SNOWHA(MIXL,MJXL)), (IASNHB,SNOWHB(MIXL,MJXL)),                   19DEC02.1330
+     & (IAVGT,IVGTYP(MIXL,MJXL)),(IASLT,ISLTYP(MIXL,MJXL)),                      SOILP.16
+     & (IASMA,SMCA(MIXL,MJXL,MLX)),(IASTA,STCA(MIXL,MJXL,MLX)),                  SOILP.17
+     & (IASMB,SMCB(MIXL,MJXL,MLX)),(IASTB,STCB(MIXL,MJXL,MLX)),                  05DEC01.656
+     & (IASWA,SWCA(MIXL,MJXL,MLX)),(IASWB,SWCB(MIXL,MJXL,MLX)),                  19DEC02.1331
+     & (IAVGM,VEGFMO(MIXL,MJXL,NMO)),(IAAMO,ALBMON(MIXL,MJXL,NMO))               19DEC02.1332
+      COMMON /LANDSFC/IASFC,IASMS,IASMT,IAGRF,IASLO,IAVGF,                       SOILP.19
+     &     IASRO,IABRO,IAASM,IAACE,IAACS,IASFE,IASNP,IAXIC,IALAI,IAALB,          07NOV00.1163
+     &     IARAD,IATHZ,IARHO,IARA,IARS,IARST,IAXLA,IAXVG,IAXLM,IAXVM,            07NOV00.1164
+     &     IAALM,IACMA,IASNA,IACMB,IASNB,IASNHA,IASNHB,IAVGT,IASLT,              19DEC02.1333
+     &     IASMA,IASTA,IASMB,IASTB,IASWA,IASWB,IAVGM,IAAMO                       19DEC02.1334

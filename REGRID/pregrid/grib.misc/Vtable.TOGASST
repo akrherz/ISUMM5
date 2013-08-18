@@ -1,0 +1,6 @@
+GRIB | Level| Level| Level| REGRID   |  REGRID  | REGRID                                   |
+Code | Code |   1  |   2  | Name     |  Units   | Description                              |
+-----+------+------+------+----------+----------+------------------------------------------+
+ 139 | 1    |   0  |      | SKINTEMP | K        | Skin Temperature                         |
+ 139 | 112  |   0  |   7  | SKINTEMP | K        | Skin Temperature                         |
+-----+------+------+------+----------+----------+------------------------------------------+

@@ -1,0 +1,127 @@
+#!/bin/csh
+## for serial job
+# @ environment = COPY_ALL;
+# @ job_name   = REGRID.job
+# @ output     = regrid.out
+# @ error      = regrid.err
+# @ checkpoint = no
+# @ wall_clock_limit = 1500
+# @ class      = com_reg
+# @ queue
+
+
+if ( ! -e /ptmp/$USER ) then
+   mkdir  /ptmp/$USER
+endif
+set TMPDIR=/ptmp/$USER
+
+
+# The necessary arguments:
+# Note: The ERA data are only available from Jan 1979 to Dec 1993.
+
+set startdate = 1987-08-25+12     # YYYY-MM-DD+HH
+set ndates = 5
+set itimint = 6
+
+#set Host = username@host.domain:/local_directory
+
+
+###############################################################################
+######################                         ################################
+######################  END USER MODIFICATION  ################################
+######################                         ################################
+###############################################################################
+
+cd $TMPDIR
+
+cat >! ftp.cmd << EOF0
+open ftp.ucar.edu
+user anonymous ${user}@ucar.edu
+cd mesouser/MM5V3
+get REGRID.TAR.gz regrid.tar.gz
+EOF0
+
+ftp -n < ftp.cmd
+rm ftp.cmd
+
+gzip -cd regrid.tar.gz | tar xf -
+
+cd REGRID/pregrid/era
+
+
+
+# Set up the list "mdate".  "mdate" will hold all the times we 
+# need to get.
+
+set num = 0
+set idth = -$itimint
+set mdate = ( )
+while ( $num < $ndates )
+   @ idth = $idth + $itimint
+   @ num ++
+   set ndate = `../util/geth_newdate ${startdate} ${idth}`
+   set mdate = ( ${mdate} ${ndate} )
+end
+
+echo "mdate = $mdate"
+
+# Set up the ftp command-script to get the archive lists.  First, set 
+# up to login anonymously to ncardata.ucar.edu
+
+cat >! ftp.cmd << EOF1
+open ncardata.ucar.edu
+user anonymous ${user}@ucar.edu
+get datasets/ds115.0/MSS-file-list sfc.master
+get datasets/ds115.1/MSS-file-list upa.master
+quit
+EOF1
+
+# Now invoke ftp to get the archive lists.
+
+if ( ! -e upa.master ) then
+   ftp -n < ftp.cmd
+   rm ftp.cmd
+endif
+
+
+set MNAM = ( jan feb mar apr may jun jul aug sep oct nov dec )
+set NAMM = ( jan jan jan jan jan jan jul jul jul jul jul jul )
+
+# Construct the dates as they appear in the upper-air archive titles.
+# Use awk (nawk) to get the actual MSS filenames from the archive lists.
+
+
+foreach ndate ( $mdate ) 
+
+   set YYYY = `echo $ndate | cut -b 1-4`
+   set Mm = `echo $ndate | cut -b 6-7`
+   set HH   = `echo $ndate | cut -b 12-13`
+
+# Get the upper-air analysis files.
+   set EraFile = `nawk -v NAM=${YYYY}${MNAM[$Mm]} -v HH=${HH}Z \\
+      '{ if (( $2 == NAM ) && ($3 == HH )) { print $1 } }' upa.master `
+
+   set local = ERA_GRIB_UPA.${YYYY}${MNAM[$Mm]}${HH}Z
+   if ( ! -e $local ) then 
+      echo "msread -f BI $local /DSS/${EraFile}"
+      msread -f BI $local /DSS/${EraFile}
+#      rcp $local ${Host}
+   endif
+
+# Get the surface analysis files.
+   set EraFile = `nawk -v NAM=${YYYY}${NAMM[$Mm]} -v HH=${HH}Z \\
+      '{ if (( substr($2,1,7) == NAM ) && ($3 == HH )) { print $1 } }' \\
+       sfc.master `
+
+   set local = ERA_GRIB_SFC.${YYYY}${NAMM[$Mm]}${HH}Z
+   if ( ! -e $local ) then 
+      echo "msread -f BI $local /DSS/${EraFile}"
+      msread -f BI $local /DSS/${EraFile}
+#      rcp $local ${Host}
+   endif
+
+end
+
+echo "DONE"
+
+exit

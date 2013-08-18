@@ -1,0 +1,9 @@
+CSTART   mpp_setupgd_00.incl
+C GLOBALLY DIMENSIONED ARRAYS USED IN INITIALIZATION.
+      REAL    DMSCR_G ( MJX_G, MIX_G )  ! NOTE J,I ORDERING
+      REAL    DMI_G   ( MIX_G, MJX_G )
+      REAL    WQ_G    ( MIX_G, MJX_G )
+      INTEGER IPRE_G  ( MIX_G, MJX_G )
+      INTEGER IPSCR_G ( MIX_G, MJX_G )
+
+CEND   mpp_setupgd_00.incl
