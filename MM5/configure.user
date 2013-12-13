@@ -817,32 +817,31 @@ ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
 #RWORDSIZE = 4
 #LWORDSIZE = 4
 #-----------------------------------------------------------------------------
-#   7g2. Linux PCs.  Need INTEL and MPICH.
+#   7g2. Linux PCs.  Need INTEL and MPICH.  (ISU Stuff here)
 #-----------------------------------------------------------------------------
-#RUNTIME_SYSTEM = "linux"
-#MPP_TARGET=$(RUNTIME_SYSTEM)
-### edit the following definition for your system
-#LINUX_MPIHOME = /usr/local/mpich-intel
-#MFC = $(LINUX_MPIHOME)/bin/mpif77
-#MCC = $(LINUX_MPIHOME)/bin/mpicc
-#MLD = $(LINUX_MPIHOME)/bin/mpif77
-#FCFLAGS = -O2 -convert big_endian -pc32
-#LDOPTIONS = -O2 -convert big_endian -pc32
-#LOCAL_LIBRARIES = -L$(LINUX_MPIHOME)/build/LINUX/ch_p4/lib -lfmpich -lmpich
-#MAKE = make -i -r
-#AWK = awk
-#SED = sed
-#CAT = cat
-#CUT = cut
-#EXPAND = /usr/bin/expand
-#M4 = m4
-#CPP = /lib/cpp -C -P -traditional
-#CPPFLAGS = -traditional -DMPI -Dlinux
-#CFLAGS = -DMPI -I/usr/local/mpi/include
-#ARCH_OBJS =  milliclock.o
-#IWORDSIZE = 4
-#RWORDSIZE = 4
-#LWORDSIZE = 4
+RUNTIME_SYSTEM = "linux"
+MPP_TARGET=$(RUNTIME_SYSTEM)
+LINUX_MPIHOME = /usr/local/openmpi-1.6.5
+MFC = $(LINUX_MPIHOME)/bin/mpif90
+MCC = $(LINUX_MPIHOME)/bin/mpicc
+MLD = $(LINUX_MPIHOME)/bin/mpif90
+FCFLAGS = -O2 -convert big_endian -pc32 -DDEC_ALPHA
+LDOPTIONS = -O2 -convert big_endian -pc32
+LOCAL_LIBRARIES = 
+MAKE = make -i -r
+AWK = awk
+SED = sed
+CAT = cat
+CUT = cut
+EXPAND = /usr/bin/expand
+M4 = m4
+CPP = /lib/cpp -C -P -traditional
+CPPFLAGS = -traditional -DMPI -Dlinux -DDEC_ALPHA
+CFLAGS = -DMPI -DDEC_ALPHA -DMPI2_SUPPORT
+ARCH_OBJS =  milliclock.o
+IWORDSIZE = 4
+RWORDSIZE = 4
+LWORDSIZE = 4
 #-----------------------------------------------------------------------------
 #   7g3. SGI Altix with Intel compilers and SGI MPI
 #        Thanks to Dr. Gerardo Cisneros  |SGI (Silicon Graphics, S.A. de C.V.)

@@ -1,1 +1,20 @@
-
+DRY = "0,0,1,1,1,1,1,1,1,1"
+MOIST = "2,2,1,1,1,1,1,1,1,1"
+EXMS = 1
+ICE = 0
+ICEG = 0
+EXICE = 1
+EXGR = 0
+ARASC = 0
+KFFC = 0
+NAV = 0
+NAV2 = 0
+NAV3 = 0
+GSPBL = 0
+RDDIM = 1
+SLDIM = 1
+LDDIM = 0
+PLACEDIM = 0
+MLX = 6
+NSPGX = 15
+NSPGD = 15

@@ -13,8 +13,10 @@ LIB =
 
 .SUFFIXES: .o .c .F
 
-CFLAGS = -I$(IDIR) -DMPI -DRSL_SYNCIO -Dlinux -DSWAPBYTES -O
-FFLAGS = -O
+#CFLAGS = -I$(IDIR) -DMPI -DRSL_SYNCIO -Dlinux -DSWAPBYTES -O
+#FFLAGS = -O
+CFLAGS = -I$(IDIR) -DMPI -DMPI2_SUPPORT -DRSL_SYNCIO -Dlinux -DSWAPBYTES -O
+FFLAGS = -O -convert big_endian
 
 warning :
 	@ echo 'This makefile is not a top level makefile'
