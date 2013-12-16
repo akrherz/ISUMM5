@@ -152,7 +152,7 @@ intel:
 	"CPPFLAGS	= -I. -C -traditional -D$(NCARGRAPHICS) "	\
 	"FC		= ifort  "	"FCFLAGS	= -I. -w90 -w95 -convert big_endian " \
 	"LDOPTIONS	= -i_dynamic" 		"CFLAGS		= -I."		\
-	"LOCAL_LIBRARIES= -L$(NCARG_ROOT)/lib -L/usr/X11R6/lib -lncarg -lncarg_gks -lncarg_c -lX11 -lgfortran -lpng" ) ; \
+	"LOCAL_LIBRARIES= -L$(NCARG_ROOT)/lib -L/usr/X11R6/lib -lncarg -lncarg_gks -lncarg_c -lX11 -lgfortran -lpng -lcairo" ) ; \
 		( $(RM) terrain.exe ; $(LN) src/terrain.exe . ) ;
 
 terrain.deck:
