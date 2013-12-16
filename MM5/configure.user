@@ -347,13 +347,13 @@ FDDAGD = 0
 FDDAOBS = 0
 #
 # MAXNES (integer)                  - Max Number of Domains in simulation
-MAXNES = 2
+MAXNES = 1
 #
 # MIX,MJX (integer)                 - Maximum Dimensions of any Domain
-MIX = 49
-MJX = 52
+MIX = 200
+MJX = 200
 # MKX (integer)                     - Number of half sigma levels in model
-MKX = 23
+MKX = 46
 #-----------------------------------------------------------------------------
 # 6. Physics Options
 #    The first MAXNES values in the list will be used for the corresponding
@@ -819,29 +819,33 @@ ASSUME_HOMOGENEOUS_ENVIRONMENT = 1
 #-----------------------------------------------------------------------------
 #   7g2. Linux PCs.  Need INTEL and MPICH.  (ISU Stuff here)
 #-----------------------------------------------------------------------------
+
 RUNTIME_SYSTEM = "linux"
 MPP_TARGET=$(RUNTIME_SYSTEM)
-LINUX_MPIHOME = /usr/local/openmpi-1.6.5
-MFC = $(LINUX_MPIHOME)/bin/mpif90
-MCC = $(LINUX_MPIHOME)/bin/mpicc
-MLD = $(LINUX_MPIHOME)/bin/mpif90
-FCFLAGS = -O2 -convert big_endian -pc32 -DDEC_ALPHA
-LDOPTIONS = -O2 -convert big_endian -pc32
-LOCAL_LIBRARIES = 
+CC=icc
+LINUX_MPIHOME = /usr/local/openmpi-intel
+MFC =$(LINUX_MPIHOME)/bin/mpif90
+MCC =$(LINUX_MPIHOME)/bin/mpicc
+MLD =$(LINUX_MPIHOME)/bin/mpif90
+FCFLAGS = -O2 -convert big_endian -pc32 -DDEC_ALPHA -ip -fno-alias -safe-cray-ptr -mp1 -no-ftz
+LDOPTIONS = $(FCFLAGS)
+CPP = /lib/cpp -C -P -traditional
+CPPFLAGS = -g -w -DDEC_ALPHA 
+CFLAGS = -g -DMPI -DDEC_ALPHA -DMPI2_SUPPORT
+
+LOCAL_LIBRARIES =
 MAKE = make -i -r
 AWK = awk
 SED = sed
 CAT = cat
 CUT = cut
-EXPAND = /usr/bin/expand
+EXPAND = expand
 M4 = m4
-CPP = /lib/cpp -C -P -traditional
-CPPFLAGS = -traditional -DMPI -Dlinux -DDEC_ALPHA
-CFLAGS = -DMPI -DDEC_ALPHA -DMPI2_SUPPORT
 ARCH_OBJS =  milliclock.o
 IWORDSIZE = 4
 RWORDSIZE = 4
 LWORDSIZE = 4
+
 #-----------------------------------------------------------------------------
 #   7g3. SGI Altix with Intel compilers and SGI MPI
 #        Thanks to Dr. Gerardo Cisneros  |SGI (Silicon Graphics, S.A. de C.V.)

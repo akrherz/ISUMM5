@@ -1,19 +1,19 @@
  ;
  ;      ************* FORECAST TIME AND TIME STEP ******************
  ;
- TIMAX  = 720.,         ; forecast length in minutes
- TISTEP = 240.,         ; coarse domain DT in model, use 3*DX
+ TIMAX  = 4320.,         ; forecast length in minutes
+ TISTEP = 6.,         ; coarse domain DT in model, use 3*DX
  ;
  ;      ************** OUTPUT/RESTART OPTIONS ***************
  ;
  IFREST = .FALSE.,      ; whether this is a restart
     IXTIMR  = 720,      ; restart time in minutes
- IFSAVE = .TRUE.,       ; save data for restart
+ IFSAVE = .FALSE.,       ; save data for restart
     SVLAST = .TRUE.,    ; T: only save the last file for restart
                         ; F: save multiple files
     SAVFRQ = 360.,      ; how frequently to save data (in minutes)
  IFTAPE = 1,            ; model output: 0,1
-    TAPFRQ = 180.,      ; how frequently to output model results (in minutes)
+    TAPFRQ = 60.,      ; how frequently to output model results (in minutes)
     BUFFRQ = 0.,        ; how frequently to split model output files (in minutes),
  ;                        ignored if < TAPFRQ
     INCTAP = 1,1,1,1,1,1,1,1,1,1,  ; multipliers of TAPFRQ for outputting

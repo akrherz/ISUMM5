@@ -1,0 +1,392 @@
+#!/bin/sh
+#
+#  Version 3 of mm5 job deck
+#
+#  The mm5 executable (mm5.exe) expects to find the following files
+#      in the Run/ directory:
+#      MMINPUT_DOMAIN1   -|
+#      BDYOUT_DOMAIN1     | --> output files from Interpf
+#      LOWBDY_DOMAIN1    -|
+#      TERRAIN_DOMAIN[2,3..] if running nests  --> output from Terrain
+#
+#  If it is a restart run:
+#      RESTART_DOMAIN1[,2,3..]  --> output from MM5 run: renamed from
+#                                   SAVE_DOMAIN1[,2,3...]
+#
+#  If it is gridded FDDA run with surface analysis nudging:
+#      SFCFDDA_DOMAIN1[2,3,...]
+#
+#  If it is observational nudging run:
+#      MM5OBS_DOMAIN1[,2,3..]   --> user-created observation files
+#
+#  Output from a MM5 run:
+#    If IFTAPE = 1
+#      MMOUT_DOMAIN1[,2,3...]   --> one output for each domain
+#    If IFSAVE = TRUE
+#      SAVE_DOMAIN1[,2,3...]
+#
+#
+# temp files should be accessible
+umask 022
+#
+# Sections
+# 1. Options for namelist ("mmlif")
+# 2. Running...
+#
+
+BLOCKEND='&END'
+
+#-----------------------------------------------------------------------------
+# 1. Options for namelist ("mmlif")
+#-----------------------------------------------------------------------------
+#
+#	The first dimension (column) of the arrays denotes the domain
+#	identifier.
+#		Col 1 = Domain #1, Col 2 = Dom #2, etc.
+#
+cat > ./Run/oparam << EOF
+ &OPARAM
+ ;
+ ;      ************* FORECAST TIME AND TIME STEP ******************
+ ;
+ TIMAX  = 4320.,         ; forecast length in minutes
+ TISTEP = 6.,         ; coarse domain DT in model, use 3*DX
+ ;
+ ;      ************** OUTPUT/RESTART OPTIONS ***************
+ ;
+ IFREST = .FALSE.,      ; whether this is a restart
+    IXTIMR  = 720,      ; restart time in minutes
+ IFSAVE = .FALSE.,       ; save data for restart
+    SVLAST = .TRUE.,    ; T: only save the last file for restart
+                        ; F: save multiple files
+    SAVFRQ = 360.,      ; how frequently to save data (in minutes)
+ IFTAPE = 1,            ; model output: 0,1
+    TAPFRQ = 60.,      ; how frequently to output model results (in minutes)
+    BUFFRQ = 0.,        ; how frequently to split model output files (in minutes),
+ ;                        ignored if < TAPFRQ
+    INCTAP = 1,1,1,1,1,1,1,1,1,1,  ; multipliers of TAPFRQ for outputting
+ IFRSFA = .FALSE.,      ; IF this is a RESTART run, AND IF FDDA is ON, 
+                        ; AND IF multiple input FILES are used, set this to .TRUE.
+                        ; set CDATEST to the INITIAL time of the first run
+ IFSKIP = .FALSE.,      ; whether to skip input files - DO NOT use this for restart
+                        ; also need to set CDATEST if set to .TRUE.
+    CDATEST = '1993-03-13_00:00:00', ; IF IFSKIP=.TRUE., this will be the date from which the code should start
+                                     ; IF IFRSFA=.TRUE., this will be the INITIAL date from the first model run
+ IFPRT = 0,             ; sample print out: =1, a lot of print
+ PRTFRQ = 720.,         ; Print frequency for sample output (in minutes)
+ MASCHK = 99999,        ; mass conservation check (KTAU or no. of time steps)
+ IFTSOUT = .FALSE.,     ; output time series (default 30 points)
+   TSLAT = 0.0,0.0,0.0,0.0,0.0, ; latitudes of time series points (S is negative)
+   TSLON = 0.0,0.0,0.0,0.0,0.0, ; longitudes of time series points (W is negative)
+ $BLOCKEND
+EOF
+cat > ./Run/lparam << EOF
+ &LPARAM
+ ;
+ ;       1. user-chosen options I
+ ;
+ RADFRQ    = 30.,  ;atmospheric radiation calculation frequency (in minutes)
+ IMVDIF    = 1,    ;moist vertical diffusion in clouds - 0, 1 (IBLTYP=2,5 only)
+ IVQADV    = 1,    ;vertical moisture advection uses log interpolation - 0, linear - 1
+ IVTADV    = 1,    ;vertical temperature advection uses theta interpolation - 0, linear - 1
+ ITHADV    = 1,    ;advection of temperature uses potential temperature - 1, standard - 0
+ ITPDIF    = 1,    ;sigma-diffusion using temperature - 0, sigma-diffusion using perturbation 
+ ;                 ;temperature - 1, z-diffusion - 2
+ TDKORR    = 2,    ;temperature gradient correction for z-diffusion at ground level
+ ;                 ;uses -1- ground temp, -2- one-sided difference of air temp
+ ICOR3D    = 1,    ;3D Coriolis force - 0, 1
+ IEXSI     = 0,    ;initial sea-ice - 0, 1(base on SST), 2(read in) (ISOIL=1 only)
+ IFUPR     = 1,    ;upper radiative boundary condition - 0, 1
+ LEVSLP    = 9,    ;nest level (correspond to LEVIDN) at which solar radiation starts to 
+                   ;account for orography
+                   ;set large to switch off
+                   ;only have an effect for very high resolution model domains
+ OROSHAW   = 0,    ;include effect of orography shadowing 
+                   ;ONLY has an effect if LEVSLP is also set
+                   ;0=no effect (default), 
+                   ;1=orography shadowing taken into account - NOT AVAILABLE FOR MPI RUNS
+ ITADVM = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ; 0: default - instability limiter not used 
+                                        ; 1: use instability limiter for temp advection
+ IQADVM = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ; 0: default - instability limiter not used 
+                                        ; 1: use instability limiter for QV/CLW advection
+ ;
+ ;       2. do not change IBOUDY
+ ;
+ IBOUDY = 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, ;boundary conditions
+ ;        (fixed, time-dependent, relaxation -0,2,3)
+ ;
+ ;       3. keep the following 8 variables as they are
+ ;          unless doing sensitivity runs
+ ;
+ IFDRY  = 0,                            ;fake-dry run (no latent heating) - 0, 1
+ ;                                       for IMPHYS = 2,3,4,5,6,7 (requires ICUPA = 1)
+ ISSTVAR= 0,                            ;varying SST in time - 1, otherwise, 0
+ IMOIAV = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ;bucket soil moisture scheme. 0 - not used,
+                                        ;1 - used w/o extra input, 2 - user w/ soil m input
+ IZ0TOPT= 0,                            ;thermal roughness option in IBLTYP = 2,5. 
+                                        ;0 - old option, 1 - Garratt, 2 - Zilitinkevich
+ ISFMTHD= 1,                            ;method for calculation of 2m/10m diagnostics
+                                        ;0 - old method, 1 - new method for stable conditions
+ IFSNOW = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ;SNOW COVER EFFECTS - 0, 1, 2
+ ;                                      ;0 - no effect, 1 - with effect, 2 - simple snow model
+ ISFFLX = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ;surface fluxes - 0, 1
+ ITGFLG = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ;surface temperature prediction - 1:yes, 3:no
+ ISFPAR = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ;surface characteristics - 0, 1
+ ICLOUD = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ;cloud effects on radiation - 0, 1
+ ;                                       currently for IFRAD = 1,2
+ IEVAP  = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ;evap of cloud/rainwater - <0, 0, >0
+ ;                                       (currently for IMPHYS=3,4,5 only)
+ ISMRD  = 0,                            ;soil moisture initialization by PX LSM:
+ ;                                       =0, use moisture avail from LANDUSE.TBL;
+ ;                                       =2, use soil moisture from REGRID
+ ;
+ ; Default soil layers expected as input for ISOIL 2 & 3
+ ; These values reflect the BOTTOM of the soil layer available
+ ISTLYR = 10,40,100,200,
+ ISMLYR = 10,40,100,200,
+ ;ISTLYR = 10,200,0,0,    
+ ;ISMLYR = 10,200,0,0,    
+ ; Other common layers used by EC models (for instance ERA40)
+ ;ISTLYR = 7,28,100,255, 
+ ;ISMLYR = 7,28,100,255, 
+ ;
+ ; Next two switches for new version of NOAH LSM (ISOIL=2)
+ RDMAXALB=.FALSE.                       ;use climo maximum snow albedo (not landuse table)
+ RDBRDALB=.FALSE.                       ;use monthly climo background albedo (not landuse table)
+ ;
+EOF
+cat > ./Run/nparam << EOF
+ &NPARAM
+ ;
+ ;      ************** NEST AND MOVING NEST OPTIONS ***************
+ ;
+ LEVIDN =   0,2,2,1,1,1,1,1,1,1,               ; level of nest for each domain
+ NUMNC  =   1,2,2,1,1,1,1,1,1,1,               ; ID of mother domain for each nest
+ NESTIX = 135,  46,  31,  46,  46,  46,  46,  46,  46,  46,  ; domain size i
+ NESTJX = 150,  61,  31,  61,  61,  61,  61,  61,  61,  61,  ; domain size j
+ NESTI  =   1,  17,   8,   1,   1,   1,   1,   1,   1,   1,  ; start location i
+ NESTJ  =   1,  17,   9,   1,   1,   1,   1,   1,   1,   1,  ; start location i
+ XSTNES =   0.,  0.,900.,  0.,  0.,  0.,  0.,  0.,  0.,  0., ; domain initiation
+ XENNES =4320.,4320.,1440.,720.,720.,720.,720.,720.,720.,720.; domain termination
+ IOVERW =   1,   2,   0,   0,   0,   0,   0,   0,   0,   0,  ; overwrite nest input
+ ;          0=interpolate from coarse mesh (for nest domains);
+ ;          1=read in domain initial conditions
+ ;          2=read in nest terrain file
+ IACTIV =   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,  ;
+ ;          in case of restart: is this domain active?
+ ;
+ ;      ************* MOVING NEST OPTIONS ******************
+ ;
+ IMOVE  =   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; move domain 0,1
+ IMOVCO =   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, ; 1st move #
+ ;          imovei(j,k)=L, ; I-INCREMENT MOVE (DOMAIN J, MOVE NUMBER K) IS L
+ IMOVEI =   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; I move #1
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; I move #2
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; I move #3
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; I move #4
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; I move #5
+ IMOVEJ =   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; J move #1
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; J move #2
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; J move #3
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; J move #4
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; J move #5
+ IMOVET =   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; time of move #1
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; time of move #2
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; time of move #3
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; time of move #4
+            0,   0,   0,   0,   0,   0,   0,   0,   0,   0, ; time of move #5
+ IFEED  =  3,     ; no feedback; 9-pt weighted average; 1-pt feedback w/o smoothing / 
+                  ; light smoothing / heavy smoothing - 0,1,2,3, and 4
+ $BLOCKEND
+EOF
+cat > ./Run/pparam << EOF
+ &PPARAM
+ ;
+ ;      ************* MISCELLANEOUS OPTIONS *****************
+ ;
+ ; The values for the following 5 variables are only used if ISFPAR = 0
+ ;     (i.e. only land/water surface catagories)
+ ;
+ ZZLND  = 0.1,          ; roughness length over land in meters
+ ZZWTR  = 0.0001,       ; roughness length over water in meters
+ ALBLND = 0.15,         ; albedo
+ THINLD = 0.04,         ; surface thermal inertia
+ XMAVA  = 0.3,          ; moisture availability over land as a decimal fraction of one
+ ;
+ CONF   = 1.0,          ; non-convective precipitation saturation threshold (=1: 100%)
+ $BLOCKEND
+EOF
+cat > ./Run/fparam << EOF
+ &FPARAM
+ ;
+ ;      ************* 4DDA OPTIONS **********************
+ ;
+ ;     THE FIRST DIMENSION (COLUMN) IS THE DOMAIN IDENTIFIER:
+ ;         COLUMN 1 = DOMAIN #1, COLUMN 2 = DOMAIN #2, ETC.
+ ;
+ ;       START TIME FOR FDDA (ANALYSIS OR OBS) FOR EACH DOMAIN
+ ;       (IN MINUTES RELATIVE TO MODEL INITIAL TIME)
+ FDASTA=0.,0.,0.,0.,0.,0.,0.,0.,0.,0.
+ ;       ENDING TIME FOR FDDA (ANALYSIS OR OBS) FOR EACH DOMAIN
+ ;       (IN MINUTES RELATIVE TO MODEL INITIAL TIME)
+ FDAEND=780.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
+ ;
+ ;      **************** ANALYSIS NUDGING ******************
+ ;
+ ;     THE FIRST DIMENSION (COLUMN) OF THE ARRAYS DENOTES THE
+ ;     DOMAIN IDENTIFIER:
+ ;         COLUMN 1 = DOMAIN #1, COLUMN 2 = DOMAIN #2, ETC.
+ ;     THE SECOND DIMENSION (ROW OR LINE) EITHER REFERS TO THE 3D VS
+ ;     SFC ANALYSIS OR WHICH VARIABLE IS ACCESSED:
+ ;         LINE 1 = 3D, LINE 2 = SFC   OR
+ ;         LINE 1 = U, LINE 2 = V, LINE 3 = T, LINE 4 = Q
+ ;
+ ;       IS THIS A GRID 4DDA RUN? 0 = NO; 1 = YES
+ I4D= 0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,
+ ;
+ ;       SPECIFY THE TIME IN MINUTES BETWEEN THE INPUT (USUALLY
+ ;       FROM INTERP) USED FOR GRID FDDA
+ DIFTIM=720.,720.,0.,0.,0.,0.,0.,0.,0.,0.,      ; 3D ANALYSIS NUDGING
+        180.,180.,0.,0.,0.,0.,0.,0.,0.,0.,      ; SFC ANALYSIS NUDGING
+ ;
+ ;       GRID NUDGE THE WIND FIELD? 0 = NO; 1 = YES
+ IWIND=1,1,0,0,0,0,0,0,0,0,    ; 3D ANALYSIS NUDGING
+       1,1,0,0,0,0,0,0,0,0,    ; SFC ANALYSIS NUDGING
+ ;
+ ;       NUDGING COEFFICIENT FOR WINDS ANALYSES
+ GV=2.5E-4,1.0E-4,0.,0.,0.,0.,0.,0.,0.,0.,       ; 3D ANALYSIS NUDGING
+    2.5E-4,1.0E-4,0.,0.,0.,0.,0.,0.,0.,0.,       ; SFC ANALYSIS NUDGING
+ ;
+ ;       GRID NUDGE THE TEMPERATURE FIELD? 0 = NO; 1 = YES
+ ITEMP=1,1,0,0,0,0,0,0,0,0,    ; 3D ANALYSIS NUDGING
+       1,1,0,0,0,0,0,0,0,0,    ; SFC ANALYSIS NUDGING
+ ;
+ ;       NUDGING COEFFICIENT FOR TEMPERATURE ANALYSES
+ GT=2.5E-4,1.0E-4,0.,0.,0.,0.,0.,0.,0.,0.,       ; 3D ANALYSIS NUDGING
+    2.5E-4,1.0E-4,0.,0.,0.,0.,0.,0.,0.,0.,       ; SFC ANALYSIS NUDGING
+ ;
+ IMOIS=1,1,0,0,0,0,0,0,0,0,    ; 3D ANALYSIS NUDGING
+       1,1,0,0,0,0,0,0,0,0,    ; SFC ANALYSIS NUDGING
+ ;
+ ;       NUDGING COEFFICIENT FOR THE MIXING RATIO ANALYSES
+ GQ=1.E-5,1.E-5,0.,0.,0.,0.,0.,0.,0.,0.,        ; 3D ANALYSIS NUDGING
+    1.E-5,1.E-5,0.,0.,0.,0.,0.,0.,0.,0.,        ; SFC ANALYSIS NUDGING
+ ;
+ ;       GRID NUDGE THE ROTATIONAL WIND FIELD? 0 = NO; 1 = YES
+ IROT=0,0,0,0,0,0,0,0,0,0,     ; 3D ANALYSIS NUDGING
+;
+ ;       NUDGING COEFFICIENT FOR THE ROTATIONAL COMPONENT OF THE WINDS
+ GR=5.E6,5.E6,0.,0.,0.,0.,0.,0.,0.,0.,          ; 3D ANALYSIS NUDGING
+ ;
+ ;        IF GRID NUDGING (I4D(1,1)=1) AND YOU WISH TO EXCLUDE THE
+ ;        BOUNDARY LAYER FROM FDDA OF COARSE GRID THREE DIMENSIONAL
+ ;        DATA (USUALLY FROM INTERP),
+ ;             0 = NO,  INCLUDE BOUNDARY LAYER NUDGING
+ ;             1 = YES, EXCLUDE BOUNDARY LAYER NUDGING
+ INONBL =0,0,0,0,0,0,0,0,0,0,         ; U WIND
+         0,0,0,0,0,0,0,0,0,0,         ; V WIND
+         1,1,1,1,1,1,1,1,1,1,         ; TEMPERATURE
+         1,1,1,1,1,1,1,1,1,1,         ; MIXING RATIO
+ ;
+ ;        RADIUS OF INFLUENCE FOR SURFACE ANALYSIS (KM).
+ ;        IF I4D(2,1)=1 OR I4D(2,2)=1, ETC, DEFINE RINBLW (KM) USED
+ ;        IN SUBROUTINE BLW TO DETERMINE THE HORIZONTAL VARIABILITY
+ ;        OF THE SURFACE-ANALYSIS NUDGING AS A FUNCTION OF SURFACE
+ ;        DATA DENSITY.  OVER LAND, THE STRENGTH OF THE SURFACE-
+ ;        ANALYSIS NUDGING IS LINEARLY DECREASED BY 80 PERCENT AT
+ ;        THOSE GRID POINTS GREATER THAN RINBLW FROM AN OBSERVATION
+ ;        TO ACCOUNT FOR DECREASED CONFIDENCE IN THE ANALYSIS
+ ;        IN REGIONS NOT NEAR ANY OBSERVATIONS.
+ RINBLW=250.,
+ ;
+ ;        SET THE NUDGING PRINT FREQUENCY FOR SELECTED DIAGNOSTIC
+ ;        PRINTS IN THE GRID (ANALYSIS) NUDGING CODE (IN CGM
+ ;        TIMESTEPS)
+ NPFG=50,
+ ;
+ ;      **************** OBSERVATION NUDGING ***************
+ ;
+ ;
+ ;     INDIVIDUAL OBSERVATION NUDGING.  VARIABLES THAT ARE ARRAYS
+ ;     USE THE FIRST DIMENSION (COLUMN) AS THE DOMAIN IDENTIFIER:
+ ;         COLUMN 1 = DOMAIN #1, COLUMN 2 = DOMAIN #2, ETC.
+ ;
+ ;       IS THIS INDIVIDUAL OBSERVATION NUDGING? 0 = NO; 1 = YES
+ I4DI   =0,0,0,0,0,0,0,0,0,0,
+ ;
+ ;       OBS NUDGE THE WIND FIELD FROM STATION DATA? 0 = NO; 1 = YES
+ ISWIND =1,0,0,0,0,0,0,0,0,0,
+ ;
+ ;       NUDGING COEFFICIENT FOR WINDS FROM STATION DATA
+ GIV  =4.E-4,4.E-4,0.,0.,0.,0.,0.,0.,0.,0.,
+ ;
+ ;       OBS NUDGE THE TEMPERATURE FIELD FROM STATION DATA? 0 = NO; 1 = YES
+ ISTEMP=1,0,0,0,0,0,0,0,0,0,
+ ;
+ ;       NUDGING COEFFICIENT FOR TEMPERATURES FROM STATION DATA
+ GIT  =4.E-4,4.E-4,0.,0.,0.,0.,0.,0.,0.,0.,
+ ;
+ ;       OBS NUDGE THE MIXING RATIO FIELD FROM STATION DATA? 0 = NO; 1 = YES
+ ISMOIS=1,0,0,0,0,0,0,0,0,0,
+ ;
+ ;       NUDGING COEFFICIENT FOR THE MIXING RATIO FROM STATION DATA
+ GIQ  =4.E-4,4.E-4,0.,0.,0.,0.,0.,0.,0.,0.,
+ ;
+ ;       THE OBS NUDGING RADIUS OF INFLUENCE IN THE
+ ;       HORIZONTAL IN KM FOR CRESSMAN-TYPE DISTANCE-WEIGHTED
+ ;       FUNCTIONS WHICH SPREAD THE OBS-NUDGING CORRECTION
+ ;       IN THE HORIZONTAL.
+ RINXY=240.,
+ ;
+ ;       THE OBS NUDGING RADIUS OF INFLUENCE IN THE
+ ;       VERTICAL IN SIGMA UNITS FOR CRESSMAN-TYPE DISTANCE-
+ ;       WEIGHTED FUNCTIONS WHICH SPREAD THE OBS-NUDGING
+ ;       CORRECTION IN THE VERTICAL.
+ RINSIG=0.001,
+ ;
+ ;       THE HALF-PERIOD OF THE TIME WINDOW, IN MINUTES, OVER
+ ;       WHICH AN OBSERVATION WILL AFFECT THE FORECAST VIA OBS
+ ;       NUDGING. THAT IS, THE OBS WILL INFLUENCE THE FORECAST
+ ;       FROM TIMEOBS-TWINDO TO TIMEOBS+TWINDO.  THE TEMPORAL
+ ;       WEIGHTING FUNCTION IS DEFINED SUCH THAT THE OBSERVATION
+ ;       IS APPLIED WITH FULL STRENGTH WITHIN TWINDO/2. MINUTES
+ ;       BEFORE OR AFTER THE OBSERVATION TIME, AND THEN LINEARLY
+ ;       DECREASES TO ZERO TWINDO MINUTES BEFORE OR AFTER THE
+ ;       OBSERVATION TIME.
+ TWINDO=40.0,
+ ;
+ ;       THE NUDGING PRINT FREQUENCY FOR SELECTED DIAGNOSTIC PRINT
+ ;       IN THE OBS NUDGING CODE (IN CGM TIMESTEPS)
+ NPFI=20,
+ ;
+ ;       FREQUENCY (IN CGM TIMESTEPS) TO COMPUTE OBS NUDGING WEIGHTS
+ IONF=2,
+ IDYNIN=0,  ;for dynamic initialization using a ramp-down function to gradually
+ ;           turn off the FDDA before the pure forecast, set idynin=1 [y=1, n=0]
+ DTRAMP=60.,;the time period in minutes over which the
+ ;           nudging (obs nudging and analysis nudging) is ramped down
+ ;           from one to zero.  Set dtramp negative if FDDA is to be ramped
+ ;           down BEFORE the end-of-data time (DATEND), and positive if the
+ ;           FDDA ramp-down period extends beyond the end-of-data time.
+ $BLOCKEND
+EOF
+#
+#-----------------------------------------------------------------
+#
+#      create namelist: mmlif, and remove comments from namelist:
+#
+make mmlif
+cd ./Run
+sed -f ../Util/no_comment.sed mmlif | grep [A-Z,a-z,/] > mmlif.tmp
+mv mmlif.tmp mmlif
+rm fparam lparam nparam oparam pparam
+#
+#-----------------------------------------------------------------
+#
+#       run MM5
+#
+echo This version of mm5.deck stops after creating namelist file mmlif.
+echo Please run code manually.
+date
+
