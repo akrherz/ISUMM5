@@ -353,7 +353,7 @@ MAXNES = 1
 MIX = 200
 MJX = 200
 # MKX (integer)                     - Number of half sigma levels in model
-MKX = 46
+MKX = 23
 #-----------------------------------------------------------------------------
 # 6. Physics Options
 #    The first MAXNES values in the list will be used for the corresponding
