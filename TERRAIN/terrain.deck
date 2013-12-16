@@ -1,0 +1,279 @@
+#!/bin/csh -f
+# terrain.csh
+#
+set echo
+#
+#   Set this if you would like to ftp terrain data
+#
+set ftpdata = true
+#set ftpdata = false
+#
+#   Set the following for ftp'ing 30 sec elevation data from USGS ftp site
+#
+set Where30sTer = ftp
+#set Where30sTer = /your-data-directory
+if ( $Where30sTer == ftp) then
+#
+#    Use this if you are ftping from other places
+#
+#    set users = Others
+#
+#    Use this if you are ftping from MMM/NCAR
+#
+     set users = MMM
+else
+     set users = 
+endif
+#
+#   Uncomment the following line if using the 30 - 100 cm layer soil file
+#
+# set BotSoil
+#
+# --------------------------------------------------------------
+#          1. Set up parameter statements
+# --------------------------------------------------------------
+#
+cat > src/parame.incl.tmp << EOF
+C      IIMX,JJMX are the maximum size of the domains, NSIZE = IIMX*JJMX
+       PARAMETER (IIMX = 200, JJMX = 200, NSIZE = IIMX*JJMX)
+EOF
+cat > src/paramed.incl.tmp << EOF
+C      ITRH,JTRH are the maximum size of the terrain data.
+C      NOBT = ITRH*JTRH, here assuming 
+C      ITRH= 270 ( 45 deg. in north-south direction, 10 min. resolution)
+C      JTRH= 450 ( 75 deg. in north-south direction, 10 min. resolution)
+C  NOTE:
+C      IF USING GLOBAL 30SEC ELEVATION DATASET FROM USGS, NEED TO SET
+C      BOTH ITRH AND JTRH BIG. TRY THE COMMENTED PARAMETER LINE FIRST.
+C      THIS WILL REQUIRE APPROXI 0.9 GB MEMORY ON A 32-BIT IEEE MACHINE.
+C      AN ESTIMATE OF THE DIMENSION SIZE CAN BE MADE FROM Data30s/rdem.out
+C      AFTER THE FIRST JOB FAILS. USE (XMAXLAT-XMINLAT)*120 TO ESTIMATE
+C      ITRH, AND (XMAXLON-XMINLON)*120 TO ESTIMATE JTRH.
+C
+       PARAMETER (ITRH =  500, JTRH =  500, NOBT = ITRH*JTRH)
+C      PARAMETER (ITRH = 1500, JTRH = 1800, NOBT = ITRH*JTRH)
+EOF
+#
+# --------------------------------------------------------------
+#          2. Set up NAMELIST
+# --------------------------------------------------------------
+#
+if ( -e terrain.namelist ) rm terrain.namelist
+cat > terrain.namelist << EOF
+ &MAPBG
+ PHIC  =   41.0,      ; CENTRAL LATITUDE (minus for southern hemesphere)
+ XLONC =  -96.0,      ; CENTRAL LONGITUDE (minus for western hemesphere)
+ IEXP  =    .F.,      ; .T. EXPANDED COARSE DOMAIN, .F. NOT EXPANDED.
+                      ; USEFUL IF RUNNING RAWINS/little_r
+ AEXP  =   360.,      ; APPROX EXPANSION (KM)
+ IPROJ = 'LAMCON',    ; LAMBERT-CONFORMAL MAP PROJECTION
+ ;IPROJ = 'POLSTR',   ; POLAR STEREOGRAPHIC MAP PROJECTION
+ ;IPROJ = 'MERCAT',   ; MERCATOR MAP PROJECTION
+ &END
+ &DOMAINS
+ ;
+ MAXNES =    1,       ; NUMBER OF DOMAINS TO PROCESS  
+ NESTIX =  135,   49,  136,  181,  211, 221,  ; GRID DIMENSIONS IN Y DIRECTION
+ NESTJX =  150,   52,  181,  196,  211, 221,  ; GRID DIMENSIONS IN X DIRECTION
+ DIS    =  20.,  30.,   9.,  3.0,  1.0, 1.0,  ; GRID DISTANCE 
+ NUMNC  =    1,    1,    2,    3,    4,   5,  ; MOTHER DOMAIN ID
+ NESTI  =    1,   10,   28,   35,   45,  50,  ; LOWER LEFT I OF NEST IN MOTHER DOMAIN
+ NESTJ  =    1,   17,   25,   65,   55,  50,  ; LOWER LEFT J OF NEST IN MOTHER DOMAIN
+ RID    =  1.5,  1.5,  1.5,  3.1,  2.3,  2.3, ; RADIUS OF INFLUENCE IN GRID UNITS (IFANAL=T)
+ NTYPE  =    2,    3,    4,    6,    6,   6,  ; INPUT DATA RESOLUTION
+ ;
+ ;      1:  1 deg (~111 km) global terrain and landuse
+ ;      2: 30 min ( ~56 km) global terrain and landuse
+ ;      3: 10 min ( ~19 km) global terrain and landuse
+ ;      4;  5 min (  ~9 km) global terrain and landuse
+ ;      5;  2 min (  ~4 km) global terrain and landuse
+ ;      6; 30 sec ( ~.9 km) global terrain and landuse
+ ;
+ NSTTYP=     1,    2,    2,    2,    2,   2,  ;  1 -- ONE WAY NEST, 2 -- TWO WAY NEST
+ &END
+ &OPTN
+ IFTER   = .TRUE.,    ; .T.-- TERRAIN,  .F.-- PLOT DOMAIN MAPS ONLY
+ IFANAL  = .F.,       ; .T.-- OBJECTIVE ANALYSIS, .F.-- INTERPOLATION
+ ISMTHTR =  2 ,       ;  1: 1-2-1 smoother, 2: two pass smoother/desmoother
+ IFEZFUG = .F.,       ; .T. USE NCAR GRAPHICS EZMAP WATER BODY INFO TO FUDGE THE LAND USE
+                      ; .F. USE LANDWATER MASK DATA
+ IFTFUG  = .F.,       ; .T. DON'T DO EZFUDGE WITHIN THE USER-SPECIFIED
+ ;                      LAT/LON BOXES, need to define namelist fudget
+ IFFUDG  = .F.,       ; .T. POINT-BY-POINT FUDGING OF LANDUSE,
+                      ;  need to define namelist fudge
+ IPRNTD  = .F.,       ; PRINT OUT LAT. AND LON. ON THE MESH
+ IPRTHT  = .F.,       ; PRINT OUT ALL PROCESSING FIELDS ON THE MESH
+ IPRINT  =  0,        ; = 1: A LOT MORE PRINT OUTPUT IN terrain.print.out
+ FIN     = 100., 100., 100., 100., 100., 100., ; CONTOUR INTERVAL (meter) FOR TERRAIN HEIGHT PLOT
+ ;TRUELAT1=91.,       ; TRUE LATITUDE 1
+ ;TRUELAT2=91.,       ; TRUE LATITUDE 2, use this if IPROJ='LAMCON'
+ IFILL   = .TRUE.,    ; .TRUE. --- color filled plots
+ LSMDATA = .FALSE.,   ; .TRUE. --- Create the data for LSM
+ VEGTYPE = 1,         ; LANDUSE DATA TYPE: =0: old 13 cat; =1: 24 cat USGS; =2: 16 cat SiB
+ VSPLOT  = .TRUE.,    ; .TRUE. --- plot Vege., Soil, Vege. Frc. percentages.
+ IEXTRA  = .FALSE.,   ; .TRUE. --- Create extra data for Pleim-Xiu LSM
+ &END
+ &FUDGE
+ ; USE ONLY IF IFFUDG = .T., POINT-BY-POINT FUDGING OF LANDUSE,
+ ; IFFUG FOR EACH OF THE NESTS: .F. NO FUDGING, .T. FUDGING
+ IFFUG   = .F.,.F.,    ; FUDGE FLAGS
+ ; NDFUG : THE NUMBER OF FUDGING POINTS FOR EACH OF NESTS
+ NDFUG   = 0,0,
+ ; LOCATION (I,J) AND LANDUSE VALUES FOR EACH OF THE NESTS
+ ; NOTE: REGARDLESS OF IFFUG AND NDFUG, 200 VALUES MUST BE GIVEN FOR
+ ;       EACH NEST, OR ELSE THE INDEXING WILL GET MESSED UP
+ ; The example below is for two domains. Add more for domain 3 and up
+ ;       if needed. Do not remove 0 values for domain 1 and/or 2 even
+ ;       they are not used.
+ ;
+ IFUG(1,1)=  200*0,    ; I location for fudge points in domain 1
+ IFUG(1,2)=  200*0,    ; I location for fudge points in domain 2
+ JFUG(1,1)=  200*0,    ; J location for fudge points in domain 1
+ JFUG(1,2)=  200*0,    ; J location for fudge points in domain 2
+ LNDFUG(1,1)= 200*0,   ; land-use value at fudge points for domain 1
+ LNDFUG(1,2)= 200*0,   ; land-use value at fudge points for domain 2
+ &END
+ &FUDGET
+ ; USE ONLY IF IFTFUG=.T., WHICH MEANS TERRAIN WON'T DO EZFUDGE WITHIN
+ ;    THE USER-SPECIFIED LAT/LON BOXES.  THIS OPTION IS USED WHEN THERE
+ ;    ARE INLAND BODIES OF WATER THAT ARE DEFINED IN THE LAND USE
+ ;    DATA SET BUT NOT IN THE EZMAP DATA SET.  THIS OPTION PREVENTS
+ ;    THOSE BODIES OF WATER FROM BEING WIPED OUT BY EZFUDGE
+ NFUGBOX = 2             ;  NUMBER OF SUBDOMAINS IN WHICH TO
+ ;                          TURN OFF EZMAP LAND USE FUDGING
+ STARTLAT=45.0,44.0,     ;  LATITUDES OF LOWER-LEFT CORNERS OF SUBDOMAINS
+ ENDLAT  =46.5,45.0,     ;  LATITUDES OF UPPER-RIGHT CORNERS OF SUBDOMAINS
+ STARTLON=-95.0,-79.8,   ;  LONGITUDES OF LOWER-LEFT CORNERS OF SUBDOMAINS
+ ENDLON  =-92.6,-78.5,   ;  LONGITUDES OF UPPER-RIGHT CORNERS OF SUBDOMAINS
+ &END
+ &EZFUDGE
+ ; USE ONLY IF IFEZFUG=.T., WHICH TURNS ON EZMAP WATER BODY FUDGING OF LANDUSE.
+ ; USERS: FEEL FREE TO ADD ANY MORE LAKE SURFACE HEIGHTS THAT YOU'LL NEED.
+ ; HTPS IS THE HEIGHT IN METERS AND THE INDEX OF HTPS CORRESPONDS TO THE ID
+ ; OF THE 'PS' AREA IN THE FILE ezmap_area_ids.
+ ;
+ HTPS(441) =  -.001   ; Oceans  --  Do NOT change this one
+ HTPS(550) =  183.    ; Lake Superior
+ HTPS(587) =  177.    ; Lakes Michigan and Huron
+ HTPS(618) =  176.    ; Lake St. Clair
+ HTPS(613) =  174.    ; Lake Erie
+ HTPS(645) =   75.    ; Lake Ontario
+ HTPS(480) = 1897.    ; Lake Tahoe
+ HTPS(500) = 1281.    ; Great Salt Lake
+ &END
+EOF
+#
+# ------------------------------------------------------------------------------
+#
+#                 END OF USER MODIFICATION
+#
+# ------------------------------------------------------------------------------
+#
+#     Check to see if recompilation is needed
+#       Need to make here so that rdnml may be used
+#
+cd src
+../Templates/incldiff.sh parame.incl.tmp parame.incl
+../Templates/incldiff.sh paramed.incl.tmp paramed.incl
+cd ..
+make intel >& make.terrain.out
+#
+#     Create a namelist without comments
+#
+sed -f Templates/no_comment.sed terrain.namelist | grep "[A-Z,a-z]" > terlif.tmp
+mv terlif.tmp terrain.namelist
+#
+#     Set default script variables
+#
+set LandUse = OLD
+#
+set DataType = `src/rdnml < terrain.namelist`
+echo $DataType
+#
+if ( $DataType[4] == 1 ) set IfProcData
+if ( $DataType[4] == 0 ) set ftpdata = false
+if ( $DataType[5] == 1 ) set LandUse = USGS
+if ( $DataType[5] == 2 ) set LandUse = SiB
+if ( $DataType[3] == 1 ) set IfUsgsTopo
+#
+#      reset LandUse if $BotSoil is set
+#            -- use bottom soil files
+#
+if ( $?BotSoil ) set LandUse = USGS2
+#
+#      link to Fortran units
+#
+set ForUnit = fort.
+rm ${ForUnit}1* ${ForUnit}2* ${ForUnit}4*
+#
+if ( $LandUse == OLD )   cat Data/namelist.usgsdata >> terrain.namelist
+if ( $LandUse == USGS )  cat Data/namelist.usgsdata >> terrain.namelist
+if ( $LandUse == USGS2 ) cat Data/namelist.usgsdata2 >> terrain.namelist
+if ( $LandUse == SiB )   cat Data/namelist.sibdata  >> terrain.namelist
+cat > endnml << EOF
+ &END
+EOF
+cat endnml >> terrain.namelist
+rm endnml
+#
+   ln -s  terrain.namelist      ${ForUnit}15
+   ln -s  ezids                 ${ForUnit}18
+   ln -s  raobsta.ieee          ${ForUnit}16
+# ----------------------------------------------------------------------
+#
+#     Update parameter statements for vegetation dataset
+#       (may require partial recompilation)
+#
+if ( $LandUse == SiB ) then
+
+   cp src/paramesv0.incl src/paramesv.incl.tmp
+   ./Templates/incldiff.sh src/paramesv.incl.tmp src/paramesv.incl
+   cp src/vs_data0.incl  src/vs_data.incl.tmp
+   ./Templates/incldiff.sh src/vs_data.incl.tmp src/vs_data.incl
+   make >& make2.print.out
+
+else if ( $LandUse == USGS ) then
+
+   cp src/paramesv1.incl src/paramesv.incl.tmp
+   ./Templates/incldiff.sh src/paramesv.incl.tmp src/paramesv.incl
+   cp src/vs_data2.incl  src/vs_data.incl.tmp
+   ./Templates/incldiff.sh src/vs_data.incl.tmp src/vs_data.incl
+   make >& make2.print.out
+
+endif
+# ----------------------------------------------------------------------
+#
+#     should I ftp the data?
+#
+if ( $ftpdata == true && $?BotSoil ) then
+#  ftp other data plus top soil data
+   echo 'about to start ftping'
+   cp Data/ftp2.csh ftp.csh
+   chmod +x ftp.csh
+   ./ftp.csh >& ftp.out
+#  rm ftp.csh ftp.out
+else
+#  ftp other data plus bottom soil data
+   echo 'about to start ftping'
+   cp Data/ftp.csh ftp.csh
+   chmod +x ftp.csh
+   ./ftp.csh >& ftp.out
+#  rm ftp.csh ftp.out
+endif
+#
+if ( $?IfUsgsTopo && $?IfProcData ) then
+   echo 'about to start ftping 30 sec tiled elevation data from USGS'
+   cp Data/ftp30s.csh .
+   chmod +x ftp30s.csh
+   ./ftp30s.csh $Where30sTer $users >& ftp30s.out
+#  rm ftp30s.csh ftp30s.out
+endif
+# ----------------------------------------------------------------------
+#
+#      Execute terrain
+#
+unlimit
+date
+./terrain.exe >&! terrain.print.out
+#
+rm ${ForUnit}* 
