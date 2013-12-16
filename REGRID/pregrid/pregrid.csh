@@ -5,16 +5,16 @@
 # Put your input files for pregrid into the directory you specify as DataDir:
 #
 
-set DataDir = /usr/tmp/username/REGRID
+set DataDir = $1
 
 #
 # Specify the source of 3-d analyses
 #
 
 
-   set SRC3D = ON84  # Old ON84-formatted NCEP GDAS analyses
+#   set SRC3D = ON84  # Old ON84-formatted NCEP GDAS analyses
 #  set SRC3D = NCEP  # Newer GRIB-formatted NCEP GDAS analyses
-#  set SRC3D = GRIB  # Many GRIB-format datasets
+  set SRC3D = GRIB  # Many GRIB-format datasets
 
 
 #  InFiles:  Tell the program where you have put the analysis files, 
@@ -22,7 +22,7 @@ set DataDir = /usr/tmp/username/REGRID
 #  then the Vtables you specify below in the script variable VT3D will 
 #  be used to interpret the files you specify in the ${InFiles} variable.
 
-   set InFiles = ( ${DataDir}/NCEP* )
+set InFiles = ( ${DataDir}/*.grib )
 #
 # Specify the source of SST analyses
 #
@@ -61,14 +61,14 @@ set DataDir = /usr/tmp/username/REGRID
 # Select the source of soil model analyses (entirely optional)
 #
   
-#   set SRCSOIL = $SRC3D
+   set SRCSOIL = $SRC3D
 
 #  InSoil:  Set InSoil only if the soil analyses are from files 
 #  not listed in InFiles.  If SRCSOIL has the value "GRIB", then the 
 #  Vtables you specify below in the script variable VTSOIL will be
 #  used to interpret the files you specify in the ${InSoil} variable.
 
-#   set InSoil = ()
+   set InSoil = ()
 
 #
 #  Build the Namelist
@@ -81,19 +81,19 @@ cat << End_Of_Namelist | sed -e 's/#.*//; s/  *$//' > ./pregrid.namelist
 #
 # Set the starting date of the time period you want to process:
 #
- START_YEAR  = 1993   # Year (Four digits)
- START_MONTH = 03     # Month ( 01 - 12 )
- START_DAY   = 13     # Day ( 01 - 31 )
- START_HOUR  = 00     # Hour ( 00 - 23 )
+START_YEAR  = $2   # Year (Four digits)
+START_MONTH = $3     # Month ( 01 - 12 )
+START_DAY   = $4     # Day ( 01 - 31 )
+START_HOUR  = $5     # Hour ( 00 - 23 )
 
- END_YEAR  = 1993   # Year (Four digits)
- END_MONTH = 03     # Month ( 01 - 12 )
- END_DAY   = 14     # Day ( 01 - 31 )
- END_HOUR  = 00     # Hour ( 00 - 23 )
+END_YEAR  = $6   # Year (Four digits)
+END_MONTH = $7     # Month ( 01 - 12 )
+END_DAY   = $8     # Day ( 01 - 31 )
+END_HOUR  = $9     # Hour ( 00 - 23 )
 #
 # Define the time interval to process.
 #
- INTERVAL =  43200 # Time interval (seconds) to process.
+INTERVAL =  10800 # Time interval (seconds) to process.
 		   # This is most sanely the same as the time interval for
                    # which the analyses were archived, but you can really
                    # set this to just about anything, and pregrid will
@@ -113,10 +113,10 @@ End_Of_Namelist
 #  specified in VTSST, VTSNOW, and VTSOIL will be applied to the files 
 #  listed above in InSST, InSNOW, and InSoil, respectively.
 #  
-   set VT3D = ( grib.misc/Vtable.NNRP3D )
-   set VTSST = ( grib.misc/Vtable.NNRPSST )
-   set VTSNOW = ( grib.misc/Vtable.xxxxSNOW )
-   set VTSOIL = ( grib.misc/Vtable.xxxxSOIL )
+   set VT3D = ( grib.misc/Vtable.AVN3D )
+   set VTSST = ( grib.misc/Vtable.AVNSST )
+   set VTSNOW = ( grib.misc/Vtable.AVNSNOW )
+   set VTSOIL = ( grib.misc/Vtable.AVNSOIL )
 
 ########################################################################
 ########################################################################
