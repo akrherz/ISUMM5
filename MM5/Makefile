@@ -100,7 +100,7 @@ mpp: MPP/mpp_install
 
 MPP/mpp_install:
 	(cd include; $(MAKE) code ;  cd ../pick ; csh ../MPP/cutincludes $(CUT) )
-	(cd MPP/RSL/RSL ; if [ "$(RUNTIME_SYSTEM)" = "alpha" -o "$(RUNTIME_SYSTEM)" = "alphavector" ]  ; then $(MAKE) CC="$(MCC)" FC="$(MFC)" UNDERSCORE=$(UNDERSCORE) $(MPP_TARGET) ; else if [ "$(RUNTIME_SYSTEM)" = "linux" ] ; then $(MAKE) CC="$(MCC)" FC="$(MFC)" LINUX_MPIHOME=$(LINUX_MPIHOME) $(MPP_TARGET) ; else $(MAKE) $(MPP_TARGET) ; fi ; fi  )
+	(cd MPP/RSL/RSL ; if [ "$(RUNTIME_SYSTEM)" = "alpha" -o "$(RUNTIME_SYSTEM)" = "alphavector" ]  ; then $(MAKE) CC="$(MCC)" FC="$(MFC)" UNDERSCORE=$(UNDERSCORE) $(MPP_TARGET) ; else if [ "$(RUNTIME_SYSTEM)" = "linux" ] ; then $(MAKE) CC="$(MCC)" FC="$(MFC)" FFLAGS="$(FCFLAGS)" LINUX_MPIHOME=$(LINUX_MPIHOME) $(MPP_TARGET) ; else $(MAKE) $(MPP_TARGET) ; fi ; fi  )
 	(cd MPP/FLIC ; if [ "$(X1_CROSS_COMP)" != "" ] ; then $(MAKE) CC="$(X1_CROSS_COMP)" CFLAGS=$(X1_CROSS_CFLG) ; else $(MAKE) CC=cc ; $(MAKE) clean ; fi )
 	(cd MPP/FLIC/FLIC ; if [ "$(X1_CROSS_COMP)" != "" ] ; then $(MAKE) CC="$(X1_CROSS_COMP)" CFLAGS=$(X1_CROSS_CFLG) ; else $(MAKE) CC=cc ; fi ; \
 	  $(MAKE) clean ; \
