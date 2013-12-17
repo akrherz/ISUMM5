@@ -7,8 +7,10 @@ import pytz
 import os
 import urllib2
 import subprocess
+import glob
 
 BASEFOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+HOURS = 72
 
 def dl_ncep( ts ):
     ''' Download stuff we want from NCEP '''
@@ -16,7 +18,7 @@ def dl_ncep( ts ):
     baseuri = "http://ftpprd.ncep.noaa.gov/data/nccf/com/gfs/prod"
     tmpdir = "/tmp/gfs.%s" % (ts.strftime("%Y%m%d%H"),)
     if not os.path.isdir(tmpdir):
-        os.makedir(tmpdir)
+        os.makedirs(tmpdir)
         
     for i in range(0,73,3):
         localfn = "%s/gfs.t%02iz.pgrbf%02i.grib2" % (tmpdir, ts.hour, i)
@@ -33,6 +35,10 @@ def dl_ncep( ts ):
             subprocess.call("/usr/local/bin/cnvgrib -g21 %s %s" % (localfn, localfn[:-1]),
                             shell=True, stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
+
+        # Remove the grib2 file as it is no longer needed...
+        if os.path.isfile(localfn):
+            os.unlink(localfn)
 
 def pregrid(sts , ets):
     ''' Do the pregrid activity '''
@@ -112,6 +118,11 @@ interval                        = 10800/
     o.write( p.stderr.read() )
     o.close()
     
+    # Lets go cleanup after ourselves
+    os.chdir("%s/REGRID/pregrid" % (BASEFOLDER,))
+    for fn in glob.glob("(FILE|SNOW_FILE|SOIL_FILE|SST_FILE)*"):
+        os.unlink(fn)
+    
 def interpf(sts, ets):
     ''' Do Interpf step '''
     print '4. Running interpf'
@@ -173,6 +184,9 @@ less_than_24h                   = .FALSE. /
     for fn in ("BDYOUT_DOMAIN1", "MMINPUT_DOMAIN1", "LOWBDY_DOMAIN1"):
         os.rename(fn, "../MM5/Run/%s" % (fn,))
     
+    # Cleanup after ourself
+    os.unlink('../REGRID/regridder/REGRID_DOMAIN1')
+    
 def mm5deck():
     ''' Run mm5deck '''
     print '5. Running MM5 Deck'
@@ -186,6 +200,37 @@ def mm5deck():
     o = open('mm5deck.stderr.txt', 'w')
     o.write( p.stderr.read() )
     o.close()
+    
+def run_mm5():
+    ''' Run mm5d '''
+    print '6. Running MM5'
+    os.chdir("%s/MM5/Run" % (BASEFOLDER,))
+    p = subprocess.Popen("/usr/local/openmpi-intel/bin/mpirun -np 2 ./mm5.mpp", 
+                         shell=True, stdout=subprocess.PIPE, 
+                        stderr=subprocess.PIPE)    
+    o = open('mm5.mpp.stdout.txt', 'w')
+    o.write( p.stdout.read() )
+    o.close()
+
+    o = open('mm5.mpp.stderr.txt', 'w')
+    o.write( p.stderr.read() )
+    o.close()
+
+def archiver( sts ):
+    ''' Run archiver '''
+    print '7. Running Archiver'
+    cmd = "archiver MMOUT_DOMAIN1 0 %s isumm5_%s.nc" % (HOURS+1,
+                                            sts.strftime("%Y%m%d%H%M"))
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, 
+                        stderr=subprocess.PIPE)    
+    o = open('archiver.stdout.txt', 'w')
+    o.write( p.stdout.read() )
+    o.close()
+
+    o = open('archiver.stderr.txt', 'w')
+    o.write( p.stderr.read() )
+    o.close()
+   
     
 if __name__ == '__main__':
     yyyy = int(sys.argv[1])
@@ -203,12 +248,9 @@ if __name__ == '__main__':
     regridder(sts, ets)
     interpf(sts, ets)
     mm5deck()
+    run_mm5()
+    archiver(sts)
 
 """
-
-echo "5. Run MM5"
-echo "6. Run Archiver"
 echo "7. Run MM5 to GEMPAK"
-echo "8. Run Frost Stuff" 
-
 """
