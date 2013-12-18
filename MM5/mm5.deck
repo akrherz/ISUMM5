@@ -50,7 +50,7 @@ cat > ./Run/oparam << EOF
  ;      ************* FORECAST TIME AND TIME STEP ******************
  ;
  TIMAX  = 4320.,         ; forecast length in minutes
- TISTEP = 6.,         ; coarse domain DT in model, use 3*DX
+ TISTEP = 60.,         ; coarse domain DT in model, use 3*DX
  ;
  ;      ************** OUTPUT/RESTART OPTIONS ***************
  ;
