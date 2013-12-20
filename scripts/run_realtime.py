@@ -219,7 +219,7 @@ def run_mm5():
 def archiver( sts ):
     ''' Run archiver '''
     print '7. Running Archiver'
-    cmd = "archiver MMOUT_DOMAIN1 0 %s isumm5_%s.nc" % (HOURS+1,
+    cmd = "/usr/local/bin/archiver MMOUT_DOMAIN1 0 %s isumm5_%s.nc" % (HOURS+1,
                                             sts.strftime("%Y%m%d%H%M"))
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, 
                         stderr=subprocess.PIPE)    
