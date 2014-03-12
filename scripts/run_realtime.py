@@ -120,7 +120,7 @@ interval                        = 10800/
     
     # Lets go cleanup after ourselves
     os.chdir("%s/REGRID/pregrid" % (BASEFOLDER,))
-    for fn in glob.glob("(FILE|SNOW_FILE|SOIL_FILE|SST_FILE)*"):
+    for fn in glob.glob("*FILE:*"):
         os.unlink(fn)
     
 def interpf(sts, ets):
