@@ -2,8 +2,6 @@ CRON_TZ=UTC
 LD_LIBRARY_PATH=/usr/local/openmpi-intel/lib:/opt/intel/lib
 
 # Run 12 UTC run at 17 UTC
-0 17 * * * cd /mesonet/www/apps/ISUMM5; python scripts/run_realtime.py $(date -u +'\%Y \%m \%d') 12; cd /mesonet/www/apps/bridget; python scripts/run_bridget.py /mesonet/www/apps/ISUMM5/MM5/Run/isumm5_$(date -u +'\%Y\%m\%d')1200.nc && python scripts/make_plots.py output/$(date -u +'\%Y\%m\%d')1200_iaoutput.nc
-
+0 17 * * * cd /mesonet/www/apps/ISUMM5/scripts; sh RUN_FROST.sh 12
 # Run 00 UTC run at 5 UTC
-0 5 * * * cd /mesonet/www/apps/ISUMM5; python scripts/run_realtime.py $(date -u +'\%Y \%m \%d') 00; cd /mesonet/www/apps/bridget; python scripts/run_bridget.py /mesonet/www/apps/ISUMM5/MM5/Run/isumm5_$(date -u +'\%Y\%m\%d')0000.nc && python scripts/make_plots.py output/$(date -u +'\%Y\%m\%d')0000_iaoutput.nc
-	
+0 5 * * * cd /mesonet/www/apps/ISUMM5/scripts; sh RUN_FROST.sh 00
