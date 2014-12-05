@@ -23,12 +23,14 @@ def dl_ncep( ts ):
     for i in range(0,73,3):
         localfn = "%s/gfs.t%02iz.pgrbf%02i.grib2" % (tmpdir, ts.hour, i)
         if not os.path.isfile(localfn):
-            print '   Fetching: %s' % (localfn,)
+            print '   Fetching: %s' % (localfn,),
             uri = "%s/gfs.%s/gfs.t%02iz.pgrbf%02i.grib2" % (baseuri, 
                                         ts.strftime("%Y%m%d%H"), ts.hour, i)
-            o = open(localfn, 'w')
-            o.write( urllib2.urlopen(uri).read() )
+            dldata = urllib2.urlopen(uri).read()
+            o = open(localfn, 'wb')
+            o.write(dldata)
             o.close()
+            print '%s' % (len(dldata),)
 
         if not os.path.isfile(localfn[:-1]):
             #convert to grib2
