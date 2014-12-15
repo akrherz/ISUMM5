@@ -186,7 +186,7 @@ less_than_24h                   = .FALSE. /
     for fn in ("BDYOUT_DOMAIN1", "MMINPUT_DOMAIN1", "LOWBDY_DOMAIN1"):
         sz = os.path.getsize(fn)
         if sz < 1000:
-            print("ABORT: %s is % bytes, too small!" % (fn, sz))
+            print("ABORT: %s is %s bytes, too small!" % (fn, sz))
             sys.exit()
         os.rename(fn, "../MM5/Run/%s" % (fn,))
     
