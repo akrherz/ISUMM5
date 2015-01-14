@@ -21,26 +21,28 @@ def dl_ncep( ts ):
         os.makedirs(tmpdir)
         
     for i in range(0,73,3):
-        localfn = "%s/gfs.t%02iz.pgrbf%02i.grib2" % (tmpdir, ts.hour, i)
-        if not os.path.isfile(localfn):
-            print '   Fetching: %s' % (localfn,),
-            uri = "%s/gfs.%s/gfs.t%02iz.pgrbf%02i.grib2" % (baseuri, 
+        g1file = "%s/gfs.t%02iz.pgrb2.1p00.f%03i.grib" % (tmpdir, ts.hour, i)
+        g2file = "%s/gfs.t%02iz.pgrb2.1p00.f%03i" % (tmpdir, ts.hour, i)
+        if not os.path.isfile(g1file):
+            print '   Fetching: %s' % (g2file,),
+            uri = "%s/gfs.%s/gfs.t%02iz.pgrb2.1p00.f%03i" % (baseuri, 
                                         ts.strftime("%Y%m%d%H"), ts.hour, i)
             dldata = urllib2.urlopen(uri).read()
-            o = open(localfn, 'wb')
+            o = open(g2file, 'wb')
             o.write(dldata)
             o.close()
             print '%s' % (len(dldata),)
 
-        if not os.path.isfile(localfn[:-1]):
+        if not os.path.isfile(g2file):
             #convert to grib2
-            subprocess.call("/usr/local/bin/cnvgrib -g21 %s %s" % (localfn, localfn[:-1]),
+            subprocess.call("/usr/local/bin/cnvgrib -g21 %s %s" % (g2file, 
+                                                                g1file),
                             shell=True, stdout=subprocess.PIPE, 
                             stderr=subprocess.PIPE)
 
         # Remove the grib2 file as it is no longer needed...
-        if os.path.isfile(localfn):
-            os.unlink(localfn)
+        if os.path.isfile(g2file):
+            os.unlink(g2file)
 
 def pregrid(sts , ets):
     ''' Do the pregrid activity '''
