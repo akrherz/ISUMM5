@@ -33,7 +33,7 @@ def dl_ncep( ts ):
             o.close()
             print '%s' % (len(dldata),)
 
-        if not os.path.isfile(g2file):
+        if not os.path.isfile(g1file):
             #convert to grib2
             subprocess.call("/usr/local/bin/cnvgrib -g21 %s %s" % (g2file, 
                                                                 g1file),
@@ -41,7 +41,7 @@ def dl_ncep( ts ):
                             stderr=subprocess.PIPE)
 
         # Remove the grib2 file as it is no longer needed...
-        if os.path.isfile(g2file):
+        if os.path.isfile(g1file) and os.path.isfile(g2file):
             os.unlink(g2file)
 
 def pregrid(sts , ets):
