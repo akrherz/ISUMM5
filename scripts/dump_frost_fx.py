@@ -58,6 +58,7 @@ def main(argv):
                                       tm.strftime("%Y-%m-%d %H:%M"), model,
                                       "%.3f" % (k,)]))
                     o.write("\n")
+            nc.close()
         now += interval
 
     o.close()
