@@ -238,15 +238,21 @@ def archiver( sts ):
     o = open('archiver.stderr.txt', 'w')
     o.write( p.stderr.read() )
     o.close()
-   
-    
+
+
+def cleanup(ts):
+    """Cleanup after ourself"""
+    tmpdir = "/tmp/gfs.%s" % (ts.strftime("%Y%m%d%H"),)
+    if os.path.isdir(tmpdir):
+        subprocess.call("rm -rf %s" % (tmpdir,), shell=True)
+
 if __name__ == '__main__':
     yyyy = int(sys.argv[1])
     mm = int(sys.argv[2])
     dd = int(sys.argv[3])
     hh24 = int(sys.argv[4])
 
-    sts = datetime.datetime(yyyy,mm,dd,hh24)
+    sts = datetime.datetime(yyyy, mm, dd, hh24)
     sts = sts.replace(tzinfo=pytz.timezone("UTC"))
 
     ets = sts + datetime.timedelta(hours=72)
@@ -258,7 +264,4 @@ if __name__ == '__main__':
     mm5deck()
     run_mm5()
     archiver(sts)
-
-"""
-echo "7. Run MM5 to GEMPAK"
-"""
+    cleanup(sts)
