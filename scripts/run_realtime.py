@@ -1,6 +1,4 @@
-'''
- Something to proctor the realtime run!
-'''
+"""Something to proctor the realtime run!"""
 import sys
 import datetime
 import pytz
@@ -8,67 +6,81 @@ import os
 import urllib2
 import subprocess
 import glob
+import random
+import time
 
 BASEFOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 HOURS = 72
 
-def dl_ncep( ts ):
+
+def exponential_backoff(func, *args, **kwargs):
+    for i in range(5):
+        try:
+            return func(*args, **kwargs)
+        except Exception, exp:
+            print("%s/5 %s traceback: %s" % (i+1, func.__name__, exp))
+            time.sleep((2 ** i) + (random.randint(0, 1000) / 1000))
+    return None
+
+
+def dl_ncep(ts):
     ''' Download stuff we want from NCEP '''
     print '1. Download NCEP GFS Data'
     baseuri = "http://ftpprd.ncep.noaa.gov/data/nccf/com/gfs/prod"
     tmpdir = "/tmp/gfs.%s" % (ts.strftime("%Y%m%d%H"),)
     if not os.path.isdir(tmpdir):
         os.makedirs(tmpdir)
-        
-    for i in range(0,73,3):
+
+    for i in range(0, 73, 3):
         g1file = "%s/gfs.t%02iz.pgrb2.1p00.f%03i.grib" % (tmpdir, ts.hour, i)
         g2file = "%s/gfs.t%02iz.pgrb2.1p00.f%03i" % (tmpdir, ts.hour, i)
         if not os.path.isfile(g1file):
             print '   Fetching: %s' % (g2file,),
-            uri = "%s/gfs.%s/gfs.t%02iz.pgrb2.1p00.f%03i" % (baseuri, 
-                                        ts.strftime("%Y%m%d%H"), ts.hour, i)
-            dldata = urllib2.urlopen(uri).read()
+            uri = ("%s/gfs.%s/gfs.t%02iz.pgrb2.1p00.f%03i"
+                   ) % (baseuri, ts.strftime("%Y%m%d%H"), ts.hour, i)
+            dldata = exponential_backoff(urllib2.urlopen, uri).read()
             o = open(g2file, 'wb')
             o.write(dldata)
             o.close()
             print '%s' % (len(dldata),)
 
         if not os.path.isfile(g1file):
-            #convert to grib2
-            subprocess.call("/usr/local/bin/cnvgrib -g21 %s %s" % (g2file, 
-                                                                g1file),
-                            shell=True, stdout=subprocess.PIPE, 
+            # convert to grib2
+            subprocess.call("/usr/local/bin/cnvgrib -g21 %s %s" % (g2file,
+                                                                   g1file),
+                            shell=True, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
 
         # Remove the grib2 file as it is no longer needed...
         if os.path.isfile(g1file) and os.path.isfile(g2file):
             os.unlink(g2file)
 
-def pregrid(sts , ets):
+
+def pregrid(sts, ets):
     ''' Do the pregrid activity '''
     print '2. Running pregrid'
     os.chdir("%s/REGRID/pregrid" % (BASEFOLDER,))
     tmpdir = "/tmp/gfs.%s" % (sts.strftime("%Y%m%d%H"),)
     cmd = "csh pregrid.csh %s %s %s" % (tmpdir, sts.strftime("%Y %m %d %H"),
-                                  ets.strftime("%Y %m %d %H"))
-    p = subprocess.Popen(cmd,shell=True, stdout=subprocess.PIPE, 
-                        stderr=subprocess.PIPE)
+                                        ets.strftime("%Y %m %d %H"))
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
     o = open('pregrid.stdout.txt', 'w')
-    o.write( p.stdout.read() )
+    o.write(p.stdout.read())
     o.close()
 
     o = open('pregrid.stderr.txt', 'w')
-    o.write( p.stderr.read() )
+    o.write(p.stderr.read())
     o.close()
 
-    
+
 def regridder(sts, ets):
     ''' Do the regridder step '''
     print '3. Running regridder'
     os.chdir("%s/REGRID/regridder" % (BASEFOLDER,))
     o = open('namelist.input', 'w')
     o.write("""
-&record1   
+&record1
 start_year                      = %s
 start_month                     = %s
 start_day                       = %s
@@ -77,7 +89,7 @@ end_year                        = %s
 end_month                       = %s
 end_day                         = %s
 end_hour                        = %s
-interval                        = 10800/    
+interval                        = 10800/
 
 &record2
  ptop_in_Pa                      = 10000
@@ -107,26 +119,27 @@ interval                        = 10800/
  print_output                    = .FALSE. ,
  print_file                      = .FALSE. ,
  print_f77_info                  = .TRUE. /
-                                           
-""" % (sts.year, sts.month, sts.day, sts.hour, ets.year, ets.month, 
+
+""" % (sts.year, sts.month, sts.day, sts.hour, ets.year, ets.month,
        ets.day, ets.hour))
     o.close()
-    
-    p = subprocess.Popen("./regridder", shell=True, stdout=subprocess.PIPE, 
-                        stderr=subprocess.PIPE)    
+
+    p = subprocess.Popen("./regridder", shell=True, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
     o = open('regrid.stdout.txt', 'w')
-    o.write( p.stdout.read() )
+    o.write(p.stdout.read())
     o.close()
 
     o = open('regrid.stderr.txt', 'w')
-    o.write( p.stderr.read() )
+    o.write(p.stderr.read())
     o.close()
-    
+
     # Lets go cleanup after ourselves
     os.chdir("%s/REGRID/pregrid" % (BASEFOLDER,))
     for fn in glob.glob("*FILE:*"):
         os.unlink(fn)
-    
+
+
 def interpf(sts, ets):
     ''' Do Interpf step '''
     print '4. Running interpf'
@@ -171,72 +184,75 @@ less_than_24h                   = .FALSE. /
 &record5
  ifdatim        = -1 /                               ! # of IC time periods to output
 
-""" % (sts.year, sts.month, sts.day, sts.hour, ets.year, ets.month, 
+""" % (sts.year, sts.month, sts.day, sts.hour, ets.year, ets.month,
        ets.day, ets.hour))
     o.close()
-    
-    p = subprocess.Popen("./interpf", shell=True, stdout=subprocess.PIPE, 
-                        stderr=subprocess.PIPE)    
+
+    p = subprocess.Popen("./interpf", shell=True, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
     o = open('interpf.stdout.txt', 'w')
-    o.write( p.stdout.read() )
+    o.write(p.stdout.read())
     o.close()
 
     o = open('interpf.stderr.txt', 'w')
-    o.write( p.stderr.read() )
+    o.write(p.stderr.read())
     o.close()
-    
+
     for fn in ("BDYOUT_DOMAIN1", "MMINPUT_DOMAIN1", "LOWBDY_DOMAIN1"):
         sz = os.path.getsize(fn)
         if sz < 1000:
             print("ABORT: %s is %s bytes, too small!" % (fn, sz))
             sys.exit()
         os.rename(fn, "../MM5/Run/%s" % (fn,))
-    
+
     # Cleanup after ourself
     os.unlink('../REGRID/regridder/REGRID_DOMAIN1')
-    
+
+
 def mm5deck():
     ''' Run mm5deck '''
     print '5. Running MM5 Deck'
     os.chdir("%s/MM5" % (BASEFOLDER,))
-    p = subprocess.Popen("./mm5deck", shell=True, stdout=subprocess.PIPE, 
-                        stderr=subprocess.PIPE)    
+    p = subprocess.Popen("./mm5deck", shell=True, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
     o = open('mm5deck.stdout.txt', 'w')
-    o.write( p.stdout.read() )
+    o.write(p.stdout.read())
     o.close()
 
     o = open('mm5deck.stderr.txt', 'w')
-    o.write( p.stderr.read() )
+    o.write(p.stderr.read())
     o.close()
-    
+
+
 def run_mm5():
     ''' Run mm5d '''
     print '6. Running MM5'
     os.chdir("%s/MM5/Run" % (BASEFOLDER,))
-    p = subprocess.Popen("/usr/local/openmpi-intel/bin/mpirun -np 2 ./mm5.mpp", 
-                         shell=True, stdout=subprocess.PIPE, 
-                        stderr=subprocess.PIPE)    
+    p = subprocess.Popen("/usr/local/openmpi-intel/bin/mpirun -np 2 ./mm5.mpp",
+                         shell=True, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
     o = open('mm5.mpp.stdout.txt', 'w')
-    o.write( p.stdout.read() )
+    o.write(p.stdout.read())
     o.close()
 
     o = open('mm5.mpp.stderr.txt', 'w')
-    o.write( p.stderr.read() )
+    o.write(p.stderr.read())
     o.close()
 
-def archiver( sts ):
+
+def archiver(sts):
     ''' Run archiver '''
     print '7. Running Archiver'
-    cmd = "/usr/local/bin/archiver MMOUT_DOMAIN1 0 %s isumm5_%s.nc" % (HOURS+1,
-                                            sts.strftime("%Y%m%d%H%M"))
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, 
-                        stderr=subprocess.PIPE)    
+    cmd = ("/usr/local/bin/archiver MMOUT_DOMAIN1 0 %s isumm5_%s.nc"
+           ) % (HOURS+1, sts.strftime("%Y%m%d%H%M"))
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
     o = open('archiver.stdout.txt', 'w')
-    o.write( p.stdout.read() )
+    o.write(p.stdout.read())
     o.close()
 
     o = open('archiver.stderr.txt', 'w')
-    o.write( p.stderr.read() )
+    o.write(p.stderr.read())
     o.close()
 
 
