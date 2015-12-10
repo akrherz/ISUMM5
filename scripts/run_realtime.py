@@ -6,21 +6,10 @@ import os
 import urllib2
 import subprocess
 import glob
-import random
-import time
+from pyiem.util import exponential_backoff
 
 BASEFOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 HOURS = 72
-
-
-def exponential_backoff(func, *args, **kwargs):
-    for i in range(5):
-        try:
-            return func(*args, **kwargs)
-        except Exception, exp:
-            print("%s/5 %s traceback: %s" % (i+1, func.__name__, exp))
-            time.sleep((2 ** i) + (random.randint(0, 1000) / 1000))
-    return None
 
 
 def dl_ncep(ts):
