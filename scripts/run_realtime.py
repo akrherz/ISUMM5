@@ -3,9 +3,9 @@ import sys
 import datetime
 import pytz
 import os
-import urllib2
 import subprocess
 import glob
+import requests
 from pyiem.util import exponential_backoff
 
 BASEFOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -27,11 +27,11 @@ def dl_ncep(ts):
             print '   Fetching: %s' % (g2file,),
             uri = ("%s/gfs.%s/gfs.t%02iz.pgrb2.1p00.f%03i"
                    ) % (baseuri, ts.strftime("%Y%m%d%H"), ts.hour, i)
-            dldata = exponential_backoff(urllib2.urlopen, uri).read()
+            res = exponential_backoff(requests.get, uri)
             o = open(g2file, 'wb')
-            o.write(dldata)
+            o.write(res.content)
             o.close()
-            print '%s' % (len(dldata),)
+            print '%s' % (len(res.content),)
 
         if not os.path.isfile(g1file):
             # convert to grib2
