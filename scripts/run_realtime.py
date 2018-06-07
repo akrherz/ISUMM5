@@ -1,10 +1,11 @@
 """Something to proctor the realtime run!"""
 import sys
 import datetime
-import pytz
 import os
 import subprocess
 import glob
+
+import pytz
 import requests
 from pyiem.util import exponential_backoff
 
@@ -14,7 +15,7 @@ HOURS = 72
 
 def dl_ncep(ts):
     ''' Download stuff we want from NCEP '''
-    print '1. Download NCEP GFS Data'
+    print('1. Download NCEP GFS Data')
     baseuri = "http://ftpprd.ncep.noaa.gov/data/nccf/com/gfs/prod"
     tmpdir = "/tmp/gfs.%s" % (ts.strftime("%Y%m%d%H"),)
     if not os.path.isdir(tmpdir):
@@ -24,14 +25,14 @@ def dl_ncep(ts):
         g1file = "%s/gfs.t%02iz.pgrb2.1p00.f%03i.grib" % (tmpdir, ts.hour, i)
         g2file = "%s/gfs.t%02iz.pgrb2.1p00.f%03i" % (tmpdir, ts.hour, i)
         if not os.path.isfile(g1file):
-            print '   Fetching: %s' % (g2file,),
+            print('   Fetching: %s' % (g2file,), end='')
             uri = ("%s/gfs.%s/gfs.t%02iz.pgrb2.1p00.f%03i"
                    ) % (baseuri, ts.strftime("%Y%m%d%H"), ts.hour, i)
             res = exponential_backoff(requests.get, uri)
             o = open(g2file, 'wb')
             o.write(res.content)
             o.close()
-            print '%s' % (len(res.content),)
+            print(' %s' % (len(res.content),))
 
         if not os.path.isfile(g1file):
             # convert to grib2
@@ -47,7 +48,7 @@ def dl_ncep(ts):
 
 def pregrid(sts, ets):
     ''' Do the pregrid activity '''
-    print '2. Running pregrid'
+    print('2. Running pregrid')
     os.chdir("%s/REGRID/pregrid" % (BASEFOLDER,))
     tmpdir = "/tmp/gfs.%s" % (sts.strftime("%Y%m%d%H"),)
     cmd = "csh pregrid.csh %s %s %s" % (tmpdir, sts.strftime("%Y %m %d %H"),
@@ -65,7 +66,7 @@ def pregrid(sts, ets):
 
 def regridder(sts, ets):
     ''' Do the regridder step '''
-    print '3. Running regridder'
+    print('3. Running regridder')
     os.chdir("%s/REGRID/regridder" % (BASEFOLDER,))
     o = open('namelist.input', 'w')
     o.write("""
@@ -131,7 +132,7 @@ interval                        = 10800/
 
 def interpf(sts, ets):
     ''' Do Interpf step '''
-    print '4. Running interpf'
+    print('4. Running interpf')
     os.chdir("%s/INTERPF" % (BASEFOLDER,))
     o = open('namelist.input', 'w')
     o.write("""
@@ -200,7 +201,7 @@ less_than_24h                   = .FALSE. /
 
 def mm5deck():
     ''' Run mm5deck '''
-    print '5. Running MM5 Deck'
+    print('5. Running MM5 Deck')
     os.chdir("%s/MM5" % (BASEFOLDER,))
     p = subprocess.Popen("./mm5deck", shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
@@ -215,7 +216,7 @@ def mm5deck():
 
 def run_mm5():
     ''' Run mm5d '''
-    print '6. Running MM5'
+    print('6. Running MM5')
     os.chdir("%s/MM5/Run" % (BASEFOLDER,))
     p = subprocess.Popen("/usr/local/openmpi-intel/bin/mpirun -np 2 ./mm5.mpp",
                          shell=True, stdout=subprocess.PIPE,
@@ -231,7 +232,7 @@ def run_mm5():
 
 def archiver(sts):
     ''' Run archiver '''
-    print '7. Running Archiver'
+    print('7. Running Archiver')
     cmd = ("/usr/local/bin/archiver MMOUT_DOMAIN1 0 %s isumm5_%s.nc"
            ) % (HOURS+1, sts.strftime("%Y%m%d%H%M"))
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
@@ -251,6 +252,7 @@ def cleanup(ts):
     if os.path.isdir(tmpdir):
         subprocess.call("rm -rf %s" % (tmpdir,), shell=True)
 
+
 if __name__ == '__main__':
     yyyy = int(sys.argv[1])
     mm = int(sys.argv[2])
@@ -258,7 +260,7 @@ if __name__ == '__main__':
     hh24 = int(sys.argv[4])
 
     sts = datetime.datetime(yyyy, mm, dd, hh24)
-    sts = sts.replace(tzinfo=pytz.timezone("UTC"))
+    sts = sts.replace(tzinfo=pytz.utc)
 
     ets = sts + datetime.timedelta(hours=72)
 
