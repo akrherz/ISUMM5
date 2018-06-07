@@ -55,11 +55,11 @@ def pregrid(sts, ets):
                                         ets.strftime("%Y %m %d %H"))
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
-    o = open('pregrid.stdout.txt', 'w')
+    o = open('pregrid.stdout.txt', 'wb')
     o.write(p.stdout.read())
     o.close()
 
-    o = open('pregrid.stderr.txt', 'w')
+    o = open('pregrid.stderr.txt', 'wb')
     o.write(p.stderr.read())
     o.close()
 
@@ -116,11 +116,11 @@ interval                        = 10800/
 
     p = subprocess.Popen("./regridder", shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
-    o = open('regrid.stdout.txt', 'w')
+    o = open('regrid.stdout.txt', 'wb')
     o.write(p.stdout.read())
     o.close()
 
-    o = open('regrid.stderr.txt', 'w')
+    o = open('regrid.stderr.txt', 'wb')
     o.write(p.stderr.read())
     o.close()
 
@@ -180,11 +180,11 @@ less_than_24h                   = .FALSE. /
 
     p = subprocess.Popen("./interpf", shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
-    o = open('interpf.stdout.txt', 'w')
+    o = open('interpf.stdout.txt', 'wb')
     o.write(p.stdout.read())
     o.close()
 
-    o = open('interpf.stderr.txt', 'w')
+    o = open('interpf.stderr.txt', 'wb')
     o.write(p.stderr.read())
     o.close()
 
@@ -205,11 +205,11 @@ def mm5deck():
     os.chdir("%s/MM5" % (BASEFOLDER,))
     p = subprocess.Popen("./mm5deck", shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
-    o = open('mm5deck.stdout.txt', 'w')
+    o = open('mm5deck.stdout.txt', 'wb')
     o.write(p.stdout.read())
     o.close()
 
-    o = open('mm5deck.stderr.txt', 'w')
+    o = open('mm5deck.stderr.txt', 'wb')
     o.write(p.stderr.read())
     o.close()
 
@@ -221,11 +221,11 @@ def run_mm5():
     p = subprocess.Popen("/usr/local/openmpi-intel/bin/mpirun -np 2 ./mm5.mpp",
                          shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
-    o = open('mm5.mpp.stdout.txt', 'w')
+    o = open('mm5.mpp.stdout.txt', 'wb')
     o.write(p.stdout.read())
     o.close()
 
-    o = open('mm5.mpp.stderr.txt', 'w')
+    o = open('mm5.mpp.stderr.txt', 'wb')
     o.write(p.stderr.read())
     o.close()
 
@@ -237,11 +237,11 @@ def archiver(sts):
            ) % (HOURS+1, sts.strftime("%Y%m%d%H%M"))
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
-    o = open('archiver.stdout.txt', 'w')
+    o = open('archiver.stdout.txt', 'wb')
     o.write(p.stdout.read())
     o.close()
 
-    o = open('archiver.stderr.txt', 'w')
+    o = open('archiver.stderr.txt', 'wb')
     o.write(p.stderr.read())
     o.close()
 
