@@ -251,7 +251,7 @@ def archiver(sts):
         "ISUMM5/%s" % (sts.year, ),
         "isumm5_%s.nc" % (sts.strftime("%Y%m%d%H%M"), )
     )
-    if res[0] is not True:
+    if res[0] is None:
         print("    upload to box failure, hmmm")
 
 
