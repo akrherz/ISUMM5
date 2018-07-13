@@ -8,6 +8,7 @@ import glob
 import pytz
 import requests
 from pyiem.util import exponential_backoff
+from pyiem.box_utils import sendfiles2box
 
 BASEFOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 HOURS = 72
@@ -245,6 +246,14 @@ def archiver(sts):
     o.write(p.stderr.read())
     o.close()
 
+    print('8. Uploading netcdf to box')
+    res = sendfiles2box(
+        "ISUMM5/%s" % (sts.year, ),
+        "isumm5_%s.nc" % (sts.strftime("%Y%m%d%H%M"), )
+    )
+    if res[0] is not True:
+        print("    upload to box failure, hmmm")
+
 
 def cleanup(ts):
     """Cleanup after ourself"""
@@ -253,7 +262,8 @@ def cleanup(ts):
         subprocess.call("rm -rf %s" % (tmpdir,), shell=True)
 
 
-if __name__ == '__main__':
+def main():
+    """Go Main Go"""
     yyyy = int(sys.argv[1])
     mm = int(sys.argv[2])
     dd = int(sys.argv[3])
@@ -272,3 +282,7 @@ if __name__ == '__main__':
     run_mm5()
     archiver(sts)
     cleanup(sts)
+
+
+if __name__ == '__main__':
+    main()
