@@ -254,6 +254,15 @@ def archiver(sts):
     if res[0] is None:
         print("    upload to box failure, hmmm")
 
+    # delete any older files, that were hopefully already processed
+    for hr in [36, 48]:
+        fn = "isumm5_%s.nc" % (
+            (sts - datetime.timedelta(hours=hr)).strftime("%Y%m%d%H%M"),
+        )
+        if os.path.isfile(fn):
+            print("    deleting %s" % (fn, ))
+            os.unlink(fn)
+
 
 def cleanup(ts):
     """Cleanup after ourself"""
