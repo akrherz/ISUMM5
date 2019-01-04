@@ -17,7 +17,7 @@ HOURS = 72
 def dl_ncep(ts):
     ''' Download stuff we want from NCEP '''
     print('1. Download NCEP GFS Data')
-    baseuri = "http://ftpprd.ncep.noaa.gov/data/nccf/com/gfs/prod"
+    baseuri = "https://ftpprd.ncep.noaa.gov/data/nccf/com/gfs/prod"
     tmpdir = "/tmp/gfs.%s" % (ts.strftime("%Y%m%d%H"),)
     if not os.path.isdir(tmpdir):
         os.makedirs(tmpdir)
@@ -29,7 +29,7 @@ def dl_ncep(ts):
             print('   Fetching: %s' % (g2file,), end='')
             uri = ("%s/gfs.%s/gfs.t%02iz.pgrb2.1p00.f%03i"
                    ) % (baseuri, ts.strftime("%Y%m%d%H"), ts.hour, i)
-            res = exponential_backoff(requests.get, uri)
+            res = exponential_backoff(requests.get, uri, timeout=60)
             o = open(g2file, 'wb')
             o.write(res.content)
             o.close()
