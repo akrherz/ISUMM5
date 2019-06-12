@@ -27,8 +27,8 @@ def dl_ncep(ts):
         g2file = "%s/gfs.t%02iz.pgrb2.1p00.f%03i" % (tmpdir, ts.hour, i)
         if not os.path.isfile(g1file):
             print('   Fetching: %s' % (g2file,), end='')
-            uri = ("%s/gfs.%s/gfs.t%02iz.pgrb2.1p00.f%03i"
-                   ) % (baseuri, ts.strftime("%Y%m%d%H"), ts.hour, i)
+            uri = ("%s/gfs.%s/%02i/gfs.t%02iz.pgrb2.1p00.f%03i"
+                   ) % (baseuri, ts.strftime("%Y%m%d"), ts.hour, ts.hour, i)
             res = exponential_backoff(requests.get, uri, timeout=60)
             o = open(g2file, 'wb')
             o.write(res.content)
