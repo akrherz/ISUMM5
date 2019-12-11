@@ -10,13 +10,13 @@ import requests
 from pyiem.util import exponential_backoff
 from pyiem.box_utils import sendfiles2box
 
-BASEFOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+BASEFOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 HOURS = 72
 
 
 def dl_ncep(ts):
-    ''' Download stuff we want from NCEP '''
-    print('1. Download NCEP GFS Data')
+    """ Download stuff we want from NCEP """
+    print("1. Download NCEP GFS Data")
     baseuri = "https://ftpprd.ncep.noaa.gov/data/nccf/com/gfs/prod"
     tmpdir = "/tmp/gfs.%s" % (ts.strftime("%Y%m%d%H"),)
     if not os.path.isdir(tmpdir):
@@ -26,21 +26,28 @@ def dl_ncep(ts):
         g1file = "%s/gfs.t%02iz.pgrb2.1p00.f%03i.grib" % (tmpdir, ts.hour, i)
         g2file = "%s/gfs.t%02iz.pgrb2.1p00.f%03i" % (tmpdir, ts.hour, i)
         if not os.path.isfile(g1file):
-            print('   Fetching: %s' % (g2file,), end='')
-            uri = ("%s/gfs.%s/%02i/gfs.t%02iz.pgrb2.1p00.f%03i"
-                   ) % (baseuri, ts.strftime("%Y%m%d"), ts.hour, ts.hour, i)
+            print("   Fetching: %s" % (g2file,), end="")
+            uri = ("%s/gfs.%s/%02i/gfs.t%02iz.pgrb2.1p00.f%03i") % (
+                baseuri,
+                ts.strftime("%Y%m%d"),
+                ts.hour,
+                ts.hour,
+                i,
+            )
             res = exponential_backoff(requests.get, uri, timeout=60)
-            o = open(g2file, 'wb')
+            o = open(g2file, "wb")
             o.write(res.content)
             o.close()
-            print(' %s' % (len(res.content),))
+            print(" %s" % (len(res.content),))
 
         if not os.path.isfile(g1file):
             # convert to grib2
-            subprocess.call("/usr/local/bin/cnvgrib -g21 %s %s" % (g2file,
-                                                                   g1file),
-                            shell=True, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+            subprocess.call(
+                "/usr/local/bin/cnvgrib -g21 %s %s" % (g2file, g1file),
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
 
         # Remove the grib2 file as it is no longer needed...
         if os.path.isfile(g1file) and os.path.isfile(g2file):
@@ -48,29 +55,34 @@ def dl_ncep(ts):
 
 
 def pregrid(sts, ets):
-    ''' Do the pregrid activity '''
-    print('2. Running pregrid')
+    """ Do the pregrid activity """
+    print("2. Running pregrid")
     os.chdir("%s/REGRID/pregrid" % (BASEFOLDER,))
     tmpdir = "/tmp/gfs.%s" % (sts.strftime("%Y%m%d%H"),)
-    cmd = "csh pregrid.csh %s %s %s" % (tmpdir, sts.strftime("%Y %m %d %H"),
-                                        ets.strftime("%Y %m %d %H"))
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    o = open('pregrid.stdout.txt', 'wb')
+    cmd = "csh pregrid.csh %s %s %s" % (
+        tmpdir,
+        sts.strftime("%Y %m %d %H"),
+        ets.strftime("%Y %m %d %H"),
+    )
+    p = subprocess.Popen(
+        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    o = open("pregrid.stdout.txt", "wb")
     o.write(p.stdout.read())
     o.close()
 
-    o = open('pregrid.stderr.txt', 'wb')
+    o = open("pregrid.stderr.txt", "wb")
     o.write(p.stderr.read())
     o.close()
 
 
 def regridder(sts, ets):
-    ''' Do the regridder step '''
-    print('3. Running regridder')
+    """ Do the regridder step """
+    print("3. Running regridder")
     os.chdir("%s/REGRID/regridder" % (BASEFOLDER,))
-    o = open('namelist.input', 'w')
-    o.write("""
+    o = open("namelist.input", "w")
+    o.write(
+        """
 &record1
 start_year                      = %s
 start_month                     = %s
@@ -111,17 +123,31 @@ interval                        = 10800/
  print_file                      = .FALSE. ,
  print_f77_info                  = .TRUE. /
 
-""" % (sts.year, sts.month, sts.day, sts.hour, ets.year, ets.month,
-       ets.day, ets.hour))
+"""
+        % (
+            sts.year,
+            sts.month,
+            sts.day,
+            sts.hour,
+            ets.year,
+            ets.month,
+            ets.day,
+            ets.hour,
+        )
+    )
     o.close()
 
-    p = subprocess.Popen("./regridder", shell=True, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    o = open('regrid.stdout.txt', 'wb')
+    p = subprocess.Popen(
+        "./regridder",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    o = open("regrid.stdout.txt", "wb")
     o.write(p.stdout.read())
     o.close()
 
-    o = open('regrid.stderr.txt', 'wb')
+    o = open("regrid.stderr.txt", "wb")
     o.write(p.stderr.read())
     o.close()
 
@@ -132,11 +158,12 @@ interval                        = 10800/
 
 
 def interpf(sts, ets):
-    ''' Do Interpf step '''
-    print('4. Running interpf')
+    """ Do Interpf step """
+    print("4. Running interpf")
     os.chdir("%s/INTERPF" % (BASEFOLDER,))
-    o = open('namelist.input', 'w')
-    o.write("""
+    o = open("namelist.input", "w")
+    o.write(
+        """
 &record0
 input_file     = '../REGRID/regridder/REGRID_DOMAIN1' /
 
@@ -175,17 +202,28 @@ less_than_24h                   = .FALSE. /
 &record5
  ifdatim        = -1 /                               ! # of IC time periods to output
 
-""" % (sts.year, sts.month, sts.day, sts.hour, ets.year, ets.month,
-       ets.day, ets.hour))
+"""
+        % (
+            sts.year,
+            sts.month,
+            sts.day,
+            sts.hour,
+            ets.year,
+            ets.month,
+            ets.day,
+            ets.hour,
+        )
+    )
     o.close()
 
-    p = subprocess.Popen("./interpf", shell=True, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    o = open('interpf.stdout.txt', 'wb')
+    p = subprocess.Popen(
+        "./interpf", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    o = open("interpf.stdout.txt", "wb")
     o.write(p.stdout.read())
     o.close()
 
-    o = open('interpf.stderr.txt', 'wb')
+    o = open("interpf.stderr.txt", "wb")
     o.write(p.stderr.read())
     o.close()
 
@@ -197,59 +235,66 @@ less_than_24h                   = .FALSE. /
         os.rename(fn, "../MM5/Run/%s" % (fn,))
 
     # Cleanup after ourself
-    os.unlink('../REGRID/regridder/REGRID_DOMAIN1')
+    os.unlink("../REGRID/regridder/REGRID_DOMAIN1")
 
 
 def mm5deck():
-    ''' Run mm5deck '''
-    print('5. Running MM5 Deck')
+    """ Run mm5deck """
+    print("5. Running MM5 Deck")
     os.chdir("%s/MM5" % (BASEFOLDER,))
-    p = subprocess.Popen("./mm5deck", shell=True, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    o = open('mm5deck.stdout.txt', 'wb')
+    p = subprocess.Popen(
+        "./mm5deck", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    o = open("mm5deck.stdout.txt", "wb")
     o.write(p.stdout.read())
     o.close()
 
-    o = open('mm5deck.stderr.txt', 'wb')
+    o = open("mm5deck.stderr.txt", "wb")
     o.write(p.stderr.read())
     o.close()
 
 
 def run_mm5():
-    ''' Run mm5d '''
-    print('6. Running MM5')
+    """ Run mm5d """
+    print("6. Running MM5")
     os.chdir("%s/MM5/Run" % (BASEFOLDER,))
-    p = subprocess.Popen("/usr/local/openmpi-intel/bin/mpirun -np 2 ./mm5.mpp",
-                         shell=True, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    o = open('mm5.mpp.stdout.txt', 'wb')
+    p = subprocess.Popen(
+        "/usr/local/openmpi-intel/bin/mpirun -np 2 ./mm5.mpp",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    o = open("mm5.mpp.stdout.txt", "wb")
     o.write(p.stdout.read())
     o.close()
 
-    o = open('mm5.mpp.stderr.txt', 'wb')
+    o = open("mm5.mpp.stderr.txt", "wb")
     o.write(p.stderr.read())
     o.close()
 
 
 def archiver(sts):
-    ''' Run archiver '''
-    print('7. Running Archiver')
-    cmd = ("/usr/local/bin/archiver MMOUT_DOMAIN1 0 %s isumm5_%s.nc"
-           ) % (HOURS+1, sts.strftime("%Y%m%d%H%M"))
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    o = open('archiver.stdout.txt', 'wb')
+    """ Run archiver """
+    print("7. Running Archiver")
+    cmd = ("/usr/local/bin/archiver MMOUT_DOMAIN1 0 %s isumm5_%s.nc") % (
+        HOURS + 1,
+        sts.strftime("%Y%m%d%H%M"),
+    )
+    p = subprocess.Popen(
+        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    o = open("archiver.stdout.txt", "wb")
     o.write(p.stdout.read())
     o.close()
 
-    o = open('archiver.stderr.txt', 'wb')
+    o = open("archiver.stderr.txt", "wb")
     o.write(p.stderr.read())
     o.close()
 
-    print('8. Uploading netcdf to box')
+    print("8. Uploading netcdf to box")
     res = sendfiles2box(
-        "ISUMM5/%s" % (sts.year, ),
-        "isumm5_%s.nc" % (sts.strftime("%Y%m%d%H%M"), )
+        "ISUMM5/%s" % (sts.year,),
+        "isumm5_%s.nc" % (sts.strftime("%Y%m%d%H%M"),),
     )
     if res[0] is None:
         print("    upload to box failure, hmmm")
@@ -260,7 +305,7 @@ def archiver(sts):
             (sts - datetime.timedelta(hours=hr)).strftime("%Y%m%d%H%M"),
         )
         if os.path.isfile(fn):
-            print("    deleting %s" % (fn, ))
+            print("    deleting %s" % (fn,))
             os.unlink(fn)
 
 
@@ -293,5 +338,5 @@ def main():
     cleanup(sts)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
