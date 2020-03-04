@@ -8,7 +8,6 @@ import glob
 import pytz
 import requests
 from pyiem.util import exponential_backoff
-from pyiem.box_utils import sendfiles2box
 
 BASEFOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 HOURS = 72
@@ -276,37 +275,24 @@ def run_mm5():
 def archiver(sts):
     """ Run archiver """
     print("7. Running Archiver")
-    cmd = ("/usr/local/bin/archiver MMOUT_DOMAIN1 0 %s isumm5_%s.nc") % (
-        HOURS + 1,
-        sts.strftime("%Y%m%d%H%M"),
-    )
+    ncfn = "isumm5_%s.nc" % (sts.strftime("%Y%m%d%H%M"),)
+    cmd = "/usr/local/bin/archiver MMOUT_DOMAIN1 0 %s %s" % (HOURS + 1, ncfn)
     p = subprocess.Popen(
         cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    o = open("archiver.stdout.txt", "wb")
-    o.write(p.stdout.read())
-    o.close()
+    with open("archiver.stdout.txt", "wb") as fh:
+        fh.write(p.stdout.read())
 
-    o = open("archiver.stderr.txt", "wb")
-    o.write(p.stderr.read())
-    o.close()
+    with open("archiver.stderr.txt", "wb") as fh:
+        fh.write(p.stderr.read())
 
-    print("8. Uploading netcdf to box")
-    res = sendfiles2box(
-        "ISUMM5/%s" % (sts.year,),
-        "isumm5_%s.nc" % (sts.strftime("%Y%m%d%H%M"),),
-    )
-    if res[0] is None:
-        print("    upload to box failure, hmmm")
-
-    # delete any older files, that were hopefully already processed
-    for hr in [36, 48]:
-        fn = "isumm5_%s.nc" % (
-            (sts - datetime.timedelta(hours=hr)).strftime("%Y%m%d%H%M"),
-        )
-        if os.path.isfile(fn):
-            print("    deleting %s" % (fn,))
-            os.unlink(fn)
+    print("8. Uploading netcdf to staging")
+    remotedir = "/stage/ISUMM5/%s" % (sts.year,)
+    cmd = (
+        'rsync -a --rsync-path="mkdir -p %s && rsync" '
+        "--remove-source-files %s mesonet@metl60.agron.iastate.edu:%s"
+    ) % (remotedir, ncfn, remotedir)
+    subprocess.call(cmd, shell=True)
 
 
 def cleanup(ts):
