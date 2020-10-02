@@ -290,9 +290,18 @@ def archiver(sts):
     remotedir = "/stage/ISUMM5/%s" % (sts.year,)
     cmd = (
         'rsync -a --rsync-path="mkdir -p %s && rsync" '
-        "--remove-source-files %s mesonet@metl60.agron.iastate.edu:%s"
+        "%s mesonet@metl60.agron.iastate.edu:%s"
     ) % (remotedir, ncfn, remotedir)
     subprocess.call(cmd, shell=True)
+
+    # delete any older files, that were hopefully already processed
+    for hr in [36, 48]:
+        fn = "isumm5_%s.nc" % (
+            (sts - datetime.timedelta(hours=hr)).strftime("%Y%m%d%H%M"),
+        )
+        if os.path.isfile(fn):
+            print("    deleting %s" % (fn,))
+            os.unlink(fn)
 
 
 def cleanup(ts):
