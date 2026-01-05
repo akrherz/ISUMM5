@@ -1,4 +1,5 @@
 """Something to proctor the realtime run!"""
+
 import sys
 import datetime
 import os
@@ -14,7 +15,7 @@ HOURS = 72
 
 
 def dl_ncep(ts):
-    """ Download stuff we want from NCEP """
+    """Download stuff we want from NCEP"""
     print("1. Download NCEP GFS Data")
     baseuri = "https://ftpprd.ncep.noaa.gov/data/nccf/com/gfs/prod"
     tmpdir = "/tmp/gfs.%s" % (ts.strftime("%Y%m%d%H"),)
@@ -54,7 +55,7 @@ def dl_ncep(ts):
 
 
 def pregrid(sts, ets):
-    """ Do the pregrid activity """
+    """Do the pregrid activity"""
     print("2. Running pregrid")
     os.chdir("%s/REGRID/pregrid" % (BASEFOLDER,))
     tmpdir = "/tmp/gfs.%s" % (sts.strftime("%Y%m%d%H"),)
@@ -76,7 +77,7 @@ def pregrid(sts, ets):
 
 
 def regridder(sts, ets):
-    """ Do the regridder step """
+    """Do the regridder step"""
     print("3. Running regridder")
     os.chdir("%s/REGRID/regridder" % (BASEFOLDER,))
     o = open("namelist.input", "w")
@@ -157,7 +158,7 @@ interval                        = 10800/
 
 
 def interpf(sts, ets):
-    """ Do Interpf step """
+    """Do Interpf step"""
     print("4. Running interpf")
     os.chdir("%s/INTERPF" % (BASEFOLDER,))
     o = open("namelist.input", "w")
@@ -238,7 +239,7 @@ less_than_24h                   = .FALSE. /
 
 
 def mm5deck():
-    """ Run mm5deck """
+    """Run mm5deck"""
     print("5. Running MM5 Deck")
     os.chdir("%s/MM5" % (BASEFOLDER,))
     p = subprocess.Popen(
@@ -254,7 +255,7 @@ def mm5deck():
 
 
 def run_mm5():
-    """ Run mm5d """
+    """Run mm5d"""
     print("6. Running MM5")
     os.chdir("%s/MM5/Run" % (BASEFOLDER,))
     p = subprocess.Popen(
@@ -273,7 +274,7 @@ def run_mm5():
 
 
 def archiver(sts):
-    """ Run archiver """
+    """Run archiver"""
     print("7. Running Archiver")
     ncfn = "isumm5_%s.nc" % (sts.strftime("%Y%m%d%H%M"),)
     cmd = "/usr/local/bin/archiver MMOUT_DOMAIN1 0 %s %s" % (HOURS + 1, ncfn)
